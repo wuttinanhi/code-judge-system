@@ -4,17 +4,15 @@ import (
 	"os"
 
 	"github.com/wuttinanhi/code-judge-system/databases"
-	repositories "github.com/wuttinanhi/code-judge-system/repositories/implements"
-	services "github.com/wuttinanhi/code-judge-system/services/implements"
-	Iservices "github.com/wuttinanhi/code-judge-system/services/interfaces"
+	"github.com/wuttinanhi/code-judge-system/repositories"
 	"gorm.io/gorm"
 )
 
 var SERVICE_KIT *ServiceKit
 
 type ServiceKit struct {
-	JWTService  Iservices.JWTService
-	UserService Iservices.UserService
+	JWTService  JWTService
+	UserService UserService
 }
 
 func newServiceKit(db *gorm.DB) *ServiceKit {
@@ -27,8 +25,8 @@ func newServiceKit(db *gorm.DB) *ServiceKit {
 		jwtSecret = "secret"
 	}
 
-	jwtService := services.NewJWTService(jwtSecret)
-	userService := services.NewUserService(userRepo)
+	jwtService := NewJWTService(jwtSecret)
+	userService := NewUserService(userRepo)
 
 	return &ServiceKit{
 		JWTService:  jwtService,

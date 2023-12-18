@@ -4,9 +4,13 @@ import (
 	"errors"
 
 	"github.com/wuttinanhi/code-judge-system/entities"
-	repositories "github.com/wuttinanhi/code-judge-system/repositories/interfaces"
-	services "github.com/wuttinanhi/code-judge-system/services/interfaces"
+	"github.com/wuttinanhi/code-judge-system/repositories"
 )
+
+type UserService interface {
+	Register(email, password, displayname string) (user *entities.User, err error)
+	Login(email, password string) (user *entities.User, err error)
+}
 
 type userService struct {
 	userRepo repositories.UserRepository
@@ -44,7 +48,7 @@ func (s *userService) Register(email string, password string, displayname string
 	return user, nil
 }
 
-func NewUserService(userRepo repositories.UserRepository) services.UserService {
+func NewUserService(userRepo repositories.UserRepository) UserService {
 	return &userService{
 		userRepo: userRepo,
 	}

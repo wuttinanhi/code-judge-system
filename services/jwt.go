@@ -6,8 +6,12 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/wuttinanhi/code-judge-system/entities"
-	services "github.com/wuttinanhi/code-judge-system/services/interfaces"
 )
+
+type JWTService interface {
+	GenerateToken(user entities.User) (string, error)
+	ValidateToken(token string) (*entities.User, error)
+}
 
 type jwtService struct {
 	secret string
@@ -53,7 +57,7 @@ func (s *jwtService) ValidateToken(token string) (*entities.User, error) {
 	return user, nil
 }
 
-func NewJWTService(secret string) services.JWTService {
+func NewJWTService(secret string) JWTService {
 	return &jwtService{
 		secret: secret,
 	}
