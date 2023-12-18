@@ -1,13 +1,12 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/wuttinanhi/code-judge-system/cmds"
+	"github.com/wuttinanhi/code-judge-system/services"
+)
 
 func main() {
-	app := fiber.New()
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
+	services.InitServiceKit()
+	app := cmds.SetupWeb()
 	app.Listen(":3000")
 }
