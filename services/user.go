@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/repositories"
@@ -42,6 +43,11 @@ func (s *userService) Register(email string, password string, displayname string
 	// Save the user to the repository
 	err = s.userRepo.CreateUser(user)
 	if err != nil {
+		// if error contains "UNIQUE constraint failed"
+		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+			return nil, errors.New("user already exists")
+		}
+
 		return nil, errors.New("failed to register user")
 	}
 
