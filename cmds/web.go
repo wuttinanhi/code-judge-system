@@ -21,5 +21,13 @@ func SetupWeb() *fiber.App {
 	userGroup.Post("/register", controllers.Register)
 	userGroup.Post("/login", controllers.Login)
 
+	challengeGroup := app.Group("/challenge")
+	challengeGroup.Use(controllers.UserMiddleware)
+	challengeGroup.Post("/create", controllers.CreateChallenge)
+	challengeGroup.Get("/all", controllers.GetAllChallenges)
+	challengeGroup.Get("/get/:id", controllers.GetChallengeByID)
+	challengeGroup.Put("/update", controllers.UpdateChallenge)
+	challengeGroup.Delete("/delete/:id", controllers.DeleteChallenge)
+
 	return app
 }

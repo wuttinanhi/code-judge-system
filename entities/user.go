@@ -68,3 +68,12 @@ func ValidateUserLoginDTO(c *fiber.Ctx) UserLoginDTO {
 type UserLoginResponse struct {
 	Token string `json:"token"`
 }
+
+func GetUserFromRequest(c *fiber.Ctx) *User {
+	user, ok := c.Locals("user").(*User)
+	if !ok {
+		panic("User not found")
+	}
+
+	return user
+}

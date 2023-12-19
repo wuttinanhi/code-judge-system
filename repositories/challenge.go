@@ -66,7 +66,7 @@ func (r *challengeRepository) DeleteChallenge(challenge *entities.Challenge) err
 
 // FindChallengeByID implements ChallengeRepository.
 func (r *challengeRepository) FindChallengeByID(id uint) (challenge *entities.Challenge, err error) {
-	result := r.db.First(&challenge, id)
+	result := r.db.First(&challenge, id).Preload("Testcases")
 	return challenge, result.Error
 }
 

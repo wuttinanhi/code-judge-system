@@ -31,6 +31,7 @@ func ValidateChallengeCreateDTO(c *fiber.Ctx) ChallengeCreateDTO {
 }
 
 type ChallengeUpdateDTO struct {
+	ChallengeID uint   `json:"challenge_id" validate:"required"`
 	Name        string `json:"name" validate:"required,min=3,max=255"`
 	Description string `json:"description" validate:"max=255"`
 }
