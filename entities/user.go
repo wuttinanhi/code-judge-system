@@ -5,12 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	UserRoleAdmin = "ADMIN"
+	UserRoleStaff = "STAFF"
+	UserRoleUser  = "USER"
+)
+
 type User struct {
 	UserID      uint   `gorm:"primary_key"`
 	DisplayName string `gorm:"unique;not null"`
 	Password    string `gorm:"not null"`
 	Email       string `gorm:"unique;not null"`
-	Role        string `gorm:"not null"`
+	Role        string `gorm:"not null;default:USER"`
 	gorm.Model
 }
 
