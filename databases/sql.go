@@ -12,8 +12,7 @@ func NewSQLiteDatabase() *gorm.DB {
 		panic("failed to connect sqlite database")
 	}
 
-	// Migrate the schema
-	db.AutoMigrate(&entities.User{})
+	StartMigration(db)
 
 	return db
 }
@@ -24,8 +23,17 @@ func NewTempSQLiteDatabase() *gorm.DB {
 		panic("failed to create temp sqlite database")
 	}
 
-	// Migrate the schema
-	db.AutoMigrate(&entities.User{})
+	StartMigration(db)
 
 	return db
+}
+
+func StartMigration(db *gorm.DB) {
+	db.AutoMigrate(
+		&entities.User{},
+		&entities.Challenge{},
+		&entities.ChallengeTestcase{},
+		&entities.Submission{},
+		&entities.SubmissionTestcase{},
+	)
 }

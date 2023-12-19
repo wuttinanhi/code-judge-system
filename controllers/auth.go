@@ -17,7 +17,7 @@ func Register(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(entities.UserRegisterResponse{
-		UserID:      user.ID,
+		UserID:      user.UserID,
 		DisplayName: user.DisplayName,
 		Email:       user.Email,
 	})
