@@ -57,7 +57,12 @@ func UpdateChallenge(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	err = services.GetServiceKit().ChallengeService.UpdateChallenge(challenge)
+	err = services.GetServiceKit().ChallengeService.UpdateChallenge(&entities.Challenge{
+		ChallengeID: challenge.ChallengeID,
+		Name:        dto.Name,
+		Description: dto.Description,
+		Testcases:   challenge.Testcases,
+	})
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}

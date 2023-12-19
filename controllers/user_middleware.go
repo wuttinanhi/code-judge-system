@@ -5,7 +5,9 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func UserMiddleware(c *fiber.Ctx, jwtService services.JWTService) error {
+func UserMiddleware(c *fiber.Ctx) error {
+	jwtService := services.GetServiceKit().JWTService
+
 	// Get the token from the Authorization header
 	tokenStr := c.Get("Authorization")
 	if tokenStr == "" {
@@ -13,6 +15,9 @@ func UserMiddleware(c *fiber.Ctx, jwtService services.JWTService) error {
 			"error": "Authorization header is missing",
 		})
 	}
+
+	// Remove the Bearer prefix from the token
+	tokenStr = tokenStr[7:]
 
 	// Parse the token
 	user, err := jwtService.ValidateToken(tokenStr)

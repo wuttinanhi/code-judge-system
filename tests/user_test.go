@@ -14,9 +14,6 @@ import (
 func TestUserRoutes(t *testing.T) {
 	services.InitTestServiceKit()
 	app := cmds.SetupWeb()
-	defer func() {
-		println("Test complete")
-	}()
 
 	t.Run("/user/register", func(t *testing.T) {
 		dto := entities.UserRegisterDTO{
