@@ -13,10 +13,31 @@ type SubmissionRepository interface {
 	GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error)
 	CreateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error)
 	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error)
+	CreateSubmissionWithTestcase(submission *entities.Submission, submissionTestcases []entities.SubmissionTestcase) (*entities.Submission, error)
 }
 
 type submissionRepository struct {
 	db *gorm.DB
+}
+
+// CreateSubmissionWithTestcase implements SubmissionRepository.
+func (r *submissionRepository) CreateSubmissionWithTestcase(submission *entities.Submission, testcaes []entities.SubmissionTestcase) (*entities.Submission, error) {
+	result := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(submission).Error; err != nil {
+			return err
+		}
+
+		for _, submissionTestcase := range testcaes {
+			submissionTestcase.SubmissionID = submission.SubmissionID
+			if err := tx.Create(&submissionTestcase).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	return submission, result
 }
 
 // CreateSubmission implements SubmissionRepository.

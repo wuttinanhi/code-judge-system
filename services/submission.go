@@ -13,10 +13,44 @@ type SubmissionService interface {
 	GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error)
 	CreateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error)
 	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error)
+	SubmitSubmission(submission *entities.Submission) (*entities.Submission, error)
 }
 
 type submissionService struct {
 	submissionRepository repositories.SubmissionRepository
+}
+
+// SubmitSubmission implements SubmissionService.
+func (s *submissionService) SubmitSubmission(submission *entities.Submission) (*entities.Submission, error) {
+	// get challenge
+	challenge, err := GetServiceKit().ChallengeService.FindChallengeByID(submission.ChallengeID)
+	if err != nil {
+		return nil, err
+	}
+
+	// get all challenge testcases
+	challengeTestcases, err := GetServiceKit().ChallengeService.AllTestcases(challenge)
+	if err != nil {
+		return nil, err
+	}
+
+	submissionTestcases := make([]entities.SubmissionTestcase, len(challengeTestcases))
+	for i, challengeTestcase := range challengeTestcases {
+		submissionTestcases[i] = entities.SubmissionTestcase{
+			ChallengeTestcaseID: challengeTestcase.TestcaseID,
+			Status:              entities.SubmissionStatusPending,
+			Output:              "",
+		}
+	}
+
+	// create submission
+	submission, err = s.submissionRepository.CreateSubmissionWithTestcase(submission, submissionTestcases)
+	if err != nil {
+		return nil, err
+	}
+
+	// finally return submission
+	return submission, nil
 }
 
 // CreateSubmission implements SubmissionService.
