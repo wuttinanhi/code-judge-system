@@ -34,10 +34,12 @@ func UpdateTestcase(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	testcase.Input = dto.Input
-	testcase.ExpectedOutput = dto.ExpectedOutput
-
-	err = services.GetServiceKit().ChallengeService.UpdateTestcase(testcase)
+	err = services.GetServiceKit().ChallengeService.UpdateTestcase(&entities.ChallengeTestcase{
+		TestcaseID:     testcase.TestcaseID,
+		Input:          dto.Input,
+		ExpectedOutput: dto.ExpectedOutput,
+		ChallengeID:    testcase.ChallengeID,
+	})
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
