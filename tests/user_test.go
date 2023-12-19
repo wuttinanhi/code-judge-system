@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/wuttinanhi/code-judge-system/cmds"
+	"github.com/wuttinanhi/code-judge-system/controllers"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func TestUserRoutes(t *testing.T) {
-	serviceKit := services.CreateTestServiceKit()
-	app := cmds.SetupWeb(serviceKit)
+	testServiceKit := services.CreateTestServiceKit()
+	app := controllers.SetupWeb(testServiceKit)
 
 	t.Run("/user/register", func(t *testing.T) {
 		dto := entities.UserRegisterDTO{

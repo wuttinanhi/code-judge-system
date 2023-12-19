@@ -6,22 +6,22 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/wuttinanhi/code-judge-system/cmds"
+	"github.com/wuttinanhi/code-judge-system/controllers"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func TestChallengeRoute(t *testing.T) {
-	serviceKit := services.CreateTestServiceKit()
-	app := cmds.SetupWeb(serviceKit)
+	testServiceKit := services.CreateTestServiceKit()
+	app := controllers.SetupWeb(testServiceKit)
 
 	// create user
-	user, err := serviceKit.UserService.Register("test-challenge-route@example.com", "testpassword", "testuser")
+	user, err := testServiceKit.UserService.Register("test-challenge-route@example.com", "testpassword", "testuser")
 	if err != nil {
 		t.Error(err)
 	}
 
-	userAccessToken, err := serviceKit.JWTService.GenerateToken(*user)
+	userAccessToken, err := testServiceKit.JWTService.GenerateToken(*user)
 	if err != nil {
 		t.Error(err)
 	}
@@ -104,7 +104,7 @@ func TestChallengeRoute(t *testing.T) {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
 		}
 
-		updatedChallenge, err := serviceKit.ChallengeService.FindChallengeByID(1)
+		updatedChallenge, err := testServiceKit.ChallengeService.FindChallengeByID(1)
 		if err != nil {
 			t.Error(err)
 		}
@@ -131,7 +131,7 @@ func TestChallengeRoute(t *testing.T) {
 		}
 
 		// get challenge by id must return error
-		_, err = serviceKit.ChallengeService.FindChallengeByID(1)
+		_, err = testServiceKit.ChallengeService.FindChallengeByID(1)
 		if err == nil {
 			t.Error("Expected error, got nil")
 		}
