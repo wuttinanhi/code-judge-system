@@ -12,16 +12,16 @@ import (
 )
 
 func TestChallengeRoute(t *testing.T) {
-	services.InitTestServiceKit()
-	app := cmds.SetupWeb()
+	serviceKit := services.CreateTestServiceKit()
+	app := cmds.SetupWeb(serviceKit)
 
 	// create user
-	user, err := services.GetServiceKit().UserService.Register("test@example.com", "testpassword", "testuser")
+	user, err := serviceKit.UserService.Register("test-challenge-route@example.com", "testpassword", "testuser")
 	if err != nil {
 		t.Error(err)
 	}
 
-	userAccessToken, err := services.GetServiceKit().JWTService.GenerateToken(*user)
+	userAccessToken, err := serviceKit.JWTService.GenerateToken(*user)
 	if err != nil {
 		t.Error(err)
 	}
@@ -104,7 +104,7 @@ func TestChallengeRoute(t *testing.T) {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
 		}
 
-		updatedChallenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(1)
+		updatedChallenge, err := serviceKit.ChallengeService.FindChallengeByID(1)
 		if err != nil {
 			t.Error(err)
 		}
@@ -131,7 +131,7 @@ func TestChallengeRoute(t *testing.T) {
 		}
 
 		// get challenge by id must return error
-		_, err = services.GetServiceKit().ChallengeService.FindChallengeByID(1)
+		_, err = serviceKit.ChallengeService.FindChallengeByID(1)
 		if err == nil {
 			t.Error("Expected error, got nil")
 		}

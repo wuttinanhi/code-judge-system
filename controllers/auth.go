@@ -6,10 +6,14 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func Register(c *fiber.Ctx) error {
+type authHandler struct {
+	serviceKit *services.ServiceKit
+}
+
+func (h *authHandler) Register(c *fiber.Ctx) error {
 	dto := entities.ValidateUserRegisterDTO(c)
 
-	user, err := services.GetServiceKit().UserService.Register(dto.Email, dto.Password, dto.DisplayName)
+	user, err := h.serviceKit.UserService.Register(dto.Email, dto.Password, dto.DisplayName)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
 			Message: err.Error(),
@@ -23,17 +27,17 @@ func Register(c *fiber.Ctx) error {
 	})
 }
 
-func Login(c *fiber.Ctx) error {
+func (h *authHandler) Login(c *fiber.Ctx) error {
 	dto := entities.ValidateUserLoginDTO(c)
 
-	user, err := services.GetServiceKit().UserService.Login(dto.Email, dto.Password)
+	user, err := h.serviceKit.UserService.Login(dto.Email, dto.Password)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
 			Message: err.Error(),
 		})
 	}
 
-	token, err := services.GetServiceKit().JWTService.GenerateToken(*user)
+	token, err := h.serviceKit.JWTService.GenerateToken(*user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(entities.HttpError{
 			Message: err.Error(),
@@ -41,4 +45,10 @@ func Login(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(entities.UserLoginResponse{Token: token})
+}
+
+func NewAuthHandler(serviceKit *services.ServiceKit) *authHandler {
+	return &authHandler{
+		serviceKit: serviceKit,
+	}
 }

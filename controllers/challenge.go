@@ -8,11 +8,15 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func CreateChallenge(c *fiber.Ctx) error {
+type challengeHandler struct {
+	serviceKit *services.ServiceKit
+}
+
+func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
 	user := entities.GetUserFromRequest(c)
 	dto := entities.ValidateChallengeCreateDTO(c)
 
-	challenge, err := services.GetServiceKit().ChallengeService.CreateChallenge(&entities.Challenge{
+	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        dto.Name,
 		Description: dto.Description,
 		UserID:      user.UserID,
@@ -24,7 +28,7 @@ func CreateChallenge(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(challenge)
 }
 
-func CreateChallengeWithTestcase(c *fiber.Ctx) error {
+func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 	user := entities.GetUserFromRequest(c)
 	dto := entities.ValidateChallengeCreateWithTestcaseDTO(c)
 
@@ -36,7 +40,7 @@ func CreateChallengeWithTestcase(c *fiber.Ctx) error {
 		}
 	}
 
-	challenge, err := services.GetServiceKit().ChallengeService.CreateChallenge(&entities.Challenge{
+	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        dto.Name,
 		Description: dto.Description,
 		UserID:      user.UserID,
@@ -49,15 +53,15 @@ func CreateChallengeWithTestcase(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(challenge)
 }
 
-func UpdateChallenge(c *fiber.Ctx) error {
+func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 	dto := entities.ValidateChallengeUpdateDTO(c)
 
-	challenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(dto.ChallengeID)
+	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(dto.ChallengeID)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	err = services.GetServiceKit().ChallengeService.UpdateChallenge(&entities.Challenge{
+	err = h.serviceKit.ChallengeService.UpdateChallenge(&entities.Challenge{
 		ChallengeID: challenge.ChallengeID,
 		Name:        dto.Name,
 		Description: dto.Description,
@@ -70,15 +74,15 @@ func UpdateChallenge(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(challenge)
 }
 
-func DeleteChallenge(c *fiber.Ctx) error {
+func (h *challengeHandler) DeleteChallenge(c *fiber.Ctx) error {
 	id := ParseIntParam(c, "id")
 
-	challenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(uint(id))
+	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(uint(id))
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	err = services.GetServiceKit().ChallengeService.DeleteChallenge(challenge)
+	err = h.serviceKit.ChallengeService.DeleteChallenge(challenge)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
@@ -86,10 +90,10 @@ func DeleteChallenge(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
-func GetChallengeByID(c *fiber.Ctx) error {
+func (h *challengeHandler) GetChallengeByID(c *fiber.Ctx) error {
 	id := ParseIntParam(c, "id")
 
-	challenges, err := services.GetServiceKit().ChallengeService.FindChallengeByID(uint(id))
+	challenges, err := h.serviceKit.ChallengeService.FindChallengeByID(uint(id))
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
@@ -97,11 +101,17 @@ func GetChallengeByID(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(challenges)
 }
 
-func GetAllChallenges(c *fiber.Ctx) error {
-	challenges, err := services.GetServiceKit().ChallengeService.AllChallenges()
+func (h *challengeHandler) GetAllChallenges(c *fiber.Ctx) error {
+	challenges, err := h.serviceKit.ChallengeService.AllChallenges()
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(http.StatusOK).JSON(challenges)
+}
+
+func NewChallengeHandler(serviceKit *services.ServiceKit) *challengeHandler {
+	return &challengeHandler{
+		serviceKit: serviceKit,
+	}
 }

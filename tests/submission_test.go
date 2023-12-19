@@ -3,10 +3,10 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/wuttinanhi/code-judge-system/cmds"
@@ -15,23 +15,23 @@ import (
 )
 
 func TestSubmissionRoute(t *testing.T) {
-	services.InitTestServiceKit()
-	app := cmds.SetupWeb()
+	serviceKit := services.CreateTestServiceKit()
+	app := cmds.SetupWeb(serviceKit)
 
 	// create user
-	user, err := services.GetServiceKit().UserService.Register("test@example.com", "testpassword", "testuser")
+	user, err := serviceKit.UserService.Register("test-submission-route@example.com", "testpassword", "test-submission-route")
 	if err != nil {
 		t.Error(err)
 	}
 
 	// get user access token
-	userAccessToken, err := services.GetServiceKit().JWTService.GenerateToken(*user)
+	userAccessToken, err := serviceKit.JWTService.GenerateToken(*user)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// create challenge
-	challenge, err := services.GetServiceKit().ChallengeService.CreateChallenge(&entities.Challenge{
+	challenge, err := serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        "Test Challenge",
 		Description: "Test Description",
 	})
@@ -46,7 +46,7 @@ func TestSubmissionRoute(t *testing.T) {
 		{Input: "3 4", ExpectedOutput: "7"},
 	}
 	for _, challengetestcase := range challengetestcases {
-		_, err := services.GetServiceKit().ChallengeService.AddTestcase(challenge, &challengetestcase)
+		_, err := serviceKit.ChallengeService.AddTestcase(challenge, &challengetestcase)
 		if err != nil {
 			t.Error(err)
 		}
@@ -74,7 +74,7 @@ func TestSubmissionRoute(t *testing.T) {
 		}
 
 		// get submission in server-side
-		submission, err := services.GetServiceKit().SubmissionService.GetSubmissionByID(1)
+		submission, err := serviceKit.SubmissionService.GetSubmissionByID(1)
 		if err != nil {
 			t.Error(err)
 		}
@@ -92,7 +92,7 @@ func TestSubmissionRoute(t *testing.T) {
 		}
 
 		// validate submission testcases
-		submissionTestcases, err := services.GetServiceKit().SubmissionService.GetSubmissionTestcaseBySubmission(submission)
+		submissionTestcases, err := serviceKit.SubmissionService.GetSubmissionTestcaseBySubmission(submission)
 		if err != nil {
 			t.Error(err)
 		}
@@ -164,8 +164,6 @@ func TestSubmissionRoute(t *testing.T) {
 			log.Fatal(err)
 		}
 
-		fmt.Println(string(bodyBytes))
-
 		if response.StatusCode != http.StatusOK {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
 		}
@@ -196,7 +194,7 @@ func TestSubmissionRoute(t *testing.T) {
 	})
 
 	t.Run("/submission/get/challenge/:id", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/submission/get/challenge/1", nil)
+		request, _ := http.NewRequest(http.MethodGet, "/submission/get/challenge/"+strconv.Itoa(int(challenge.ChallengeID)), nil)
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", "Bearer "+userAccessToken)
 

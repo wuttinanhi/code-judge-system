@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	services.InitServiceKit()
-	app := cmds.SetupWeb()
+	serviceKit := services.CreateServiceKit()
+	app := cmds.SetupWeb(serviceKit)
 	app.Listen(":3000")
 }

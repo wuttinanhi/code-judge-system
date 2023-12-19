@@ -6,15 +6,19 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func CreateTestcase(c *fiber.Ctx) error {
+type challengeTestcaseHandler struct {
+	serviceKit *services.ServiceKit
+}
+
+func (h *challengeTestcaseHandler) CreateTestcase(c *fiber.Ctx) error {
 	dto := entities.ValidateChallengeTestcaseCreateDTO(c)
 
-	challenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(dto.ChallengeID)
+	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(dto.ChallengeID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	testcase, err := services.GetServiceKit().ChallengeService.AddTestcase(challenge, &entities.ChallengeTestcase{
+	testcase, err := h.serviceKit.ChallengeService.AddTestcase(challenge, &entities.ChallengeTestcase{
 		Input:          dto.Input,
 		ExpectedOutput: dto.ExpectedOutput,
 		ChallengeID:    challenge.ChallengeID,
@@ -26,15 +30,15 @@ func CreateTestcase(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(testcase)
 }
 
-func UpdateTestcase(c *fiber.Ctx) error {
+func (h *challengeTestcaseHandler) UpdateTestcase(c *fiber.Ctx) error {
 	dto := entities.ValidateChallengeTestcaseUpdateDTO(c)
 
-	testcase, err := services.GetServiceKit().ChallengeService.FindTestcaseByID(dto.TestcaseID)
+	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(dto.TestcaseID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	err = services.GetServiceKit().ChallengeService.UpdateTestcase(&entities.ChallengeTestcase{
+	err = h.serviceKit.ChallengeService.UpdateTestcase(&entities.ChallengeTestcase{
 		TestcaseID:     testcase.TestcaseID,
 		Input:          dto.Input,
 		ExpectedOutput: dto.ExpectedOutput,
@@ -47,15 +51,15 @@ func UpdateTestcase(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(testcase)
 }
 
-func DeleteTestcase(c *fiber.Ctx) error {
+func (h *challengeTestcaseHandler) DeleteTestcase(c *fiber.Ctx) error {
 	id := ParseIntParam(c, "id")
 
-	testcase, err := services.GetServiceKit().ChallengeService.FindTestcaseByID(uint(id))
+	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	err = services.GetServiceKit().ChallengeService.DeleteTestcase(testcase)
+	err = h.serviceKit.ChallengeService.DeleteTestcase(testcase)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
@@ -63,13 +67,19 @@ func DeleteTestcase(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func GetTestcaseByID(c *fiber.Ctx) error {
+func (h *challengeTestcaseHandler) GetTestcaseByID(c *fiber.Ctx) error {
 	id := ParseIntParam(c, "id")
 
-	testcase, err := services.GetServiceKit().ChallengeService.FindTestcaseByID(uint(id))
+	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(testcase)
+}
+
+func NewChallengeTestcaseHandler(serviceKit *services.ServiceKit) *challengeTestcaseHandler {
+	return &challengeTestcaseHandler{
+		serviceKit: serviceKit,
+	}
 }

@@ -18,18 +18,19 @@ type SubmissionService interface {
 
 type submissionService struct {
 	submissionRepository repositories.SubmissionRepository
+	challengeService     ChallengeService
 }
 
 // SubmitSubmission implements SubmissionService.
 func (s *submissionService) SubmitSubmission(submission *entities.Submission) (*entities.Submission, error) {
 	// get challenge
-	challenge, err := GetServiceKit().ChallengeService.FindChallengeByID(submission.ChallengeID)
+	challenge, err := s.challengeService.FindChallengeByID(submission.ChallengeID)
 	if err != nil {
 		return nil, err
 	}
 
 	// get all challenge testcases
-	challengeTestcases, err := GetServiceKit().ChallengeService.AllTestcases(challenge)
+	challengeTestcases, err := s.challengeService.AllTestcases(challenge)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +73,6 @@ func (s *submissionService) DeleteSubmission(submission *entities.Submission) er
 }
 
 // GetSubmissionByChallenge implements SubmissionService.
-// GetSubmissionByChallenge implements SubmissionService.
 func (s *submissionService) GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error) {
 	submissions, err := s.submissionRepository.GetSubmissionByChallenge(challenge)
 	return submissions, err
@@ -96,8 +96,9 @@ func (s *submissionService) GetSubmissionTestcaseBySubmission(submission *entiti
 	return submissionTestcases, err
 }
 
-func NewSubmissionService(submissionRepository repositories.SubmissionRepository) SubmissionService {
+func NewSubmissionService(submissionRepository repositories.SubmissionRepository, challengeService ChallengeService) SubmissionService {
 	return &submissionService{
 		submissionRepository: submissionRepository,
+		challengeService:     challengeService,
 	}
 }

@@ -6,17 +6,21 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func SubmitSubmission(c *fiber.Ctx) error {
+type submissionHandler struct {
+	serviceKit *services.ServiceKit
+}
+
+func (h *submissionHandler) SubmitSubmission(c *fiber.Ctx) error {
 	dto := entities.ValidateSubmissionCreateDTO(c)
 
 	user := entities.GetUserFromRequest(c)
 
-	challenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(dto.ChallengeID)
+	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(dto.ChallengeID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	submission, err := services.GetServiceKit().SubmissionService.SubmitSubmission(&entities.Submission{
+	submission, err := h.serviceKit.SubmissionService.SubmitSubmission(&entities.Submission{
 		ChallengeID: challenge.ChallengeID,
 		UserID:      user.UserID,
 		Language:    dto.Language,
@@ -29,10 +33,10 @@ func SubmitSubmission(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(submission)
 }
 
-func GetSubmissionByID(c *fiber.Ctx) error {
+func (h *submissionHandler) GetSubmissionByID(c *fiber.Ctx) error {
 	id := ParseIntParam(c, "id")
 
-	submission, err := services.GetServiceKit().SubmissionService.GetSubmissionByID(uint(id))
+	submission, err := h.serviceKit.SubmissionService.GetSubmissionByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
@@ -40,10 +44,10 @@ func GetSubmissionByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(submission)
 }
 
-func GetSubmissionByUser(c *fiber.Ctx) error {
+func (h *submissionHandler) GetSubmissionByUser(c *fiber.Ctx) error {
 	user := entities.GetUserFromRequest(c)
 
-	submissions, err := services.GetServiceKit().SubmissionService.GetSubmissionByUser(user)
+	submissions, err := h.serviceKit.SubmissionService.GetSubmissionByUser(user)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
@@ -51,18 +55,24 @@ func GetSubmissionByUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(submissions)
 }
 
-func GetSubmissionByChallenge(c *fiber.Ctx) error {
+func (h *submissionHandler) GetSubmissionByChallenge(c *fiber.Ctx) error {
 	id := ParseIntParam(c, "id")
 
-	challenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(uint(id))
+	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	submissions, err := services.GetServiceKit().SubmissionService.GetSubmissionByChallenge(challenge)
+	submissions, err := h.serviceKit.SubmissionService.GetSubmissionByChallenge(challenge)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(submissions)
+}
+
+func NewSubmissionHandler(serviceKit *services.ServiceKit) *submissionHandler {
+	return &submissionHandler{
+		serviceKit: serviceKit,
+	}
 }

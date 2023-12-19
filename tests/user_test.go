@@ -12,8 +12,8 @@ import (
 )
 
 func TestUserRoutes(t *testing.T) {
-	services.InitTestServiceKit()
-	app := cmds.SetupWeb()
+	serviceKit := services.CreateTestServiceKit()
+	app := cmds.SetupWeb(serviceKit)
 
 	t.Run("/user/register", func(t *testing.T) {
 		dto := entities.UserRegisterDTO{

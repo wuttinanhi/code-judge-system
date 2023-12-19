@@ -4,9 +4,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/wuttinanhi/code-judge-system/controllers"
+	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func SetupWeb() *fiber.App {
+func SetupWeb(serviceKit *services.ServiceKit) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: controllers.ErrorHandler,
 	})
@@ -17,31 +18,36 @@ func SetupWeb() *fiber.App {
 		return c.SendString("Hello, World!")
 	})
 
+	authHandler := controllers.NewAuthHandler(serviceKit)
+	challengeHandler := controllers.NewChallengeHandler(serviceKit)
+	challengeTestcaseHandler := controllers.NewChallengeTestcaseHandler(serviceKit)
+	submissionHandler := controllers.NewSubmissionHandler(serviceKit)
+
 	userGroup := app.Group("/user")
-	userGroup.Post("/register", controllers.Register)
-	userGroup.Post("/login", controllers.Login)
+	userGroup.Post("/register", authHandler.Register)
+	userGroup.Post("/login", authHandler.Login)
 
 	challengeGroup := app.Group("/challenge")
-	challengeGroup.Use(controllers.UserMiddleware)
-	challengeGroup.Post("/create", controllers.CreateChallengeWithTestcase)
-	challengeGroup.Get("/all", controllers.GetAllChallenges)
-	challengeGroup.Get("/get/:id", controllers.GetChallengeByID)
-	challengeGroup.Put("/update", controllers.UpdateChallenge)
-	challengeGroup.Delete("/delete/:id", controllers.DeleteChallenge)
+	challengeGroup.Use(controllers.UserMiddleware(serviceKit))
+	challengeGroup.Post("/create", challengeHandler.CreateChallengeWithTestcase)
+	challengeGroup.Get("/all", challengeHandler.GetAllChallenges)
+	challengeGroup.Get("/get/:id", challengeHandler.GetChallengeByID)
+	challengeGroup.Put("/update", challengeHandler.UpdateChallenge)
+	challengeGroup.Delete("/delete/:id", challengeHandler.DeleteChallenge)
 
 	testcaseGroup := app.Group("/testcase")
-	testcaseGroup.Use(controllers.UserMiddleware)
-	testcaseGroup.Post("/create", controllers.CreateTestcase)
-	testcaseGroup.Get("/get/:id", controllers.GetTestcaseByID)
-	testcaseGroup.Put("/update", controllers.UpdateTestcase)
-	testcaseGroup.Delete("/delete/:id", controllers.DeleteTestcase)
+	testcaseGroup.Use(controllers.UserMiddleware(serviceKit))
+	testcaseGroup.Post("/create", challengeTestcaseHandler.CreateTestcase)
+	testcaseGroup.Get("/get/:id", challengeTestcaseHandler.GetTestcaseByID)
+	testcaseGroup.Put("/update", challengeTestcaseHandler.UpdateTestcase)
+	testcaseGroup.Delete("/delete/:id", challengeTestcaseHandler.DeleteTestcase)
 
 	submissionGroup := app.Group("/submission")
-	submissionGroup.Use(controllers.UserMiddleware)
-	submissionGroup.Post("/submit", controllers.SubmitSubmission)
-	submissionGroup.Get("/get/user", controllers.GetSubmissionByUser)
-	submissionGroup.Get("/get/challenge/:id", controllers.GetSubmissionByChallenge)
-	submissionGroup.Get("/get/submission/:id", controllers.GetSubmissionByID)
+	submissionGroup.Use(controllers.UserMiddleware(serviceKit))
+	submissionGroup.Post("/submit", submissionHandler.SubmitSubmission)
+	submissionGroup.Get("/get/user", submissionHandler.GetSubmissionByUser)
+	submissionGroup.Get("/get/challenge/:id", submissionHandler.GetSubmissionByChallenge)
+	submissionGroup.Get("/get/submission/:id", submissionHandler.GetSubmissionByID)
 
 	return app
 }
