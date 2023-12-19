@@ -39,9 +39,9 @@ func SetupWeb() *fiber.App {
 	submissionGroup := app.Group("/submission")
 	submissionGroup.Use(controllers.UserMiddleware)
 	submissionGroup.Post("/submit", controllers.SubmitSubmission)
-	submissionGroup.Get("/get/:id", controllers.GetSubmissionByID)
 	submissionGroup.Get("/get/user", controllers.GetSubmissionByUser)
 	submissionGroup.Get("/get/challenge/:id", controllers.GetSubmissionByChallenge)
+	submissionGroup.Get("/get/submission/:id", controllers.GetSubmissionByID)
 
 	return app
 }
