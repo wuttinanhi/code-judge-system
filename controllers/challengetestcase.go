@@ -60,3 +60,14 @@ func DeleteTestcase(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusOK)
 }
+
+func GetTestcaseByID(c *fiber.Ctx) error {
+	id := ParseIntParam(c, "id")
+
+	testcase, err := services.GetServiceKit().ChallengeService.FindTestcaseByID(uint(id))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(testcase)
+}
