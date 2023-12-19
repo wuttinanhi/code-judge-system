@@ -9,7 +9,7 @@ import (
 func Register(c *fiber.Ctx) error {
 	dto := entities.ValidateUserRegisterDTO(c)
 
-	user, err := services.SERVICE_KIT.UserService.Register(dto.Email, dto.Password, dto.DisplayName)
+	user, err := services.GetServiceKit().UserService.Register(dto.Email, dto.Password, dto.DisplayName)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
 			Message: err.Error(),
@@ -26,14 +26,14 @@ func Register(c *fiber.Ctx) error {
 func Login(c *fiber.Ctx) error {
 	dto := entities.ValidateUserLoginDTO(c)
 
-	user, err := services.SERVICE_KIT.UserService.Login(dto.Email, dto.Password)
+	user, err := services.GetServiceKit().UserService.Login(dto.Email, dto.Password)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
 			Message: err.Error(),
 		})
 	}
 
-	token, err := services.SERVICE_KIT.JWTService.GenerateToken(*user)
+	token, err := services.GetServiceKit().JWTService.GenerateToken(*user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(entities.HttpError{
 			Message: err.Error(),

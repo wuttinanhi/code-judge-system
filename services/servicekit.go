@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var SERVICE_KIT *ServiceKit
+var singleton *ServiceKit
 
 type ServiceKit struct {
 	JWTService        JWTService
@@ -44,10 +44,14 @@ func newServiceKit(db *gorm.DB) *ServiceKit {
 
 func InitServiceKit() {
 	db := databases.NewSQLiteDatabase()
-	SERVICE_KIT = newServiceKit(db)
+	singleton = newServiceKit(db)
 }
 
 func InitTestServiceKit() {
 	db := databases.NewTempSQLiteDatabase()
-	SERVICE_KIT = newServiceKit(db)
+	singleton = newServiceKit(db)
+}
+
+func GetServiceKit() *ServiceKit {
+	return singleton
 }
