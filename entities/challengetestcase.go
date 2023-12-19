@@ -11,9 +11,8 @@ type ChallengeTestcase struct {
 }
 
 type ChallengeTestcaseCreateDTO struct {
-	Input          string `json:"input" validate:"required"`
-	ExpectedOutput string `json:"expected_output" validate:"required"`
-	ChallengeID    uint   `json:"challenge_id" validate:"required"`
+	Input          string `json:"input" validate:"required,max=1024"`
+	ExpectedOutput string `json:"expected_output" validate:"required,max=1024"`
 }
 
 func ValidateChallengeTestcaseCreateDTO(c *fiber.Ctx) ChallengeTestcaseCreateDTO {
@@ -31,8 +30,8 @@ func ValidateChallengeTestcaseCreateDTO(c *fiber.Ctx) ChallengeTestcaseCreateDTO
 }
 
 type ChallengeTestcaseUpdateDTO struct {
-	Input          string `json:"input"`
-	ExpectedOutput string `json:"expected_output"`
+	Input          string `json:"input" validate:"required,max=1024"`
+	ExpectedOutput string `json:"expected_output" validate:"required,max=1024"`
 }
 
 func ValidateChallengeTestcaseUpdateDTO(c *fiber.Ctx) ChallengeTestcaseUpdateDTO {

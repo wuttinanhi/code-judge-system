@@ -4,16 +4,16 @@ import "github.com/gofiber/fiber/v2"
 
 type Challenge struct {
 	ChallengeID uint                `json:"challenge_id" gorm:"primaryKey"`
-	Name        string              `json:"name" validate:"required"`
-	Description string              `json:"description" validate:"required"`
+	Name        string              `json:"name"`
+	Description string              `json:"description"`
 	UserID      uint                `json:"user_id"`
 	User        User                `json:"user" gorm:"foreignKey:UserID"`
 	Testcases   []ChallengeTestcase `json:"testcases" gorm:"foreignKey:ChallengeID"`
 }
 
 type ChallengeCreateDTO struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name" validate:"required,min=3,max=255"`
+	Description string `json:"description" validate:"max=255"`
 }
 
 func ValidateChallengeCreateDTO(c *fiber.Ctx) ChallengeCreateDTO {
@@ -31,8 +31,8 @@ func ValidateChallengeCreateDTO(c *fiber.Ctx) ChallengeCreateDTO {
 }
 
 type ChallengeUpdateDTO struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name" validate:"required,min=3,max=255"`
+	Description string `json:"description" validate:"max=255"`
 }
 
 func ValidateChallengeUpdateDTO(c *fiber.Ctx) ChallengeUpdateDTO {
