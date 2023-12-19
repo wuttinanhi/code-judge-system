@@ -23,7 +23,7 @@ func SetupWeb() *fiber.App {
 
 	challengeGroup := app.Group("/challenge")
 	challengeGroup.Use(controllers.UserMiddleware)
-	challengeGroup.Post("/create", controllers.CreateChallenge)
+	challengeGroup.Post("/create", controllers.CreateChallengeWithTestcase)
 	challengeGroup.Get("/all", controllers.GetAllChallenges)
 	challengeGroup.Get("/get/:id", controllers.GetChallengeByID)
 	challengeGroup.Put("/update", controllers.UpdateChallenge)

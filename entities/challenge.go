@@ -55,3 +55,22 @@ type ChallengeCreateResponse struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
+
+type ChallengeCreateWithTestcaseDTO struct {
+	ChallengeCreateDTO
+	Testcases []ChallengeTestcaseCreateDTO `json:"testcases" validate:"required"`
+}
+
+func ValidateChallengeCreateWithTestcaseDTO(c *fiber.Ctx) ChallengeCreateWithTestcaseDTO {
+	var dto ChallengeCreateWithTestcaseDTO
+
+	if err := c.BodyParser(&dto); err != nil {
+		panic(err)
+	}
+
+	if err := validate.Struct(&dto); err != nil {
+		panic(err)
+	}
+
+	return dto
+}

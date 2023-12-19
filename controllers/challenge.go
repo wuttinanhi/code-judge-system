@@ -26,6 +26,33 @@ func CreateChallenge(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(challenge)
 }
 
+func CreateChallengeWithTestcase(c *fiber.Ctx) error {
+	user := entities.GetUserFromRequest(c)
+	dto := entities.ValidateChallengeCreateWithTestcaseDTO(c)
+
+	testcases := make([]entities.ChallengeTestcase, len(dto.Testcases))
+	for i, testcase := range dto.Testcases {
+		testcases[i] = entities.ChallengeTestcase{
+			Input:          testcase.Input,
+			ExpectedOutput: testcase.ExpectedOutput,
+		}
+	}
+
+	challenge, err := services.GetServiceKit().ChallengeService.CreateChallenge(&entities.Challenge{
+		Name:        dto.Name,
+		Description: dto.Description,
+		UserID:      user.UserID,
+		Testcases:   testcases,
+	})
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusOK).JSON(challenge)
+}
+
 func UpdateChallenge(c *fiber.Ctx) error {
 	dto := entities.ValidateChallengeUpdateDTO(c)
 
