@@ -18,9 +18,7 @@ func CreateChallenge(c *fiber.Ctx) error {
 		UserID:      user.UserID,
 	})
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(http.StatusOK).JSON(challenge)
@@ -45,9 +43,7 @@ func CreateChallengeWithTestcase(c *fiber.Ctx) error {
 		Testcases:   testcases,
 	})
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(http.StatusOK).JSON(challenge)
@@ -58,16 +54,12 @@ func UpdateChallenge(c *fiber.Ctx) error {
 
 	challenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(dto.ChallengeID)
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	err = services.GetServiceKit().ChallengeService.UpdateChallenge(challenge)
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(http.StatusOK).JSON(challenge)
@@ -78,16 +70,12 @@ func DeleteChallenge(c *fiber.Ctx) error {
 
 	challenge, err := services.GetServiceKit().ChallengeService.FindChallengeByID(uint(id))
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	err = services.GetServiceKit().ChallengeService.DeleteChallenge(challenge)
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.SendStatus(http.StatusOK)
@@ -98,9 +86,7 @@ func GetChallengeByID(c *fiber.Ctx) error {
 
 	challenges, err := services.GetServiceKit().ChallengeService.FindChallengeByID(uint(id))
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(http.StatusOK).JSON(challenges)
@@ -109,9 +95,7 @@ func GetChallengeByID(c *fiber.Ctx) error {
 func GetAllChallenges(c *fiber.Ctx) error {
 	challenges, err := services.GetServiceKit().ChallengeService.AllChallenges()
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
-		})
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
 	return c.Status(http.StatusOK).JSON(challenges)
