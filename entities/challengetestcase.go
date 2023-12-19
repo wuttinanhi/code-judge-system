@@ -13,6 +13,7 @@ type ChallengeTestcase struct {
 type ChallengeTestcaseCreateDTO struct {
 	Input          string `json:"input" validate:"required,max=1024"`
 	ExpectedOutput string `json:"expected_output" validate:"required,max=1024"`
+	ChallengeID    uint   `json:"challenge_id" validate:"required"`
 }
 
 func ValidateChallengeTestcaseCreateDTO(c *fiber.Ctx) ChallengeTestcaseCreateDTO {
