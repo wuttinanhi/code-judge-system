@@ -24,15 +24,16 @@ type sandboxService struct {
 	DockerClient *client.Client
 }
 
-func (s *sandboxService) pullImage(imageName string) error {
-	ctx := context.Background()
-	fmt.Println("pulling image", imageName)
+func (s *sandboxService) pullImage(ctx context.Context, imageName string) error {
 	out, err := s.DockerClient.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
-		return err
+		panic(err)
 	}
 	defer out.Close()
-	fmt.Println("pulled image", imageName)
+
+	var logs bytes.Buffer
+	io.Copy(&logs, out)
+
 	return nil
 }
 
