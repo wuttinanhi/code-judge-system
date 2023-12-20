@@ -11,10 +11,18 @@ import (
 type UserService interface {
 	Register(email, password, displayname string) (user *entities.User, err error)
 	Login(email, password string) (user *entities.User, err error)
+	UpdateRole(user *entities.User, role string) (err error)
 }
 
 type userService struct {
 	userRepo repositories.UserRepository
+}
+
+// UpdateRole implements UserService.
+func (s *userService) UpdateRole(user *entities.User, role string) (err error) {
+	user.Role = role
+	err = s.userRepo.UpdateUser(user)
+	return err
 }
 
 // Login implements services.UserService.
@@ -41,7 +49,7 @@ func (s *userService) Register(email string, password string, displayname string
 	}
 
 	// Save the user to the repository
-	err = s.userRepo.CreateUser(user)
+	user, err = s.userRepo.CreateUser(user)
 	if err != nil {
 		// if error contains "UNIQUE constraint failed"
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {

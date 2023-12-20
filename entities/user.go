@@ -1,8 +1,9 @@
 package entities
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 const (
@@ -12,12 +13,12 @@ const (
 )
 
 type User struct {
-	UserID      uint   `gorm:"primary_key"`
-	DisplayName string `gorm:"unique;not null"`
-	Password    string `gorm:"not null"`
-	Email       string `gorm:"unique;not null"`
-	Role        string `gorm:"not null;default:USER"`
-	gorm.Model
+	UserID      uint      `gorm:"primarykey"`
+	DisplayName string    `gorm:"unique;not null"`
+	Password    string    `gorm:"not null"`
+	Email       string    `gorm:"unique;not null"`
+	Role        string    `gorm:"not null;default:USER"`
+	CreatedAt   time.Time `gorm:"autoCreateTime"`
 }
 
 type UserRegisterDTO struct {

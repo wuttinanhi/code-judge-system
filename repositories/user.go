@@ -14,7 +14,7 @@ type UserRepository interface {
 	// FindUserByEmail returns a user by given email.
 	FindUserByEmail(email string) (user *entities.User, err error)
 	// CreateUser creates a new user.
-	CreateUser(user *entities.User) error
+	CreateUser(user *entities.User) (*entities.User, error)
 	// UpdateUser updates a user.
 	UpdateUser(user *entities.User) error
 	// DeleteUser deletes a user.
@@ -26,21 +26,18 @@ type userRepository struct {
 }
 
 // CreateUser implements repositories.UserRepository.
-func (r *userRepository) CreateUser(user *entities.User) error {
+func (r *userRepository) CreateUser(user *entities.User) (*entities.User, error) {
 	result := r.db.Create(user)
 	if result.Error != nil {
-		return result.Error
+		return nil, result.Error
 	}
-	return nil
+	return user, nil
 }
 
 // DeleteUser implements repositories.UserRepository.
 func (r *userRepository) DeleteUser(user *entities.User) error {
 	result := r.db.Delete(user)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+	return result.Error
 }
 
 // FindUserByEmail implements repositories.UserRepository.
@@ -73,10 +70,7 @@ func (r *userRepository) FindUserByDisplayName(displayName string) (user *entiti
 // UpdateUser implements repositories.UserRepository.
 func (r *userRepository) UpdateUser(user *entities.User) error {
 	result := r.db.Save(user)
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+	return result.Error
 }
 
 func NewSQLUserRepository(db *gorm.DB) UserRepository {
