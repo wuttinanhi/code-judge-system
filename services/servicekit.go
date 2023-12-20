@@ -13,6 +13,7 @@ type ServiceKit struct {
 	UserService       UserService
 	ChallengeService  ChallengeService
 	SubmissionService SubmissionService
+	SandboxService    SandboxService
 }
 
 func newServiceKit(db *gorm.DB) *ServiceKit {
@@ -31,12 +32,14 @@ func newServiceKit(db *gorm.DB) *ServiceKit {
 	userService := NewUserService(userRepo)
 	challengeService := NewChallengeService(challengeRepo)
 	submissionService := NewSubmissionService(submissionRepo, challengeService)
+	sandboxService := NewSandboxService()
 
 	return &ServiceKit{
 		JWTService:        jwtService,
 		UserService:       userService,
 		ChallengeService:  challengeService,
 		SubmissionService: submissionService,
+		SandboxService:    sandboxService,
 	}
 }
 

@@ -14,11 +14,17 @@ type SubmissionService interface {
 	CreateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error)
 	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error)
 	SubmitSubmission(submission *entities.Submission) (*entities.Submission, error)
+	ProcessSubmission(submission *entities.Submission) (*entities.Submission, error)
 }
 
 type submissionService struct {
 	submissionRepository repositories.SubmissionRepository
 	challengeService     ChallengeService
+}
+
+// ProcessSubmission implements SubmissionService.
+func (s *submissionService) ProcessSubmission(submission *entities.Submission) (*entities.Submission, error) {
+	panic("unimplemented")
 }
 
 // SubmitSubmission implements SubmissionService.
