@@ -13,7 +13,7 @@ type challengeHandler struct {
 }
 
 func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
-	user := entities.GetUserFromRequest(c)
+	user := GetUserFromRequest(c)
 	dto := entities.ValidateChallengeCreateDTO(c)
 
 	// only user with role admin can create challenge
@@ -34,7 +34,7 @@ func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
 }
 
 func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
-	user := entities.GetUserFromRequest(c)
+	user := GetUserFromRequest(c)
 	dto := entities.ValidateChallengeCreateWithTestcaseDTO(c)
 
 	// only user with role admin can create challenge
@@ -64,7 +64,7 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 }
 
 func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
-	user := entities.GetUserFromRequest(c)
+	user := GetUserFromRequest(c)
 	dto := entities.ValidateChallengeUpdateDTO(c)
 
 	// only user with role admin can update challenge
@@ -91,7 +91,7 @@ func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 }
 
 func (h *challengeHandler) DeleteChallenge(c *fiber.Ctx) error {
-	user := entities.GetUserFromRequest(c)
+	user := GetUserFromRequest(c)
 	id := ParseIntParam(c, "id")
 
 	if user.Role != entities.UserRoleAdmin {

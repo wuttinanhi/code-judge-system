@@ -13,7 +13,7 @@ type submissionHandler struct {
 func (h *submissionHandler) SubmitSubmission(c *fiber.Ctx) error {
 	dto := entities.ValidateSubmissionCreateDTO(c)
 
-	user := entities.GetUserFromRequest(c)
+	user := GetUserFromRequest(c)
 
 	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(dto.ChallengeID)
 	if err != nil {
@@ -45,7 +45,7 @@ func (h *submissionHandler) GetSubmissionByID(c *fiber.Ctx) error {
 }
 
 func (h *submissionHandler) GetSubmissionByUser(c *fiber.Ctx) error {
-	user := entities.GetUserFromRequest(c)
+	user := GetUserFromRequest(c)
 
 	submissions, err := h.serviceKit.SubmissionService.GetSubmissionByUser(user)
 	if err != nil {
