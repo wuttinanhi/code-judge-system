@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/wuttinanhi/code-judge-system/entities"
 )
@@ -24,11 +26,13 @@ type sandboxService struct {
 
 func (s *sandboxService) pullImage(imageName string) error {
 	ctx := context.Background()
+	fmt.Println("pulling image", imageName)
 	out, err := s.DockerClient.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		return err
 	}
 	defer out.Close()
+	fmt.Println("pulled image", imageName)
 	return nil
 }
 
@@ -63,11 +67,23 @@ func (s *sandboxService) createTempCodeFile(code string) (string, error) {
 	return fileName, nil
 }
 
+func (s *sandboxService) deleteTempCodeFile(filePath string) error {
+	return os.Remove(filePath)
+}
+
 // Run implements SandboxService.
 func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.SandboxInstance, error) {
 	ctx := context.Background()
 
-	imageName := "docker.io/library/python:3.10"
+	instruction := entities.GetSandboxInstructionByLanguage(instance.Language)
+	if instruction == nil {
+		return nil, fmt.Errorf("language %s not supported", instance.Language)
+	}
+
+	imageName := instruction.DockerImage
+	if imageName == "" {
+		return nil, fmt.Errorf("language %s not supported", instance.Language)
+	}
 
 	// check if image exist
 	exist, err := s.imageExist(imageName)
@@ -85,22 +101,30 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	}
 
 	// create temp code file
-	// codeFile, err := s.createTempCodeFile(instance.Code)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	codeFilePath, err := s.createTempCodeFile(instance.Code)
+	if err != nil {
+		return nil, err
+	}
+	defer s.deleteTempCodeFile(codeFilePath)
 
 	// create mount host code file to container at /tmp/code.py (read only)
 	hostConfig := &container.HostConfig{
-		// Mounts: []mount.Mount{
-		// 	{
-		// 		Type:     mount.TypeBind,
-		// 		ReadOnly: true,
-		// 		Source:   codeFile,
-		// 		Target:   "/tmp/code.py",
-		// 	},
-		// },
+		Mounts: []mount.Mount{
+			{
+				Type:     mount.TypeBind,
+				ReadOnly: true,
+				Source:   codeFilePath,
+				Target:   "/tmp/code",
+			},
+		},
 	}
+
+	// compile command
+	compileCommand := instruction.CompileCmd
+	runCommand := instruction.RunCmd
+
+	// merge two command together
+	mergedCommand := fmt.Sprintf("%s && %s", compileCommand, runCommand)
 
 	// create container
 	resp, err := s.DockerClient.ContainerCreate(ctx, &container.Config{
@@ -112,8 +136,7 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 		AttachStdin:     true,
 		OpenStdin:       true,
 		Env:             []string{"PYTHONUNBUFFERED=1"},
-		// Entrypoint:      []string{"python3", "/tmp/code.py"},
-		Entrypoint: []string{"python3", "-c", instance.Code},
+		Entrypoint:      []string{"/bin/sh", "-c", mergedCommand},
 	},
 		hostConfig,
 		nil,
@@ -193,14 +216,18 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	instance.Stdout = stdoutBuffer.String()
 	instance.Stderr = stderrBuffer.String()
 
+	// replace "\r\n" to "\n"
+	instance.Stdout = strings.ReplaceAll(instance.Stdout, "\r\n", "\n")
+	instance.Stderr = strings.ReplaceAll(instance.Stderr, "\r\n", "\n")
+
 	// remove container
-	// err = s.DockerClient.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{
-	// 	RemoveVolumes: true,
-	// 	Force:         true,
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
+	err = s.DockerClient.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		Force:         true,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	// return instance
 	return instance, nil
