@@ -49,27 +49,53 @@ func (s *sandboxService) imageExist(imageName string) (bool, error) {
 	return true, nil
 }
 
-func (s *sandboxService) createTempCodeFile(code string) (string, error) {
-	os.MkdirAll("/tmp/code-judge-system", os.ModePerm)
-	unixTime := time.Now().UnixNano()
-	fileName := fmt.Sprintf("/tmp/code-judge-system/%d.py", unixTime)
-
-	file, err := os.Create(fileName)
+func createFileWrapper(path, content string) error {
+	file, err := os.Create(path)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(code)
+	_, err = file.WriteString(content)
 	if err != nil {
-		return "", err
+		return err
 	}
-
-	return fileName, nil
+	return nil
 }
 
-func (s *sandboxService) deleteTempCodeFile(filePath string) error {
-	return os.Remove(filePath)
+func (s *sandboxService) createTempCodeFile(instance *entities.SandboxInstance) error {
+	os.MkdirAll("/tmp/code-judge-system", os.ModePerm)
+	unixTime := time.Now().UnixNano()
+
+	codefileName := fmt.Sprintf("/tmp/code-judge-system/code-%d.py", unixTime)
+	stdinfileName := fmt.Sprintf("/tmp/code-judge-system/stdin-%d.py", unixTime)
+
+	err := createFileWrapper(codefileName, instance.Code)
+	if err != nil {
+		return err
+	}
+
+	err = createFileWrapper(stdinfileName, instance.Stdin)
+	if err != nil {
+		return err
+	}
+
+	instance.CodeFilePath = codefileName
+	instance.StdinFilePath = stdinfileName
+
+	return nil
+}
+
+func (s *sandboxService) deleteTempCodeFile(instance *entities.SandboxInstance) error {
+	err := os.Remove(instance.CodeFilePath)
+	if err != nil {
+		return err
+	}
+	err = os.Remove(instance.StdinFilePath)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s sandboxService) getLog(containerID string, showStdout, showStderr bool) (string, error) {
@@ -121,16 +147,14 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	}
 
 	// create temp code file
-	codeFilePath, err := s.createTempCodeFile(instance.Code)
-	if err != nil {
-		return nil, err
-	}
-	defer s.deleteTempCodeFile(codeFilePath)
+	s.createTempCodeFile(instance)
+	defer s.deleteTempCodeFile(instance)
 
 	// create mount host code file to container at /tmp/code.py (read only)
 	hostConfig := &container.HostConfig{
 		Mounts: []mount.Mount{
-			{Type: mount.TypeBind, ReadOnly: true, Source: codeFilePath, Target: "/tmp/code"},
+			{Type: mount.TypeBind, ReadOnly: true, Source: instance.CodeFilePath, Target: "/tmp/code"},
+			{Type: mount.TypeBind, ReadOnly: true, Source: instance.StdinFilePath, Target: "/tmp/stdin"},
 		},
 	}
 

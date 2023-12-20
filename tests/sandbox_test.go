@@ -22,7 +22,7 @@ func TestSandbox(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if instance.Stdout != "Hello World\n" {
+		if instance.Stdout != "3\n" {
 			t.Fatal("stdout not match")
 		}
 		if instance.Stderr != "" {
@@ -42,7 +42,7 @@ func TestSandbox(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if instance.Stdout != "Hello World\n" {
+		if instance.Stdout != "3\n" {
 			t.Fatal("stdout not match")
 		}
 		if instance.Stderr != "" {
@@ -62,7 +62,7 @@ func TestSandbox(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if instance.Stdout != "Hello World" {
+		if instance.Stdout != "3\n" {
 			t.Fatal("stdout not match")
 		}
 		if instance.Stderr != "" {
