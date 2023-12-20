@@ -72,6 +72,25 @@ func (s *sandboxService) deleteTempCodeFile(filePath string) error {
 	return os.Remove(filePath)
 }
 
+func (s sandboxService) getLog(containerID string, showStdout, showStderr bool) (string, error) {
+	ctx := context.Background()
+	logs, err := s.DockerClient.ContainerLogs(ctx, containerID, types.ContainerLogsOptions{
+		ShowStdout: showStdout,
+		ShowStderr: showStderr,
+	})
+	if err != nil {
+		return "", err
+	}
+	defer logs.Close()
+
+	var buf bytes.Buffer
+	io.Copy(&buf, logs)
+	logsString := buf.String()
+	logsString = strings.ReplaceAll(logsString, "\r\n", "\n")
+
+	return logsString, nil
+}
+
 // Run implements SandboxService.
 func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.SandboxInstance, error) {
 	ctx := context.Background()
@@ -95,7 +114,7 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	// if image not exist, pull image
 	if !exist {
 		// pull image
-		err := s.pullImage(imageName)
+		err := s.pullImage(ctx, imageName)
 		if err != nil {
 			return nil, err
 		}
@@ -111,12 +130,7 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	// create mount host code file to container at /tmp/code.py (read only)
 	hostConfig := &container.HostConfig{
 		Mounts: []mount.Mount{
-			{
-				Type:     mount.TypeBind,
-				ReadOnly: true,
-				Source:   codeFilePath,
-				Target:   "/tmp/code",
-			},
+			{Type: mount.TypeBind, ReadOnly: true, Source: codeFilePath, Target: "/tmp/code"},
 		},
 	}
 
@@ -187,39 +201,14 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 		return nil, err
 	}
 
-	// get stdout container log
-	stdoutLog, err := s.DockerClient.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{
-		ShowStdout: true,
-	})
+	instance.Stdout, err = s.getLog(resp.ID, true, false)
 	if err != nil {
 		return nil, err
 	}
-	defer stdoutLog.Close()
-
-	// get stderr container log
-	stdErrLog, err := s.DockerClient.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{
-		ShowStderr: true,
-	})
+	instance.Stderr, err = s.getLog(resp.ID, false, true)
 	if err != nil {
 		return nil, err
 	}
-	defer stdErrLog.Close()
-
-	// create buffer to store logs
-	var stdoutBuffer bytes.Buffer
-	var stderrBuffer bytes.Buffer
-
-	// copy logs to buffer
-	io.Copy(&stdoutBuffer, stdoutLog)
-	io.Copy(&stderrBuffer, stdErrLog)
-
-	// assign logs to instance
-	instance.Stdout = stdoutBuffer.String()
-	instance.Stderr = stderrBuffer.String()
-
-	// replace "\r\n" to "\n"
-	instance.Stdout = strings.ReplaceAll(instance.Stdout, "\r\n", "\n")
-	instance.Stderr = strings.ReplaceAll(instance.Stderr, "\r\n", "\n")
 
 	// remove container
 	err = s.DockerClient.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{
@@ -235,7 +224,8 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 }
 
 func NewSandboxService() SandboxService {
-	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	// dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	dockerClient, err := client.NewClientWithOpts(client.WithHost("unix:///var/run/docker.sock"))
 	if err != nil {
 		panic(err)
 	}
