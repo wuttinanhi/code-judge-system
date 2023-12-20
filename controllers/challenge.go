@@ -16,6 +16,11 @@ func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
 	user := entities.GetUserFromRequest(c)
 	dto := entities.ValidateChallengeCreateDTO(c)
 
+	// only user with role admin can create challenge
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        dto.Name,
 		Description: dto.Description,
@@ -31,6 +36,11 @@ func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
 func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 	user := entities.GetUserFromRequest(c)
 	dto := entities.ValidateChallengeCreateWithTestcaseDTO(c)
+
+	// only user with role admin can create challenge
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
 
 	testcases := make([]entities.ChallengeTestcase, len(dto.Testcases))
 	for i, testcase := range dto.Testcases {
@@ -54,7 +64,13 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 }
 
 func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
+	user := entities.GetUserFromRequest(c)
 	dto := entities.ValidateChallengeUpdateDTO(c)
+
+	// only user with role admin can update challenge
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
 
 	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(dto.ChallengeID)
 	if err != nil {
@@ -75,7 +91,12 @@ func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 }
 
 func (h *challengeHandler) DeleteChallenge(c *fiber.Ctx) error {
+	user := entities.GetUserFromRequest(c)
 	id := ParseIntParam(c, "id")
+
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
 
 	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(uint(id))
 	if err != nil {
