@@ -117,6 +117,15 @@ func (s sandboxService) getLog(containerID string, showStdout, showStderr bool) 
 	return logsString, nil
 }
 
+func (s sandboxService) getContainerExitCode(containerID string) (int, error) {
+	ctx := context.Background()
+	resp, err := s.DockerClient.ContainerInspect(ctx, containerID)
+	if err != nil {
+		return 0, err
+	}
+	return resp.State.ExitCode, nil
+}
+
 // Run implements SandboxService.
 func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.SandboxInstance, error) {
 	ctx := context.Background()
@@ -155,6 +164,9 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 		Mounts: []mount.Mount{
 			{Type: mount.TypeBind, ReadOnly: true, Source: instance.CodeFilePath, Target: "/tmp/code"},
 			{Type: mount.TypeBind, ReadOnly: true, Source: instance.StdinFilePath, Target: "/tmp/stdin"},
+		},
+		Resources: container.Resources{
+			Memory: int64(instance.MemoryLimit),
 		},
 	}
 
@@ -230,6 +242,10 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 		return nil, err
 	}
 	instance.Stderr, err = s.getLog(resp.ID, false, true)
+	if err != nil {
+		return nil, err
+	}
+	instance.ExitCode, err = s.getContainerExitCode(resp.ID)
 	if err != nil {
 		return nil, err
 	}

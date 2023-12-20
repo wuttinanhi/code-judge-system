@@ -1,8 +1,8 @@
 package entities
 
 const (
-	SandboxRamMB = 1000
-	SandboxRamGB = 1000 * SandboxRamMB
+	SandboxMemoryMB = 1024 * 1024
+	SandboxMemoryGB = 1024 * SandboxMemoryMB
 )
 
 type SandboxInstance struct {
@@ -12,8 +12,9 @@ type SandboxInstance struct {
 	Stdout        string
 	Stderr        string
 	Timeout       int
-	RamLimit      int
+	MemoryLimit   int
 	Error         error
+	ExitCode      int
 	Note          string
 	CodeFilePath  string
 	StdinFilePath string
@@ -51,6 +52,13 @@ var PythonCodeExample = `
 x = int(input())
 y = int(input())
 print(x + y)
+`
+
+var PythonCodeOOMTestCode = `
+data = []
+
+while True:
+    data.append(' ' * 10**6)
 `
 
 var GoCodeExample = `
