@@ -10,7 +10,7 @@ import (
 func TestSandbox(t *testing.T) {
 	testServiceKit := services.CreateTestServiceKit()
 
-	t.Run("go sandbox", func(t *testing.T) {
+	t.Run("Sandbox Go Test", func(t *testing.T) {
 		instance, err := testServiceKit.SandboxService.Run(&entities.SandboxInstance{
 			Language:    entities.GoInstructionBook.Language,
 			Code:        entities.GoCodeExample,
@@ -30,7 +30,7 @@ func TestSandbox(t *testing.T) {
 		}
 	})
 
-	t.Run("python sandbox", func(t *testing.T) {
+	t.Run("Sandbox Python Test", func(t *testing.T) {
 		instance, err := testServiceKit.SandboxService.Run(&entities.SandboxInstance{
 			Language:    entities.PythonInstructionBook.Language,
 			Code:        entities.PythonCodeExample,
@@ -50,7 +50,7 @@ func TestSandbox(t *testing.T) {
 		}
 	})
 
-	t.Run("c sandbox", func(t *testing.T) {
+	t.Run("Sandbox C Test", func(t *testing.T) {
 		instance, err := testServiceKit.SandboxService.Run(&entities.SandboxInstance{
 			Language:    entities.CInstructionBook.Language,
 			Code:        entities.CCodeExample,
@@ -70,7 +70,7 @@ func TestSandbox(t *testing.T) {
 		}
 	})
 
-	t.Run("python OOM sandbox", func(t *testing.T) {
+	t.Run("Sandbox OOM Python Test", func(t *testing.T) {
 		instance, err := testServiceKit.SandboxService.Run(&entities.SandboxInstance{
 			Language:    entities.PythonInstructionBook.Language,
 			Code:        entities.PythonCodeOOMTestCode,
