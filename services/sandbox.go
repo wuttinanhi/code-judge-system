@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -25,6 +26,7 @@ type sandboxService struct {
 }
 
 func (s *sandboxService) pullImage(ctx context.Context, imageName string) error {
+	log.Println("pulling image", imageName)
 	out, err := s.DockerClient.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
@@ -33,6 +35,8 @@ func (s *sandboxService) pullImage(ctx context.Context, imageName string) error 
 
 	var logs bytes.Buffer
 	io.Copy(&logs, out)
+
+	log.Println("pulling image", imageName, "done")
 
 	return nil
 }
