@@ -23,10 +23,10 @@ func TestSandbox(t *testing.T) {
 		}
 
 		if instance.Stdout != "3\n" {
-			t.Fatal("stdout not match")
+			t.Error("stdout not match")
 		}
 		if instance.Stderr != "" {
-			t.Fatal("stderr not match")
+			t.Error("stderr not match")
 		}
 	})
 
@@ -43,10 +43,10 @@ func TestSandbox(t *testing.T) {
 		}
 
 		if instance.Stdout != "3\n" {
-			t.Fatal("stdout not match")
+			t.Error("stdout not match")
 		}
 		if instance.Stderr != "" {
-			t.Fatal("stderr not match")
+			t.Error("stderr not match")
 		}
 	})
 
@@ -63,10 +63,10 @@ func TestSandbox(t *testing.T) {
 		}
 
 		if instance.Stdout != "3\n" {
-			t.Fatal("stdout not match")
+			t.Error("stdout not match")
 		}
 		if instance.Stderr != "" {
-			t.Fatal("stderr not match")
+			t.Error("stderr not match")
 		}
 	})
 
@@ -84,7 +84,29 @@ func TestSandbox(t *testing.T) {
 
 		// exit code must be OOM
 		if instance.ExitCode != 137 {
-			t.Fatal("OOM exit code not match")
+			t.Error("OOM exit code not match")
+		}
+	})
+
+	t.Run("Sandbox Timeout Python Test", func(t *testing.T) {
+		instance, err := testServiceKit.SandboxService.Run(&entities.SandboxInstance{
+			Language:    entities.PythonInstructionBook.Language,
+			Code:        entities.PythonCodeTimeoutTestCode,
+			Stdin:       "1\n2\n",
+			Timeout:     1000,
+			MemoryLimit: entities.SandboxMemoryMB * 128,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// exit code must be timeout
+		if instance.ExitCode != 137 {
+			t.Error("timeout exit code not match expected 137 got", instance.ExitCode)
+		}
+		// note must be timeout
+		if instance.Note != "timeout" {
+			t.Error("note not match expected 'timeout' got", instance.Note)
 		}
 	})
 }

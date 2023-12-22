@@ -64,6 +64,11 @@ while True:
     data.append(' ' * 10**6)
 `
 
+var PythonCodeTimeoutTestCode = `
+import time
+time.sleep(2)
+`
+
 var GoCodeExample = `
 package main
 

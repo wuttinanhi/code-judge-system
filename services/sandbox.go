@@ -179,7 +179,7 @@ func (s sandboxService) copyToContainer(containerID, targetPath string, content 
 	return err
 }
 
-func (s sandboxService) createContainer(imageName string, command []string, volumes []mount.Mount) (response container.CreateResponse, err error) {
+func (s sandboxService) createContainer(imageName string, command []string, volumes []mount.Mount, memoryLimit int64) (response container.CreateResponse, err error) {
 	ctx := context.Background()
 	response, err = s.DockerClient.ContainerCreate(ctx, &container.Config{
 		Image:           imageName,
@@ -194,6 +194,9 @@ func (s sandboxService) createContainer(imageName string, command []string, volu
 	},
 		&container.HostConfig{
 			Mounts: volumes,
+			Resources: container.Resources{
+				Memory: memoryLimit,
+			},
 		},
 		nil,
 		nil,
@@ -272,11 +275,9 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	// create container to create necessary files
 	resp, err := s.createContainer(
 		imageName,
-		// echo > /sandbox/code && echo > /sandbox/stdin &&
-		// []string{"/bin/bash", "-c", "sleep 9999"},
-		// && echo > /sandbox/code.txt && echo > /sandbox/stdin.txt
 		[]string{"/bin/bash", "-c", "chmod 777 -R /sandbox && sleep 9999"},
 		volumeMount,
+		entities.SandboxMemoryMB*128,
 	)
 	if err != nil {
 		return nil, err
@@ -321,7 +322,7 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	compileCommand := instruction.CompileCmd
 
 	// create container to compile
-	resp, err = s.createContainer(imageName, []string{"/bin/bash", "-c", compileCommand}, volumeMount)
+	resp, err = s.createContainer(imageName, []string{"/bin/bash", "-c", compileCommand}, volumeMount, entities.SandboxMemoryMB*256)
 	if err != nil {
 		return nil, errors.New("compile stage: failed to create container")
 	}
@@ -383,7 +384,7 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	runCommand := instruction.RunCmd
 
 	// create container to run
-	resp, err = s.createContainer(imageName, []string{"/bin/bash", "-c", runCommand}, volumeMount)
+	resp, err = s.createContainer(imageName, []string{"/bin/bash", "-c", runCommand}, volumeMount, int64(instance.MemoryLimit))
 	if err != nil {
 		return nil, errors.New("run stage: failed to create container")
 	}
