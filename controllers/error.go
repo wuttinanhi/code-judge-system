@@ -7,6 +7,13 @@ import (
 )
 
 func ErrorHandler(c *fiber.Ctx, err error) error {
+	// if got panic "user not found"
+	if err.Error() == "user not found" {
+		return c.Status(fiber.StatusUnauthorized).JSON(entities.HttpError{
+			Message: "Unauthorized",
+		})
+	}
+
 	// if error is go-validator error
 	if err, ok := err.(validator.ValidationErrors); ok {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
@@ -14,6 +21,7 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 		})
 	}
 
+	// default error
 	return c.Status(fiber.StatusInternalServerError).JSON(entities.HttpError{
 		Message: err.Error(),
 	})
