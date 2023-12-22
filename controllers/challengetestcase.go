@@ -11,6 +11,11 @@ type challengeTestcaseHandler struct {
 }
 
 func (h *challengeTestcaseHandler) CreateTestcase(c *fiber.Ctx) error {
+	user := GetUserFromRequest(c)
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	dto := entities.ValidateChallengeTestcaseCreateDTO(c)
 
 	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(dto.ChallengeID)
@@ -31,6 +36,11 @@ func (h *challengeTestcaseHandler) CreateTestcase(c *fiber.Ctx) error {
 }
 
 func (h *challengeTestcaseHandler) UpdateTestcase(c *fiber.Ctx) error {
+	user := GetUserFromRequest(c)
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	dto := entities.ValidateChallengeTestcaseUpdateDTO(c)
 
 	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(dto.TestcaseID)
@@ -52,6 +62,11 @@ func (h *challengeTestcaseHandler) UpdateTestcase(c *fiber.Ctx) error {
 }
 
 func (h *challengeTestcaseHandler) DeleteTestcase(c *fiber.Ctx) error {
+	user := GetUserFromRequest(c)
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	id := ParseIntParam(c, "id")
 
 	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(uint(id))
@@ -68,6 +83,11 @@ func (h *challengeTestcaseHandler) DeleteTestcase(c *fiber.Ctx) error {
 }
 
 func (h *challengeTestcaseHandler) GetTestcaseByID(c *fiber.Ctx) error {
+	user := GetUserFromRequest(c)
+	if user.Role != entities.UserRoleAdmin {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	id := ParseIntParam(c, "id")
 
 	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(uint(id))
