@@ -6,18 +6,21 @@ const (
 )
 
 type SandboxInstance struct {
-	Code          string
-	Stdin         string
-	Language      string
-	Stdout        string
-	Stderr        string
-	Timeout       int
-	MemoryLimit   int
-	Error         error
-	ExitCode      int
-	Note          string
-	CodeFilePath  string
-	StdinFilePath string
+	Code            string
+	Stdin           string
+	Language        string
+	Stdout          string
+	Stderr          string
+	Timeout         int
+	MemoryLimit     int
+	Error           error
+	ExitCode        int
+	CodeFilePath    string
+	StdinFilePath   string
+	CompileStdout   string
+	CompileStderr   string
+	CompileExitCode int
+	Note            string
 }
 
 type SandboxInstruction struct {
@@ -30,22 +33,22 @@ type SandboxInstruction struct {
 var PythonInstructionBook = SandboxInstruction{
 	Language:    "python",
 	DockerImage: "docker.io/library/python:3.10",
-	CompileCmd:  "cp /tmp/code /tmp/code.py",
-	RunCmd:      "python3 /tmp/code.py < /tmp/stdin",
+	CompileCmd:  "cp /sandbox/code /sandbox/code.py",
+	RunCmd:      "python3 /sandbox/code.py < /sandbox/stdin",
 }
 
 var GoInstructionBook = SandboxInstruction{
 	Language:    "go",
 	DockerImage: "docker.io/library/golang:1.21",
-	CompileCmd:  "cp /tmp/code /main.go && cd / && (go mod init sandbox > /dev/null 2>&1) && go build -o /main > /dev/null",
-	RunCmd:      "/main < /tmp/stdin",
+	CompileCmd:  "cd /sandbox && cp /sandbox/code /sandbox/main.go && (go mod init sandbox > /dev/null 2>&1) && go build -o main",
+	RunCmd:      "/sandbox/main < /sandbox/stdin",
 }
 
 var CInstructionBook = SandboxInstruction{
 	Language:    "c",
 	DockerImage: "docker.io/library/gcc:12.3.0",
-	CompileCmd:  "cp /tmp/code /tmp/main.c && cd /tmp/ && gcc -o /tmp/main /tmp/main.c > /dev/null",
-	RunCmd:      "/tmp/main < /tmp/stdin",
+	CompileCmd:  "cp /sandbox/code /sandbox/main.c && cd /sandbox/ && gcc -o /sandbox/main /sandbox/main.c > /dev/null",
+	RunCmd:      "/sandbox/main < /sandbox/stdin",
 }
 
 var PythonCodeExample = `

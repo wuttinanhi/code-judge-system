@@ -1,18 +1,23 @@
 package services
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/wuttinanhi/code-judge-system/entities"
 )
@@ -53,7 +58,7 @@ func (s *sandboxService) imageExist(imageName string) (bool, error) {
 	return true, nil
 }
 
-func createFileWrapper(path, content string) error {
+func CreateFileWrapper(path, content string) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -67,19 +72,19 @@ func createFileWrapper(path, content string) error {
 	return nil
 }
 
-func (s *sandboxService) createTempCodeFile(instance *entities.SandboxInstance) error {
+func (s *sandboxService) CreateTempCodeFile(instance *entities.SandboxInstance) error {
 	os.MkdirAll("/tmp/code-judge-system", os.ModePerm)
 	unixTime := time.Now().UnixNano()
 
 	codefileName := fmt.Sprintf("/tmp/code-judge-system/code-%d.py", unixTime)
 	stdinfileName := fmt.Sprintf("/tmp/code-judge-system/stdin-%d.py", unixTime)
 
-	err := createFileWrapper(codefileName, instance.Code)
+	err := CreateFileWrapper(codefileName, instance.Code)
 	if err != nil {
 		return err
 	}
 
-	err = createFileWrapper(stdinfileName, instance.Stdin)
+	err = CreateFileWrapper(stdinfileName, instance.Stdin)
 	if err != nil {
 		return err
 	}
@@ -90,7 +95,7 @@ func (s *sandboxService) createTempCodeFile(instance *entities.SandboxInstance) 
 	return nil
 }
 
-func (s *sandboxService) deleteTempCodeFile(instance *entities.SandboxInstance) error {
+func (s *sandboxService) DeleteTempCodeFile(instance *entities.SandboxInstance) error {
 	err := os.Remove(instance.CodeFilePath)
 	if err != nil {
 		return err
@@ -130,6 +135,98 @@ func (s sandboxService) getContainerExitCode(containerID string) (int, error) {
 	return resp.State.ExitCode, nil
 }
 
+func (s sandboxService) createVolume(name string) (volume.Volume, error) {
+	ctx := context.Background()
+	volume, err := s.DockerClient.VolumeCreate(ctx, volume.CreateOptions{
+		Name:   name,
+		Driver: "local",
+	})
+	return volume, err
+}
+
+func (s sandboxService) deleteVolume(v volume.Volume) error {
+	ctx := context.Background()
+	err := s.DockerClient.VolumeRemove(ctx, v.Name, true)
+	return err
+}
+
+func (s sandboxService) copyToContainer(containerID, targetPath string, content io.Reader) error {
+	ctx := context.Background()
+
+	data, err := io.ReadAll(content)
+	if err != nil {
+		return err
+	}
+
+	targetDir := filepath.Dir(targetPath)
+	fileName := filepath.Base(targetPath)
+
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	tw.WriteHeader(&tar.Header{
+		Name:   fileName,
+		Mode:   0777,
+		Size:   int64(len(data)),
+		Format: tar.FormatGNU,
+	})
+	tw.Write(data)
+	tw.Close()
+
+	err = s.DockerClient.CopyToContainer(ctx, containerID, targetDir, &buf, types.CopyToContainerOptions{
+		AllowOverwriteDirWithFile: false,
+		CopyUIDGID:                false,
+	})
+	return err
+}
+
+func (s sandboxService) createContainer(imageName string, command []string, volumes []mount.Mount) (response container.CreateResponse, err error) {
+	ctx := context.Background()
+	response, err = s.DockerClient.ContainerCreate(ctx, &container.Config{
+		Image:           imageName,
+		NetworkDisabled: true,
+		Tty:             true,
+		AttachStdout:    true,
+		AttachStderr:    true,
+		AttachStdin:     true,
+		OpenStdin:       true,
+		Env:             []string{"PYTHONUNBUFFERED=1"},
+		Entrypoint:      command,
+	},
+		&container.HostConfig{
+			Mounts: volumes,
+		},
+		nil,
+		nil,
+		"",
+	)
+	return
+}
+
+func (s sandboxService) startContainer(containerID string) error {
+	ctx := context.Background()
+	err := s.DockerClient.ContainerStart(ctx, containerID, types.ContainerStartOptions{})
+	return err
+}
+
+func (s sandboxService) stopContainer(containerID string) error {
+	ctx := context.Background()
+	timeout := int(0)
+	err := s.DockerClient.ContainerStop(ctx, containerID, container.StopOptions{
+		Timeout: &timeout,
+		Signal:  "SIGKILL",
+	})
+	return err
+}
+
+func (s sandboxService) removeContainer(containerID string) error {
+	ctx := context.Background()
+	err := s.DockerClient.ContainerRemove(ctx, containerID, types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		Force:         true,
+	})
+	return err
+}
+
 // Run implements SandboxService.
 func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.SandboxInstance, error) {
 	ctx := context.Background()
@@ -159,109 +256,192 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 		}
 	}
 
-	// create temp code file
-	s.createTempCodeFile(instance)
-	defer s.deleteTempCodeFile(instance)
-
-	// create mount host code file to container at /tmp/code.py (read only)
-	hostConfig := &container.HostConfig{
-		Mounts: []mount.Mount{
-			{Type: mount.TypeBind, ReadOnly: true, Source: instance.CodeFilePath, Target: "/tmp/code"},
-			{Type: mount.TypeBind, ReadOnly: true, Source: instance.StdinFilePath, Target: "/tmp/stdin"},
-		},
-		Resources: container.Resources{
-			Memory: int64(instance.MemoryLimit),
-		},
+	runID := strconv.Itoa(int(time.Now().UnixNano()))
+	volumeID := "code-judge-system-" + runID
+	volumeMount := []mount.Mount{
+		{Type: mount.TypeVolume, Source: volumeID, Target: "/sandbox"},
 	}
 
-	// compile command
-	compileCommand := instruction.CompileCmd
-	runCommand := instruction.RunCmd
+	// create volume
+	volume, err := s.createVolume(volumeID)
+	if err != nil {
+		return nil, errors.New("failed to create volume")
+	}
+	defer s.deleteVolume(volume)
 
-	// merge two command together
-	mergedCommand := fmt.Sprintf("%s && %s", compileCommand, runCommand)
-
-	// create container
-	resp, err := s.DockerClient.ContainerCreate(ctx, &container.Config{
-		Image:           imageName,
-		NetworkDisabled: true,
-		Tty:             true,
-		AttachStdout:    true,
-		AttachStderr:    true,
-		AttachStdin:     true,
-		OpenStdin:       true,
-		Env:             []string{"PYTHONUNBUFFERED=1"},
-		Entrypoint:      []string{"/bin/sh", "-c", mergedCommand},
-	},
-		hostConfig,
-		nil,
-		nil,
-		"",
+	// create container to create necessary files
+	resp, err := s.createContainer(
+		imageName,
+		// echo > /sandbox/code && echo > /sandbox/stdin &&
+		// []string{"/bin/bash", "-c", "sleep 9999"},
+		// && echo > /sandbox/code.txt && echo > /sandbox/stdin.txt
+		[]string{"/bin/bash", "-c", "chmod 777 -R /sandbox && sleep 9999"},
+		volumeMount,
 	)
 	if err != nil {
 		return nil, err
 	}
+	if err != nil {
+		return nil, err
+	}
+	defer s.removeContainer(resp.ID)
 
 	// start container
-	if err := s.DockerClient.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return nil, err
+	err = s.startContainer(resp.ID)
+	if err != nil {
+		return nil, errors.New("create stage: failed to start container")
 	}
 
-	// create channel to wait for container to finish or timeout
-	waitChannel := make(chan string, 1)
+	time.Sleep(1 * time.Second)
 
-	// wait for timeout
-	go func() {
-		time.Sleep(time.Millisecond * time.Duration(instance.Timeout))
-		waitChannel <- "timeout"
-	}()
-
-	// wait for container to finish
-	go func() {
-		resultC, errC := s.DockerClient.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
-
-		select {
-		case err := <-errC:
-			waitChannel <- err.Error()
-		case <-resultC:
-			waitChannel <- "success"
-		}
-	}()
-
-	// wait for waitChannel
-	exitReason := <-waitChannel
-	instance.Note = exitReason
+	// copy code file to container
+	err = s.copyToContainer(resp.ID, "/sandbox/code", strings.NewReader(instance.Code))
+	if err != nil {
+		return nil, err
+	}
+	// copy stdin file to container
+	err = s.copyToContainer(resp.ID, "/sandbox/stdin", strings.NewReader(instance.Stdin))
+	if err != nil {
+		return nil, err
+	}
 
 	// stop container
-	timeout := int(0)
-	err = s.DockerClient.ContainerStop(ctx, resp.ID, container.StopOptions{
-		Timeout: &timeout,
-	})
+	err = s.stopContainer(resp.ID)
 	if err != nil {
-		return nil, err
-	}
-
-	instance.Stdout, err = s.getLog(resp.ID, true, false)
-	if err != nil {
-		return nil, err
-	}
-	instance.Stderr, err = s.getLog(resp.ID, false, true)
-	if err != nil {
-		return nil, err
-	}
-	instance.ExitCode, err = s.getContainerExitCode(resp.ID)
-	if err != nil {
-		return nil, err
+		return nil, errors.New("create stage: failed to stop container")
 	}
 
 	// remove container
-	err = s.DockerClient.ContainerRemove(ctx, resp.ID, types.ContainerRemoveOptions{
-		RemoveVolumes: true,
-		Force:         true,
-	})
+	err = s.stopContainer(resp.ID)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("create stage: failed to remove container")
 	}
+
+	// compile stage
+	compileCommand := instruction.CompileCmd
+
+	// create container to compile
+	resp, err = s.createContainer(imageName, []string{"/bin/bash", "-c", compileCommand}, volumeMount)
+	if err != nil {
+		return nil, errors.New("compile stage: failed to create container")
+	}
+	defer s.removeContainer(resp.ID)
+
+	// start container
+	err = s.startContainer(resp.ID)
+	if err != nil {
+		return nil, errors.New("compile stage: failed to start container")
+	}
+
+	// grab container wait channel
+	resultC, errC := s.DockerClient.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	if err != nil {
+		return nil, errors.New("compile stage: failed to wait container")
+	}
+
+	// wait for container to finish or timeout
+	select {
+	case <-time.After(time.Duration(instance.Timeout) * time.Millisecond):
+		// timeout
+		err = s.stopContainer(resp.ID)
+		if err != nil {
+			return nil, errors.New("compile stage: failed to stop container")
+		}
+		return nil, errors.New("compile stage: timeout")
+	case <-resultC:
+		// container finish
+		// do nothing
+	case <-errC:
+		// container error
+		return nil, errors.New("compile stage: failed to compile code")
+	}
+
+	// get container exit code
+	exitCode, err := s.getContainerExitCode(resp.ID)
+	if err != nil {
+		return nil, errors.New("compile stage: failed to get container exit code")
+	}
+
+	// if exit code is not 0, return error
+	if exitCode != 0 {
+		logs, err := s.getLog(resp.ID, true, true)
+		if err != nil {
+			return nil, errors.New("compile stage: failed to get container log")
+		}
+		instance.CompileExitCode = exitCode
+		instance.CompileStderr = logs
+		return nil, errors.New("compile stage: failed to compile code")
+	}
+
+	// stop and remove container
+	err = s.removeContainer(resp.ID)
+	if err != nil {
+		return nil, errors.New("compile stage: failed to stop and remove container")
+	}
+
+	// run stage
+	runCommand := instruction.RunCmd
+
+	// create container to run
+	resp, err = s.createContainer(imageName, []string{"/bin/bash", "-c", runCommand}, volumeMount)
+	if err != nil {
+		return nil, errors.New("run stage: failed to create container")
+	}
+	defer s.removeContainer(resp.ID)
+
+	// start container
+	err = s.startContainer(resp.ID)
+	if err != nil {
+		return nil, errors.New("run stage: failed to start container")
+	}
+
+	// grab container wait channel
+	resultC, errC = s.DockerClient.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	if err != nil {
+		return nil, errors.New("run stage: failed to wait container")
+	}
+
+	result := ""
+
+	// wait for container to finish or timeout
+	select {
+	case <-time.After(time.Duration(instance.Timeout) * time.Millisecond):
+		// timeout
+		err = s.stopContainer(resp.ID)
+		if err != nil {
+			return nil, errors.New("run stage: failed to stop container")
+		}
+		result = "timeout"
+	case <-resultC:
+		// container finish
+		result = "finish"
+	case <-errC:
+		// container error
+		return nil, errors.New("run stage: failed to run code")
+	}
+
+	// get container exit code
+	exitCode, err = s.getContainerExitCode(resp.ID)
+	if err != nil {
+		return nil, errors.New("run stage: failed to get container exit code")
+	}
+
+	// get container stdout
+	stdout, err := s.getLog(resp.ID, true, false)
+	if err != nil {
+		return nil, errors.New("run stage: failed to get container stdout")
+	}
+
+	// get container stderr
+	stderr, err := s.getLog(resp.ID, false, true)
+	if err != nil {
+		return nil, errors.New("run stage: failed to get container stderr")
+	}
+
+	instance.ExitCode = exitCode
+	instance.Stdout = stdout
+	instance.Stderr = stderr
+	instance.Note = result
 
 	// return instance
 	return instance, nil
