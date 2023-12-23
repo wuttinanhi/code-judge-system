@@ -1,6 +1,9 @@
 package databases
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -8,7 +11,14 @@ import (
 )
 
 func NewSQLiteDatabase() *gorm.DB {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic("failed to get current working directory")
+	}
+
+	sqlitepath := filepath.Join(cwd, "test.db")
+
+	db, err := gorm.Open(sqlite.Open(sqlitepath), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect sqlite database")
 	}

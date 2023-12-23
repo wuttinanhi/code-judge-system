@@ -73,7 +73,7 @@ func (r *userRepository) UpdateUser(user *entities.User) error {
 	return result.Error
 }
 
-func NewSQLUserRepository(db *gorm.DB) UserRepository {
+func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{
 		db: db,
 	}

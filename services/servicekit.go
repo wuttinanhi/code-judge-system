@@ -17,7 +17,7 @@ type ServiceKit struct {
 }
 
 func newServiceKit(db *gorm.DB) *ServiceKit {
-	userRepo := repositories.NewSQLUserRepository(db)
+	userRepo := repositories.NewUserRepository(db)
 	challengeRepo := repositories.NewChallengeRepository(db)
 	submissionRepo := repositories.NewSubmissionRepository(db)
 
