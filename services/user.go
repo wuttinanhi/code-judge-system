@@ -6,6 +6,7 @@ import (
 
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/repositories"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
@@ -32,7 +33,8 @@ func (s *userService) Login(email string, password string) (user *entities.User,
 		return nil, errors.New("failed to get user")
 	}
 
-	if user.Password != password {
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
 		return nil, errors.New("invalid password")
 	}
 
@@ -41,9 +43,14 @@ func (s *userService) Login(email string, password string) (user *entities.User,
 
 // Register implements services.UserService.
 func (s *userService) Register(email string, password string, displayname string) (user *entities.User, err error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("failed to hash password")
+	}
+
 	user = &entities.User{
 		Email:       email,
-		Password:    password,
+		Password:    string(hashedPassword),
 		DisplayName: displayname,
 		Role:        "user",
 	}
