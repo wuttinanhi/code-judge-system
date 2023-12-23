@@ -68,4 +68,5 @@ func ValidateUserLoginDTO(c *fiber.Ctx) UserLoginDTO {
 
 type UserLoginResponse struct {
 	Token string `json:"token"`
+	UserRegisterResponse
 }

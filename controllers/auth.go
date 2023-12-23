@@ -44,7 +44,14 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(entities.UserLoginResponse{Token: token})
+	return c.Status(fiber.StatusOK).JSON(entities.UserLoginResponse{
+		Token: token,
+		UserRegisterResponse: entities.UserRegisterResponse{
+			UserID:      user.UserID,
+			DisplayName: user.DisplayName,
+			Email:       user.Email,
+		},
+	})
 }
 
 func NewAuthHandler(serviceKit *services.ServiceKit) *authHandler {
