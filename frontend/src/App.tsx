@@ -10,6 +10,7 @@ import { UserProvider } from "./contexts/user.provider";
 import DashboardPage from "./pages/DashboardPage";
 import { SignInPage } from "./pages/SigninPage";
 import { SignUpPage } from "./pages/SignupPage";
+import UserSettingPage from "./pages/UserSettingPage";
 
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <SignUpPage />,
+  },
+  {
+    path: "/settings",
+    element: <UserSettingPage />,
   },
 ]);
 

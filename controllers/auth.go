@@ -32,6 +32,12 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 
 	user, err := h.serviceKit.UserService.Login(dto.Email, dto.Password)
 	if err != nil {
+		if err.Error() == "failed to get user" {
+			return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
+				Message: "invalid email or password",
+			})
+		}
+
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
 			Message: err.Error(),
 		})

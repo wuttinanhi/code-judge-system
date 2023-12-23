@@ -1,13 +1,21 @@
-import { ReactNode, createContext, useContext, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { UserLoginResponse } from "../apis/user";
 
 type UserDataType = {
   accessToken: string;
-  username: string;
+  displayName: string;
+  email: string;
 };
 
 interface UserContextType {
   user: UserDataType | undefined;
-  setUser: (user: UserDataType) => void;
+  setUser: (user: UserDataType | undefined) => void;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -17,6 +25,22 @@ const UserContext = createContext<UserContextType>({
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserDataType | undefined>(undefined);
+
+  // try load accessToken from local storage
+  useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    const userData = localStorage.getItem("user");
+
+    if (userData && accessToken) {
+      const parsedUserData = JSON.parse(userData) as UserLoginResponse;
+
+      setUser({
+        accessToken,
+        displayName: parsedUserData.displayname,
+        email: parsedUserData.email,
+      });
+    }
+  }, []);
 
   return (
     <UserContext.Provider value={{ user, setUser }}>

@@ -2,10 +2,8 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
@@ -25,10 +23,21 @@ export function SignInPage() {
     const password = data.get("password") as string;
 
     UserService.login(email, password).then((response) => {
-      if (response.data.success) {
-        userContext.setUser(response.data.user);
+      if (response.token) {
+        userContext.setUser({
+          accessToken: response.token,
+          displayName: response.displayname,
+          email: response.email,
+        });
+
+        // save token and user data to local storage
+        localStorage.setItem("accessToken", response.token);
+        localStorage.setItem("user", JSON.stringify(response));
+
+        // redirect to dashboard
+        window.location.href = "/";
       } else {
-        toast.error(response.data.message);
+        toast.error("Invalid email or password");
       }
     });
   };
@@ -47,9 +56,11 @@ export function SignInPage() {
         <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
           <LockOutlinedIcon />
         </Avatar>
+
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
+
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
@@ -71,10 +82,10 @@ export function SignInPage() {
             id="password"
             autoComplete="current-password"
           />
-          <FormControlLabel
+          {/* <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
             label="Remember me"
-          />
+          /> */}
           <Button
             type="submit"
             fullWidth
@@ -83,15 +94,16 @@ export function SignInPage() {
           >
             Sign In
           </Button>
-          <Grid container>
-            <Grid item xs>
+
+          <Grid container justifyContent="flex-end">
+            {/* <Grid item xs>
               <Link href="#" variant="body2">
                 Forgot password?
               </Link>
-            </Grid>
+            </Grid> */}
             <Grid item>
-              <Link href="#" variant="body2">
-                {"Don't have an account? Sign Up"}
+              <Link href="/signup" variant="body2">
+                {"Sign Up"}
               </Link>
             </Grid>
           </Grid>

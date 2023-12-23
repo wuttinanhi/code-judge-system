@@ -6,7 +6,7 @@ export class UserService {
       body: JSON.stringify({ email, password }),
     });
     if (response.ok) {
-      return await response.json();
+      return (await response.json()) as UserLoginResponse;
     } else {
       throw new Error("Something went wrong");
     }
@@ -23,9 +23,22 @@ export class UserService {
       body: JSON.stringify({ username, password, displayname }),
     });
     if (response.ok) {
-      return await response.json();
+      return (await response.json()) as UserRegisterResponse;
     } else {
       throw new Error("Something went wrong");
     }
   }
+}
+
+export interface UserLoginResponse {
+  token: string;
+  userid: number;
+  displayname: string;
+  email: string;
+}
+
+export interface UserRegisterResponse {
+  userid: number;
+  displayname: string;
+  email: string;
 }
