@@ -68,7 +68,7 @@ func (r *submissionRepository) GetSubmissionByChallenge(challenge *entities.Chal
 // GetSubmissionByID implements SubmissionRepository.
 func (r *submissionRepository) GetSubmissionByID(submissionID uint) (*entities.Submission, error) {
 	var submission entities.Submission
-	result := r.db.Where("submission_id = ?", submissionID).First(&submission)
+	result := r.db.Find(&submission, submissionID)
 	return &submission, result.Error
 }
 

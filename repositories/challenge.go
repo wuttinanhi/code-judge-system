@@ -58,6 +58,7 @@ LEFT JOIN (
 	WHERE user_id = ?
     GROUP BY challenge_id
 ) AS subq ON t.id = subq.challenge_id
+ORDER BY t.id ASC
 LIMIT ?
 OFFSET ?
 `,
