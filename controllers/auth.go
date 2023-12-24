@@ -24,6 +24,7 @@ func (h *authHandler) Register(c *fiber.Ctx) error {
 		UserID:      user.UserID,
 		DisplayName: user.DisplayName,
 		Email:       user.Email,
+		Role:        user.Role,
 	})
 }
 
@@ -56,6 +57,7 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 			UserID:      user.UserID,
 			DisplayName: user.DisplayName,
 			Email:       user.Email,
+			Role:        user.Role,
 		},
 	})
 }

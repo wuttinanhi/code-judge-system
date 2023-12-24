@@ -45,6 +45,7 @@ type UserRegisterResponse struct {
 	UserID      uint   `json:"userid"`
 	DisplayName string `json:"displayname"`
 	Email       string `json:"email"`
+	Role        string `json:"role"`
 }
 
 type UserLoginDTO struct {
