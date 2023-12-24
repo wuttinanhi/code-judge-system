@@ -36,7 +36,7 @@ func SetupWeb(serviceKit *services.ServiceKit) *fiber.App {
 	challengeGroup := app.Group("/challenge")
 	challengeGroup.Use(UserMiddleware(serviceKit))
 	challengeGroup.Post("/create", challengeHandler.CreateChallengeWithTestcase)
-	challengeGroup.Get("/all", challengeHandler.GetAllChallenges)
+	challengeGroup.Get("/pagination", challengeHandler.PaginationChallengesWithStatus)
 	challengeGroup.Get("/get/:id", challengeHandler.GetChallengeByID)
 	challengeGroup.Put("/update", challengeHandler.UpdateChallenge)
 	challengeGroup.Delete("/delete/:id", challengeHandler.DeleteChallenge)

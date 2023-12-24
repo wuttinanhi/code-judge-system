@@ -15,7 +15,7 @@ import (
 func TestChallengeRoute(t *testing.T) {
 	// testServiceKit := services.CreateTestServiceKit()
 
-	db := databases.NewMySQLDatabase()
+	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	app := controllers.SetupWeb(testServiceKit)
 
@@ -74,8 +74,8 @@ func TestChallengeRoute(t *testing.T) {
 		}
 	})
 
-	t.Run("/challenge/all", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/challenge/all", nil)
+	t.Run("/challenge/pagination", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/challenge/pagination", nil)
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", "Bearer "+adminAccessToken)
 
@@ -86,6 +86,23 @@ func TestChallengeRoute(t *testing.T) {
 
 		if response.StatusCode != http.StatusOK {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
+		}
+
+		// try parse json response to pagination result
+		var result entities.PaginationResult[entities.ChallengeExtended]
+		err = json.NewDecoder(response.Body).Decode(&result)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// expect total 1
+		if result.Total != 1 {
+			t.Errorf("Expected total 1, got %v", result.Total)
+		}
+
+		// expect challenge name to be Test Challenge
+		if result.Items[0].Name != "Test Challenge" {
+			t.Errorf("Expected challenge name Test Challenge, got %v", result.Items[0].Name)
 		}
 	})
 

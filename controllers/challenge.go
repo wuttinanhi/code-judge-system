@@ -131,16 +131,21 @@ func (h *challengeHandler) GetAllChallenges(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(challenges)
 }
 
-// func (h *challengeHandler) PaginationChallengesWithStatus(c *fiber.Ctx) error {
-// 	dto := entities.ValidatePaginationChallengesWithStatusDTO(c)
+func (h *challengeHandler) PaginationChallengesWithStatus(c *fiber.Ctx) error {
+	user := GetUserFromRequest(c)
+	options := ParsePaginationOptions(c)
 
-// 	challenges, err := h.serviceKit.ChallengeService.PaginationChallengesWithStatus(dto.Status, dto.Page, dto.Limit)
-// 	if err != nil {
-// 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
-// 	}
+	challenges, err := h.serviceKit.ChallengeService.PaginationChallengesWithStatus(
+		options.Page,
+		options.Limit,
+		user,
+	)
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
+	}
 
-// 	return c.Status(http.StatusOK).JSON(challenges)
-// }
+	return c.Status(http.StatusOK).JSON(challenges)
+}
 
 func NewChallengeHandler(serviceKit *services.ServiceKit) *challengeHandler {
 	return &challengeHandler{

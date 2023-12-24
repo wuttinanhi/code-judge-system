@@ -8,9 +8,7 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-/*
-Quick test to test functionality of PaginationChallengesWithStatus
-*/
+// Quick test to test functionality of PaginationChallengesWithStatus
 func TestChallengeWithStatus(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
@@ -112,19 +110,19 @@ func TestChallengeWithStatus(t *testing.T) {
 	// 3 Test Challenge 3 WRONG
 	// 4 Test Challenge 4 NOTSOLVE
 
-	if challenges[0].SubmissionStatus != entities.SubmissionStatusPending {
-		t.Errorf("Expected status PENDING, got %v", challenges[0].SubmissionStatus)
+	if challenges.Items[0].SubmissionStatus != entities.SubmissionStatusPending {
+		t.Errorf("Expected status PENDING, got %v", challenges.Items[0].SubmissionStatus)
 	}
 
-	if challenges[1].SubmissionStatus != entities.SubmissionStatusCorrect {
-		t.Errorf("Expected status CORRECT, got %v", challenges[1].SubmissionStatus)
+	if challenges.Items[1].SubmissionStatus != entities.SubmissionStatusCorrect {
+		t.Errorf("Expected status CORRECT, got %v", challenges.Items[1].SubmissionStatus)
 	}
 
-	if challenges[2].SubmissionStatus != entities.SubmissionStatusWrong {
-		t.Errorf("Expected status WRONG, got %v", challenges[2].SubmissionStatus)
+	if challenges.Items[2].SubmissionStatus != entities.SubmissionStatusWrong {
+		t.Errorf("Expected status WRONG, got %v", challenges.Items[2].SubmissionStatus)
 	}
 
-	if challenges[3].SubmissionStatus != entities.SubmissionStatusNotSolve {
-		t.Errorf("Expected status NOTSOLVE, got %v", challenges[3].SubmissionStatus)
+	if challenges.Items[3].SubmissionStatus != entities.SubmissionStatusNotSolve {
+		t.Errorf("Expected status NOTSOLVE, got %v", challenges.Items[3].SubmissionStatus)
 	}
 }

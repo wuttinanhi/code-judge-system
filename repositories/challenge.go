@@ -31,7 +31,7 @@ type ChallengeRepository interface {
 	// FindTestcaseByID returns a testcase by given ID.
 	FindTestcaseByID(id uint) (testcase *entities.ChallengeTestcase, err error)
 	// PaginationChallengesWithStatus returns all challenges with status.
-	PaginationChallengesWithStatus(page int, limit int, user *entities.User) (challengesWithStatus []*entities.ChallengeExtended, err error)
+	PaginationChallengesWithStatus(page int, limit int, user *entities.User) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 }
 
 type challengeRepository struct {
@@ -39,9 +39,15 @@ type challengeRepository struct {
 }
 
 // PaginationChallengesWithStatus implements ChallengeRepository.
-func (r *challengeRepository) PaginationChallengesWithStatus(page int, limit int, user *entities.User) (challenges []*entities.ChallengeExtended, err error) {
+func (r *challengeRepository) PaginationChallengesWithStatus(page int, limit int, user *entities.User) (result *entities.PaginationResult[*entities.ChallengeExtended], err error) {
+	result = &entities.PaginationResult[*entities.ChallengeExtended]{
+		Items: make([]*entities.ChallengeExtended, 0),
+		Total: 0,
+	}
+
+	var storeVaule []*entities.ChallengeExtended
 	err = r.db.Raw(`
-SELECT t.*, COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status
+SELECT t.*, COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status, (SELECT COUNT(*) FROM challenges) AS total_challenges
 FROM challenges AS t
 LEFT JOIN (
     SELECT
@@ -59,9 +65,16 @@ OFFSET ?
 		limit,
 		(page-1)*limit,
 	).
-		Scan(&challenges).Error
+		Scan(&storeVaule).Error
 
-	return challenges, err
+	// Query to count total challenges
+	var totalChallenges int64
+	r.db.Model(&entities.Challenge{}).Count(&totalChallenges)
+
+	result.Items = storeVaule
+	result.Total = int(totalChallenges)
+
+	return
 }
 
 // CreateChallengeWithTestcase implements ChallengeRepository.

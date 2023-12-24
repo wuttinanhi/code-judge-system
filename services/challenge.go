@@ -17,7 +17,7 @@ type ChallengeService interface {
 	DeleteTestcase(testcase *entities.ChallengeTestcase) (err error)
 	AllTestcases(challenge *entities.Challenge) (testcases []*entities.ChallengeTestcase, err error)
 	FindTestcaseByID(testcaseID uint) (testcase *entities.ChallengeTestcase, err error)
-	PaginationChallengesWithStatus(page int, limit int, user *entities.User) (challengesWithStatus []*entities.ChallengeExtended, err error)
+	PaginationChallengesWithStatus(page int, limit int, user *entities.User) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 }
 
 type challengeService struct {
@@ -25,9 +25,9 @@ type challengeService struct {
 }
 
 // PaginationChallengesWithStatus implements ChallengeService.
-func (s *challengeService) PaginationChallengesWithStatus(page int, limit int, user *entities.User) (challengesWithStatus []*entities.ChallengeExtended, err error) {
-	challengesWithStatus, err = s.challengeRepo.PaginationChallengesWithStatus(page, limit, user)
-	return challengesWithStatus, err
+func (s *challengeService) PaginationChallengesWithStatus(page int, limit int, user *entities.User) (result *entities.PaginationResult[*entities.ChallengeExtended], err error) {
+	result, err = s.challengeRepo.PaginationChallengesWithStatus(page, limit, user)
+	return result, err
 }
 
 // CreateChallenge implements ChallengeService.
