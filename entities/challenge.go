@@ -3,7 +3,7 @@ package entities
 import "github.com/gofiber/fiber/v2"
 
 type Challenge struct {
-	ChallengeID uint                `json:"challenge_id" gorm:"primaryKey"`
+	ID          uint                `json:"challenge_id" gorm:"primaryKey"`
 	Name        string              `json:"name"`
 	Description string              `json:"description"`
 	UserID      uint                `json:"user_id"`
@@ -73,4 +73,9 @@ func ValidateChallengeCreateWithTestcaseDTO(c *fiber.Ctx) ChallengeCreateWithTes
 	}
 
 	return dto
+}
+
+type ChallengeExtended struct {
+	Challenge
+	SubmissionStatus string
 }

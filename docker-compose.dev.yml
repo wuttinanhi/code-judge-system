@@ -1,0 +1,27 @@
+version: '3.4'
+
+volumes:
+  db_data:
+
+services:
+  db:
+    image: mysql:8.2.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: codejudgesystem
+    ports:
+      - 3306:3306
+    volumes:
+      - db_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - 8080:80
+    depends_on:
+      - db

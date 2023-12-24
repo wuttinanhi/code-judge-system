@@ -30,10 +30,38 @@ type ChallengeRepository interface {
 	AllTestcases(challenge *entities.Challenge) (testcases []*entities.ChallengeTestcase, err error)
 	// FindTestcaseByID returns a testcase by given ID.
 	FindTestcaseByID(id uint) (testcase *entities.ChallengeTestcase, err error)
+	// PaginationChallengesWithStatus returns all challenges with status.
+	PaginationChallengesWithStatus(page int, limit int, user *entities.User) (challengesWithStatus []*entities.ChallengeExtended, err error)
 }
 
 type challengeRepository struct {
 	db *gorm.DB
+}
+
+// PaginationChallengesWithStatus implements ChallengeRepository.
+func (r *challengeRepository) PaginationChallengesWithStatus(page int, limit int, user *entities.User) (challenges []*entities.ChallengeExtended, err error) {
+	err = r.db.Raw(`
+SELECT t.*, COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status
+FROM challenges AS t
+LEFT JOIN (
+    SELECT
+        challenge_id,
+        MAX(id),
+        MAX(status) as submission_status
+    FROM submissions
+	WHERE user_id = ?
+    GROUP BY challenge_id
+) AS subq ON t.id = subq.challenge_id
+LIMIT ?
+OFFSET ?
+`,
+		user.ID,
+		limit,
+		(page-1)*limit,
+	).
+		Scan(&challenges).Error
+
+	return challenges, err
 }
 
 // CreateChallengeWithTestcase implements ChallengeRepository.
@@ -81,7 +109,7 @@ func (r *challengeRepository) FindChallengeByID(id uint) (challenge *entities.Ch
 
 // FindChallengesByAuthor implements ChallengeRepository.
 func (r *challengeRepository) FindChallengesByAuthor(author *entities.User) (challenges []*entities.Challenge, err error) {
-	result := r.db.Where("author_id = ?", author.UserID).Find(&challenges)
+	result := r.db.Where("author_id = ?", author.ID).Find(&challenges)
 	return challenges, result.Error
 }
 

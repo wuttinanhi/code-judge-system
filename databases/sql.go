@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"gorm.io/driver/mysql"
+
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -42,12 +44,28 @@ func NewTempSQLiteDatabase() *gorm.DB {
 	return db
 }
 
-func StartMigration(db *gorm.DB) {
-	db.AutoMigrate(
-		&entities.User{},
-		&entities.Challenge{},
+func NewMySQLDatabase() *gorm.DB {
+	dsn := "root:root@tcp(127.0.0.1:3306)/codejudgesystem?charset=utf8&parseTime=True&loc=Local"
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect mysql database")
+	}
+
+	err = StartMigration(db)
+	if err != nil {
+		panic("failed to migrate mysql database")
+	}
+
+	return db
+}
+
+func StartMigration(db *gorm.DB) error {
+	return db.AutoMigrate(
 		&entities.ChallengeTestcase{},
-		&entities.Submission{},
+		&entities.Challenge{},
 		&entities.SubmissionTestcase{},
+		&entities.Submission{},
+		&entities.User{},
 	)
 }

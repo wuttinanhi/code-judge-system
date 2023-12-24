@@ -21,7 +21,7 @@ func (h *authHandler) Register(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(entities.UserRegisterResponse{
-		UserID:      user.UserID,
+		UserID:      user.ID,
 		DisplayName: user.DisplayName,
 		Email:       user.Email,
 		Role:        user.Role,
@@ -54,7 +54,7 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(entities.UserLoginResponse{
 		Token: token,
 		UserRegisterResponse: entities.UserRegisterResponse{
-			UserID:      user.UserID,
+			UserID:      user.ID,
 			DisplayName: user.DisplayName,
 			Email:       user.Email,
 			Role:        user.Role,

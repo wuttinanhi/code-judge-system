@@ -10,12 +10,14 @@ import (
 	"testing"
 
 	"github.com/wuttinanhi/code-judge-system/controllers"
+	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func TestSubmissionRoute(t *testing.T) {
-	testServiceKit := services.CreateTestServiceKit()
+	db := databases.NewTempSQLiteDatabase()
+	testServiceKit := services.CreateServiceKit(db)
 	app := controllers.SetupWeb(testServiceKit)
 
 	// create user
@@ -54,7 +56,7 @@ func TestSubmissionRoute(t *testing.T) {
 
 	t.Run("/submission/submit", func(t *testing.T) {
 		dto := entities.SubmissionCreateDTO{
-			ChallengeID: challenge.ChallengeID,
+			ChallengeID: challenge.ID,
 			Language:    "go",
 			SourceCode:  "test source code",
 		}
@@ -78,11 +80,11 @@ func TestSubmissionRoute(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if submission.ChallengeID != challenge.ChallengeID {
-			t.Errorf("Expected challenge id %v, got %v", challenge.ChallengeID, submission.ChallengeID)
+		if submission.ChallengeID != challenge.ID {
+			t.Errorf("Expected challenge id %v, got %v", challenge.ID, submission.ChallengeID)
 		}
-		if submission.UserID != user.UserID {
-			t.Errorf("Expected user id %v, got %v", user.UserID, submission.UserID)
+		if submission.UserID != user.ID {
+			t.Errorf("Expected user id %v, got %v", user.ID, submission.UserID)
 		}
 		if submission.Language != dto.Language {
 			t.Errorf("Expected language %v, got %v", dto.Language, submission.Language)
@@ -101,8 +103,8 @@ func TestSubmissionRoute(t *testing.T) {
 		}
 		for i := range challengetestcases {
 			submissionTestcase := submissionTestcases[i]
-			if submissionTestcase.SubmissionTestcaseID != uint(i+1) {
-				t.Errorf("Expected challenge testcase id %v, got %v", uint(i+1), submissionTestcase.SubmissionTestcaseID)
+			if submissionTestcase.ID != uint(i+1) {
+				t.Errorf("Expected challenge testcase id %v, got %v", uint(i+1), submissionTestcase.ID)
 			}
 			if submissionTestcase.Status != entities.SubmissionStatusPending {
 				t.Errorf("Expected status %v, got %v", entities.SubmissionStatusPending, submissionTestcase.Status)
@@ -135,11 +137,11 @@ func TestSubmissionRoute(t *testing.T) {
 			t.Error(err)
 		}
 
-		if submission.ChallengeID != challenge.ChallengeID {
-			t.Errorf("Expected challenge id %v, got %v", challenge.ChallengeID, submission.ChallengeID)
+		if submission.ChallengeID != challenge.ID {
+			t.Errorf("Expected challenge id %v, got %v", challenge.ID, submission.ChallengeID)
 		}
-		if submission.UserID != user.UserID {
-			t.Errorf("Expected user id %v, got %v", user.UserID, submission.UserID)
+		if submission.UserID != user.ID {
+			t.Errorf("Expected user id %v, got %v", user.ID, submission.UserID)
 		}
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
@@ -179,11 +181,11 @@ func TestSubmissionRoute(t *testing.T) {
 		}
 
 		submission := submissions[0]
-		if submission.ChallengeID != challenge.ChallengeID {
-			t.Errorf("Expected challenge id %v, got %v", challenge.ChallengeID, submission.ChallengeID)
+		if submission.ChallengeID != challenge.ID {
+			t.Errorf("Expected challenge id %v, got %v", challenge.ID, submission.ChallengeID)
 		}
-		if submission.UserID != user.UserID {
-			t.Errorf("Expected user id %v, got %v", user.UserID, submission.UserID)
+		if submission.UserID != user.ID {
+			t.Errorf("Expected user id %v, got %v", user.ID, submission.UserID)
 		}
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
@@ -194,7 +196,7 @@ func TestSubmissionRoute(t *testing.T) {
 	})
 
 	t.Run("/submission/get/challenge/:id", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/submission/get/challenge/"+strconv.Itoa(int(challenge.ChallengeID)), nil)
+		request, _ := http.NewRequest(http.MethodGet, "/submission/get/challenge/"+strconv.Itoa(int(challenge.ID)), nil)
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", "Bearer "+userAccessToken)
 
@@ -223,11 +225,11 @@ func TestSubmissionRoute(t *testing.T) {
 		}
 
 		submission := submissions[0]
-		if submission.ChallengeID != challenge.ChallengeID {
-			t.Errorf("Expected challenge id %v, got %v", challenge.ChallengeID, submission.ChallengeID)
+		if submission.ChallengeID != challenge.ID {
+			t.Errorf("Expected challenge id %v, got %v", challenge.ID, submission.ChallengeID)
 		}
-		if submission.UserID != user.UserID {
-			t.Errorf("Expected user id %v, got %v", user.UserID, submission.UserID)
+		if submission.UserID != user.ID {
+			t.Errorf("Expected user id %v, got %v", user.ID, submission.UserID)
 		}
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)

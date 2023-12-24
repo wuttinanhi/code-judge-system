@@ -3,20 +3,22 @@ package entities
 import "github.com/gofiber/fiber/v2"
 
 const (
-	SubmissionStatusPending = "PENDING"
-	SubmissionStatusCorrect = "CORRECT"
-	SubmissionStatusWrong   = "WRONG"
+	SubmissionStatusPending  = "PENDING"
+	SubmissionStatusCorrect  = "CORRECT"
+	SubmissionStatusWrong    = "WRONG"
+	SubmissionStatusNotSolve = "NOTSOLVE"
 )
 
 type Submission struct {
-	SubmissionID uint      `json:"submission_id" gorm:"primaryKey"`
-	ChallengeID  uint      `json:"challenge_id"`
-	Challenge    Challenge `json:"challenge" gorm:"foreignKey:ChallengeID"`
-	UserID       uint      `json:"user_id"`
-	User         User      `json:"user" gorm:"foreignKey:UserID"`
-	Language     string    `json:"language"`
-	SourceCode   string    `json:"source_code"`
-	Status       string    `json:"status" gorm:"default:PENDING"`
+	ID                  uint                 `json:"submission_id" gorm:"primaryKey"`
+	Language            string               `json:"language"`
+	SourceCode          string               `json:"source_code"`
+	Status              string               `json:"status" gorm:"default:PENDING"`
+	UserID              uint                 `json:"user_id"`
+	User                User                 `json:"user"`
+	ChallengeID         uint                 `json:"challenge_id"`
+	Challenge           Challenge            `json:"challenge"`
+	SubmissionTestcases []SubmissionTestcase `json:"submission_testcases" gorm:"foreignKey:SubmissionID"`
 }
 
 type SubmissionCreateDTO struct {

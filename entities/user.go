@@ -13,7 +13,7 @@ const (
 )
 
 type User struct {
-	UserID      uint      `gorm:"primarykey"`
+	ID          uint      `gorm:"primarykey"`
 	DisplayName string    `gorm:"unique;not null"`
 	Password    string    `gorm:"not null"`
 	Email       string    `gorm:"unique;not null"`

@@ -21,8 +21,8 @@ func (h *submissionHandler) SubmitSubmission(c *fiber.Ctx) error {
 	}
 
 	submission, err := h.serviceKit.SubmissionService.SubmitSubmission(&entities.Submission{
-		ChallengeID: challenge.ChallengeID,
-		UserID:      user.UserID,
+		ChallengeID: challenge.ID,
+		UserID:      user.ID,
 		Language:    dto.Language,
 		SourceCode:  dto.SourceCode,
 	})

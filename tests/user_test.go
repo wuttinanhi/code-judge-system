@@ -7,12 +7,14 @@ import (
 	"testing"
 
 	"github.com/wuttinanhi/code-judge-system/controllers"
+	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func TestUserRoutes(t *testing.T) {
-	testServiceKit := services.CreateTestServiceKit()
+	db := databases.NewTempSQLiteDatabase()
+	testServiceKit := services.CreateServiceKit(db)
 	app := controllers.SetupWeb(testServiceKit)
 
 	t.Run("/user/register", func(t *testing.T) {

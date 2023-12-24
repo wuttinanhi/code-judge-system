@@ -44,7 +44,7 @@ func (s *submissionService) SubmitSubmission(submission *entities.Submission) (*
 	submissionTestcases := make([]entities.SubmissionTestcase, len(challengeTestcases))
 	for i, challengeTestcase := range challengeTestcases {
 		submissionTestcases[i] = entities.SubmissionTestcase{
-			ChallengeTestcaseID: challengeTestcase.TestcaseID,
+			ChallengeTestcaseID: challengeTestcase.ID,
 			Status:              entities.SubmissionStatusPending,
 			Output:              "",
 		}

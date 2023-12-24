@@ -3,12 +3,14 @@ package tests_test
 import (
 	"testing"
 
+	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func TestSandbox(t *testing.T) {
-	testServiceKit := services.CreateTestServiceKit()
+	db := databases.NewTempSQLiteDatabase()
+	testServiceKit := services.CreateServiceKit(db)
 
 	t.Run("Sandbox Go Test", func(t *testing.T) {
 		instance, err := testServiceKit.SandboxService.Run(&entities.SandboxInstance{

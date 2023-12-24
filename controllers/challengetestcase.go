@@ -26,7 +26,7 @@ func (h *challengeTestcaseHandler) CreateTestcase(c *fiber.Ctx) error {
 	testcase, err := h.serviceKit.ChallengeService.AddTestcase(challenge, &entities.ChallengeTestcase{
 		Input:          dto.Input,
 		ExpectedOutput: dto.ExpectedOutput,
-		ChallengeID:    challenge.ChallengeID,
+		ChallengeID:    challenge.ID,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
@@ -49,7 +49,7 @@ func (h *challengeTestcaseHandler) UpdateTestcase(c *fiber.Ctx) error {
 	}
 
 	err = h.serviceKit.ChallengeService.UpdateTestcase(&entities.ChallengeTestcase{
-		TestcaseID:     testcase.TestcaseID,
+		ID:             testcase.ID,
 		Input:          dto.Input,
 		ExpectedOutput: dto.ExpectedOutput,
 		ChallengeID:    testcase.ChallengeID,

@@ -7,40 +7,44 @@ import (
 	"testing"
 
 	"github.com/wuttinanhi/code-judge-system/controllers"
+	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func TestChallengeRoute(t *testing.T) {
-	testServiceKit := services.CreateTestServiceKit()
+	// testServiceKit := services.CreateTestServiceKit()
+
+	db := databases.NewMySQLDatabase()
+	testServiceKit := services.CreateServiceKit(db)
 	app := controllers.SetupWeb(testServiceKit)
 
 	// create admin user
 	adminUser, err := testServiceKit.UserService.Register("admin@example.com", "testpassword", "admin")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	// set user role to admin
 	err = testServiceKit.UserService.UpdateRole(adminUser, entities.UserRoleAdmin)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	adminAccessToken, err := testServiceKit.JWTService.GenerateToken(*adminUser)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	// create user
 	user, err := testServiceKit.UserService.Register("user@example.com", "testpassword", "user")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	userAccessToken, err := testServiceKit.JWTService.GenerateToken(*user)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	t.Run("/challenge/create", func(t *testing.T) {

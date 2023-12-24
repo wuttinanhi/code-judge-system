@@ -24,7 +24,7 @@ func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
 	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        dto.Name,
 		Description: dto.Description,
-		UserID:      user.UserID,
+		UserID:      user.ID,
 	})
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
@@ -53,7 +53,7 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        dto.Name,
 		Description: dto.Description,
-		UserID:      user.UserID,
+		UserID:      user.ID,
 		Testcases:   testcases,
 	})
 	if err != nil {
@@ -78,7 +78,7 @@ func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 	}
 
 	err = h.serviceKit.ChallengeService.UpdateChallenge(&entities.Challenge{
-		ChallengeID: challenge.ChallengeID,
+		ID:          challenge.ID,
 		Name:        dto.Name,
 		Description: dto.Description,
 		Testcases:   challenge.Testcases,
@@ -130,6 +130,17 @@ func (h *challengeHandler) GetAllChallenges(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusOK).JSON(challenges)
 }
+
+// func (h *challengeHandler) PaginationChallengesWithStatus(c *fiber.Ctx) error {
+// 	dto := entities.ValidatePaginationChallengesWithStatusDTO(c)
+
+// 	challenges, err := h.serviceKit.ChallengeService.PaginationChallengesWithStatus(dto.Status, dto.Page, dto.Limit)
+// 	if err != nil {
+// 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
+// 	}
+
+// 	return c.Status(http.StatusOK).JSON(challenges)
+// }
 
 func NewChallengeHandler(serviceKit *services.ServiceKit) *challengeHandler {
 	return &challengeHandler{

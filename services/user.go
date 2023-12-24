@@ -13,10 +13,17 @@ type UserService interface {
 	Register(email, password, displayname string) (user *entities.User, err error)
 	Login(email, password string) (user *entities.User, err error)
 	UpdateRole(user *entities.User, role string) (err error)
+	FindUserByID(id uint) (user *entities.User, err error)
 }
 
 type userService struct {
 	userRepo repositories.UserRepository
+}
+
+// FindUserByID implements UserService.
+func (s *userService) FindUserByID(id uint) (user *entities.User, err error) {
+	user, err = s.userRepo.FindUserByID(id)
+	return user, err
 }
 
 // UpdateRole implements UserService.

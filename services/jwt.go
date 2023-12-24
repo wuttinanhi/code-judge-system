@@ -20,7 +20,7 @@ type jwtService struct {
 // GenerateToken implements services.JWTService.
 func (s *jwtService) GenerateToken(user entities.User) (string, error) {
 	claims := &entities.JWTClaims{
-		UserID:      user.UserID,
+		UserID:      user.ID,
 		DisplayName: user.DisplayName,
 		Email:       user.Email,
 		Role:        user.Role,
@@ -48,7 +48,7 @@ func (s *jwtService) ValidateToken(token string) (*entities.User, error) {
 	}
 
 	user := &entities.User{
-		UserID:      claims.UserID,
+		ID:          claims.UserID,
 		DisplayName: claims.DisplayName,
 		Email:       claims.Email,
 		Role:        claims.Role,

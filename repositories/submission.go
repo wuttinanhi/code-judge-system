@@ -28,7 +28,7 @@ func (r *submissionRepository) CreateSubmissionWithTestcase(submission *entities
 		}
 
 		for _, submissionTestcase := range testcaes {
-			submissionTestcase.SubmissionID = submission.SubmissionID
+			submissionTestcase.SubmissionID = submission.ID
 			if err := tx.Create(&submissionTestcase).Error; err != nil {
 				return err
 			}
@@ -61,7 +61,7 @@ func (r *submissionRepository) DeleteSubmission(submission *entities.Submission)
 // GetSubmissionByChallenge implements SubmissionRepository.
 func (r *submissionRepository) GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error) {
 	var submissions []entities.Submission
-	result := r.db.Where("challenge_id = ?", challenge.ChallengeID).Find(&submissions)
+	result := r.db.Where("challenge_id = ?", challenge.ID).Find(&submissions)
 	return submissions, result.Error
 }
 
@@ -75,14 +75,14 @@ func (r *submissionRepository) GetSubmissionByID(submissionID uint) (*entities.S
 // GetSubmissionByUser implements SubmissionRepository.
 func (r *submissionRepository) GetSubmissionByUser(user *entities.User) ([]entities.Submission, error) {
 	var submissions []entities.Submission
-	result := r.db.Where("user_id = ?", user.UserID).Find(&submissions)
+	result := r.db.Where("user_id = ?", user.ID).Find(&submissions)
 	return submissions, result.Error
 }
 
 // GetSubmissionTestcaseBySubmission implements SubmissionRepository.
 func (r *submissionRepository) GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error) {
 	var submissionTestcases []entities.SubmissionTestcase
-	result := r.db.Where("submission_id = ?", submission.SubmissionID).Find(&submissionTestcases)
+	result := r.db.Where("submission_id = ?", submission.ID).Find(&submissionTestcases)
 	return submissionTestcases, result.Error
 }
 

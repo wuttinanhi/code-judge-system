@@ -3,7 +3,6 @@ package services
 import (
 	"os"
 
-	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/repositories"
 	"gorm.io/gorm"
 )
@@ -43,12 +42,6 @@ func newServiceKit(db *gorm.DB) *ServiceKit {
 	}
 }
 
-func CreateServiceKit() *ServiceKit {
-	db := databases.NewSQLiteDatabase()
-	return newServiceKit(db)
-}
-
-func CreateTestServiceKit() *ServiceKit {
-	db := databases.NewTempSQLiteDatabase()
+func CreateServiceKit(db *gorm.DB) *ServiceKit {
 	return newServiceKit(db)
 }
