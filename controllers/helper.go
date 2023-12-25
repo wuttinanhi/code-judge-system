@@ -25,9 +25,13 @@ func ParseIntParam(c *fiber.Ctx, paramName string) int {
 func ParsePaginationOptions(c *fiber.Ctx) *entities.PaginationOptions {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
+	sort := c.Query("sort", "id")
+	order := c.Query("order", "asc")
 
 	return &entities.PaginationOptions{
 		Page:  page,
 		Limit: limit,
+		Sort:  sort,
+		Order: order,
 	}
 }

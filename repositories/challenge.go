@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"fmt"
+
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/gorm"
 )
@@ -31,7 +33,7 @@ type ChallengeRepository interface {
 	// FindTestcaseByID returns a testcase by given ID.
 	FindTestcaseByID(id uint) (testcase *entities.ChallengeTestcase, err error)
 	// PaginationChallengesWithStatus returns all challenges with status.
-	PaginationChallengesWithStatus(page int, limit int, user *entities.User) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
+	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 }
 
 type challengeRepository struct {
@@ -39,32 +41,37 @@ type challengeRepository struct {
 }
 
 // PaginationChallengesWithStatus implements ChallengeRepository.
-func (r *challengeRepository) PaginationChallengesWithStatus(page int, limit int, user *entities.User) (result *entities.PaginationResult[*entities.ChallengeExtended], err error) {
+func (r *challengeRepository) PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error) {
 	result = &entities.PaginationResult[*entities.ChallengeExtended]{
 		Items: make([]*entities.ChallengeExtended, 0),
 		Total: 0,
 	}
 
-	var storeVaule []*entities.ChallengeExtended
-	err = r.db.Raw(`
+	challengeQuery := fmt.Sprintf(`
 SELECT t.*, COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status, (SELECT COUNT(*) FROM challenges) AS total_challenges
 FROM challenges AS t
 LEFT JOIN (
-    SELECT
-        challenge_id,
-        MAX(id),
-        MAX(status) as submission_status
-    FROM submissions
+	SELECT
+		challenge_id,
+		MAX(id),
+		MAX(status) as submission_status
+	FROM submissions
 	WHERE user_id = ?
-    GROUP BY challenge_id
+	GROUP BY challenge_id
 ) AS subq ON t.id = subq.challenge_id
-ORDER BY t.id ASC
+ORDER BY ? %s
 LIMIT ?
 OFFSET ?
-`,
-		user.ID,
-		limit,
-		(page-1)*limit,
+	`, options.Order)
+
+	offset := (options.Page - 1) * options.Limit
+
+	var storeVaule []*entities.ChallengeExtended
+	err = r.db.Raw(challengeQuery,
+		options.User.ID,
+		options.Sort,
+		options.Limit,
+		offset,
 	).
 		Scan(&storeVaule).Error
 

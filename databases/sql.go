@@ -9,7 +9,6 @@ import (
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 func NewSQLiteDatabase() *gorm.DB {
@@ -33,7 +32,7 @@ func NewSQLiteDatabase() *gorm.DB {
 func NewTempSQLiteDatabase() *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{
 		// disable logger
-		Logger: logger.Default.LogMode(logger.Silent),
+		// Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if err != nil {
 		panic("failed to create temp sqlite database")

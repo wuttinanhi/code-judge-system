@@ -79,3 +79,8 @@ type ChallengeExtended struct {
 	Challenge
 	SubmissionStatus string
 }
+
+type ChallengePaginationOptions struct {
+	PaginationOptions
+	User *User
+}

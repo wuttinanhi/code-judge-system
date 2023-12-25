@@ -21,29 +21,31 @@ func TestChallengeWithStatus(t *testing.T) {
 		panic(err)
 	}
 
-	testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
-		Name:        "Test Challenge 1",
-		Description: "Test Description 1",
-		UserID:      user.ID,
-	})
+	{
+		testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
+			Name:        "Test Challenge 1",
+			Description: "Test Description 1",
+			UserID:      user.ID,
+		})
 
-	testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
-		Name:        "Test Challenge 2",
-		Description: "Test Description 2",
-		UserID:      user.ID,
-	})
+		testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
+			Name:        "Test Challenge 2",
+			Description: "Test Description 2",
+			UserID:      user.ID,
+		})
 
-	testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
-		Name:        "Test Challenge 3",
-		Description: "Test Description 3",
-		UserID:      user.ID,
-	})
+		testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
+			Name:        "Test Challenge 3",
+			Description: "Test Description 3",
+			UserID:      user.ID,
+		})
 
-	testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
-		Name:        "Test Challenge 4",
-		Description: "Test Description 4",
-		UserID:      user.ID,
-	})
+		testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
+			Name:        "Test Challenge 4",
+			Description: "Test Description 4",
+			UserID:      user.ID,
+		})
+	}
 
 	{
 		testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
@@ -99,7 +101,10 @@ func TestChallengeWithStatus(t *testing.T) {
 		})
 	}
 
-	challenges, err := testServiceKit.ChallengeService.PaginationChallengesWithStatus(1, 10, user)
+	challenges, err := testServiceKit.ChallengeService.PaginationChallengesWithStatus(&entities.ChallengePaginationOptions{
+		PaginationOptions: entities.PaginationOptions{Page: 1, Limit: 10, Order: "ASC", Sort: "id"},
+		User:              user,
+	})
 	if err != nil {
 		panic(err)
 	}

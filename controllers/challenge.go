@@ -135,11 +135,10 @@ func (h *challengeHandler) PaginationChallengesWithStatus(c *fiber.Ctx) error {
 	user := GetUserFromRequest(c)
 	options := ParsePaginationOptions(c)
 
-	challenges, err := h.serviceKit.ChallengeService.PaginationChallengesWithStatus(
-		options.Page,
-		options.Limit,
-		user,
-	)
+	challenges, err := h.serviceKit.ChallengeService.PaginationChallengesWithStatus(&entities.ChallengePaginationOptions{
+		PaginationOptions: *options,
+		User:              user,
+	})
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
