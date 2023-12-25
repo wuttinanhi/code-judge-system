@@ -13,6 +13,7 @@ type ServiceKit struct {
 	ChallengeService  ChallengeService
 	SubmissionService SubmissionService
 	SandboxService    SandboxService
+	KafkaService      KafkaService
 }
 
 func newServiceKit(db *gorm.DB) *ServiceKit {
@@ -27,11 +28,14 @@ func newServiceKit(db *gorm.DB) *ServiceKit {
 		jwtSecret = "secret"
 	}
 
+	kafkaHost := os.Getenv("KAFKA_HOST")
+
 	jwtService := NewJWTService(jwtSecret)
 	userService := NewUserService(userRepo)
 	challengeService := NewChallengeService(challengeRepo)
-	submissionService := NewSubmissionService(submissionRepo, challengeService)
 	sandboxService := NewSandboxService()
+	submissionService := NewSubmissionService(submissionRepo, challengeService, sandboxService)
+	kafkaService := NewKafkaService(kafkaHost)
 
 	return &ServiceKit{
 		JWTService:        jwtService,
@@ -39,6 +43,7 @@ func newServiceKit(db *gorm.DB) *ServiceKit {
 		ChallengeService:  challengeService,
 		SubmissionService: submissionService,
 		SandboxService:    sandboxService,
+		KafkaService:      kafkaService,
 	}
 }
 

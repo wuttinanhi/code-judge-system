@@ -29,7 +29,7 @@ type DockerService interface {
 	StartContainer(containerID string) error
 	StopContainer(containerID string) error
 	RemoveContainer(containerID string) error
-	WaitContainer(containerID string, timeout int) string
+	WaitContainer(containerID string, timeout uint) string
 }
 
 type dockerService struct {
@@ -44,7 +44,7 @@ const (
 )
 
 // WaitContainer implements DockerService.
-func (s dockerService) WaitContainer(containerID string, timeout int) string {
+func (s dockerService) WaitContainer(containerID string, timeout uint) string {
 	resultC, errC := s.DockerClient.ContainerWait(s.ctx, containerID, container.WaitConditionNotRunning)
 
 	select {

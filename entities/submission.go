@@ -10,15 +10,15 @@ const (
 )
 
 type Submission struct {
-	ID                  uint                 `json:"submission_id" gorm:"primaryKey"`
-	Language            string               `json:"language"`
-	SourceCode          string               `json:"source_code"`
-	Status              string               `json:"status" gorm:"default:PENDING"`
-	UserID              uint                 `json:"user_id"`
-	User                User                 `json:"user"`
-	ChallengeID         uint                 `json:"challenge_id"`
-	Challenge           Challenge            `json:"challenge"`
-	SubmissionTestcases []SubmissionTestcase `json:"submission_testcases" gorm:"foreignKey:SubmissionID"`
+	ID                  uint                  `json:"submission_id" gorm:"primaryKey"`
+	Language            string                `json:"language"`
+	SourceCode          string                `json:"source_code"`
+	Status              string                `json:"status" gorm:"default:PENDING"`
+	UserID              uint                  `json:"user_id"`
+	User                *User                 `json:"user"`
+	ChallengeID         uint                  `json:"challenge_id"`
+	Challenge           *Challenge            `json:"challenge"`
+	SubmissionTestcases []*SubmissionTestcase `json:"submission_testcases" gorm:"foreignKey:SubmissionID"`
 }
 
 type SubmissionCreateDTO struct {
@@ -39,4 +39,14 @@ func ValidateSubmissionCreateDTO(c *fiber.Ctx) SubmissionCreateDTO {
 	}
 
 	return dto
+}
+
+func (s *Submission) IsCorrect() bool {
+	for _, testcase := range s.SubmissionTestcases {
+		if testcase.Status == SubmissionStatusWrong || testcase.Status == SubmissionStatusNotSolve {
+			return false
+		}
+	}
+
+	return true
 }

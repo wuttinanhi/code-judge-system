@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
@@ -28,6 +30,11 @@ func (h *submissionHandler) SubmitSubmission(c *fiber.Ctx) error {
 	})
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
+	}
+
+	err = h.serviceKit.KafkaService.Produce("submission-topic", strconv.Itoa(int(submission.ID)))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: "failed to add submission to queue"})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(submission)

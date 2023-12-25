@@ -9,12 +9,16 @@ type ChallengeTestcase struct {
 	ChallengeID         uint                 `json:"challenge_id"`
 	Challenge           Challenge            `json:"challenge"`
 	SubmissionTestcases []SubmissionTestcase `json:"submission_testcases"`
+	LimitMemory         uint                 `json:"limit_memory"`
+	LimitTimeMs         uint                 `json:"limit_time_ms"`
 }
 
 type ChallengeTestcaseCreateDTO struct {
 	Input          string `json:"input" validate:"required,max=1024"`
 	ExpectedOutput string `json:"expected_output" validate:"required,max=1024"`
 	ChallengeID    uint   `json:"challenge_id" validate:"required"`
+	LimitMemory    uint   `json:"limit_memory" validate:"required"`
+	LimitTimeMs    uint   `json:"limit_time_ms" validate:"required"`
 }
 
 func ValidateChallengeTestcaseCreateDTO(c *fiber.Ctx) ChallengeTestcaseCreateDTO {

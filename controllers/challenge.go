@@ -12,26 +12,26 @@ type challengeHandler struct {
 	serviceKit *services.ServiceKit
 }
 
-func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
-	user := GetUserFromRequest(c)
-	dto := entities.ValidateChallengeCreateDTO(c)
+// func (h *challengeHandler) CreateChallenge(c *fiber.Ctx) error {
+// 	user := GetUserFromRequest(c)
+// 	dto := entities.ValidateChallengeCreateDTO(c)
 
-	// only user with role admin can create challenge
-	if user.Role != entities.UserRoleAdmin {
-		return c.SendStatus(fiber.StatusForbidden)
-	}
+// 	// only user with role admin can create challenge
+// 	if user.Role != entities.UserRoleAdmin {
+// 		return c.SendStatus(fiber.StatusForbidden)
+// 	}
 
-	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
-		Name:        dto.Name,
-		Description: dto.Description,
-		UserID:      user.ID,
-	})
-	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
-	}
+// 	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
+// 		Name:        dto.Name,
+// 		Description: dto.Description,
+// 		UserID:      user.ID,
+// 	})
+// 	if err != nil {
+// 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
+// 	}
 
-	return c.Status(http.StatusOK).JSON(challenge)
-}
+// 	return c.Status(http.StatusOK).JSON(challenge)
+// }
 
 func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 	user := GetUserFromRequest(c)
@@ -43,10 +43,12 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 	}
 
 	testcases := make([]entities.ChallengeTestcase, len(dto.Testcases))
-	for i, testcase := range dto.Testcases {
+	for i, dtotestcase := range dto.Testcases {
 		testcases[i] = entities.ChallengeTestcase{
-			Input:          testcase.Input,
-			ExpectedOutput: testcase.ExpectedOutput,
+			Input:          dtotestcase.Input,
+			ExpectedOutput: dtotestcase.ExpectedOutput,
+			LimitMemory:    dtotestcase.LimitMemory,
+			LimitTimeMs:    dtotestcase.LimitTimeMs,
 		}
 	}
 

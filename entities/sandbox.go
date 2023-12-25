@@ -11,8 +11,8 @@ type SandboxInstance struct {
 	Language        string
 	Stdout          string
 	Stderr          string
-	Timeout         int
-	MemoryLimit     int
+	Timeout         uint
+	MemoryLimit     uint
 	Error           error
 	ExitCode        int
 	CodeFilePath    string
