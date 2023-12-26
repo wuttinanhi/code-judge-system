@@ -9,10 +9,10 @@ type SubmissionRepository interface {
 	CreateSubmission(submission *entities.Submission) (*entities.Submission, error)
 	DeleteSubmission(submission *entities.Submission) error
 	GetSubmissionByID(submissionID uint) (*entities.Submission, error)
-	GetSubmissionByUser(user *entities.User) ([]entities.Submission, error)
-	GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error)
+	GetSubmissionByUser(user *entities.User) ([]*entities.Submission, error)
+	GetSubmissionByChallenge(challenge *entities.Challenge) ([]*entities.Submission, error)
 	CreateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error)
-	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error)
+	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]*entities.SubmissionTestcase, error)
 	// CreateSubmissionWithTestcase(submission *entities.Submission, submissionTestcases []entities.SubmissionTestcase) (*entities.Submission, error)
 	UpdateSubmission(submission *entities.Submission) (*entities.Submission, error)
 	UpdateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error)
@@ -24,23 +24,8 @@ type submissionRepository struct {
 
 // CreateSubmission implements SubmissionRepository.
 func (r *submissionRepository) CreateSubmission(submission *entities.Submission) (*entities.Submission, error) {
-	result := r.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(submission).Error; err != nil {
-			return err
-		}
-
-		// for _, submissionTestcase := range submission.SubmissionTestcases {
-		// 	submissionTestcase.ID = 0
-		// 	submissionTestcase.SubmissionID = submission.ID
-		// 	if err := tx.Create(&submissionTestcase).Error; err != nil {
-		// 		return err
-		// 	}
-		// }
-
-		return nil
-	})
-
-	return submission, result
+	result := r.db.Create(submission)
+	return submission, result.Error
 }
 
 // UpdateSubmissionTestcase implements SubmissionRepository.
@@ -75,12 +60,6 @@ func (r *submissionRepository) CreateSubmissionWithTestcase(submission *entities
 	return submission, result
 }
 
-// CreateSubmission implements SubmissionRepository.
-// func (r *submissionRepository) CreateSubmission(submission *entities.Submission) (*entities.Submission, error) {
-// 	result := r.db.Create(submission)
-// 	return submission, result.Error
-// }
-
 // CreateSubmissionTestcase implements SubmissionRepository.
 func (r *submissionRepository) CreateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error) {
 	result := r.db.Create(submissionTestcase)
@@ -94,8 +73,8 @@ func (r *submissionRepository) DeleteSubmission(submission *entities.Submission)
 }
 
 // GetSubmissionByChallenge implements SubmissionRepository.
-func (r *submissionRepository) GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error) {
-	var submissions []entities.Submission
+func (r *submissionRepository) GetSubmissionByChallenge(challenge *entities.Challenge) ([]*entities.Submission, error) {
+	var submissions []*entities.Submission
 	result := r.db.Where("challenge_id = ?", challenge.ID).Find(&submissions)
 	return submissions, result.Error
 }
@@ -110,8 +89,8 @@ func (r *submissionRepository) GetSubmissionByID(submissionID uint) (*entities.S
 }
 
 // GetSubmissionByUser implements SubmissionRepository.
-func (r *submissionRepository) GetSubmissionByUser(user *entities.User) ([]entities.Submission, error) {
-	var submissions []entities.Submission
+func (r *submissionRepository) GetSubmissionByUser(user *entities.User) ([]*entities.Submission, error) {
+	var submissions []*entities.Submission
 	result := r.db.Model(&entities.Submission{}).
 		Preload("SubmissionTestcases").
 		Where(&entities.Submission{UserID: user.ID}).
@@ -120,8 +99,8 @@ func (r *submissionRepository) GetSubmissionByUser(user *entities.User) ([]entit
 }
 
 // GetSubmissionTestcaseBySubmission implements SubmissionRepository.
-func (r *submissionRepository) GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error) {
-	var submissionTestcases []entities.SubmissionTestcase
+func (r *submissionRepository) GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]*entities.SubmissionTestcase, error) {
+	var submissionTestcases []*entities.SubmissionTestcase
 	result := r.db.
 		Where(&entities.SubmissionTestcase{SubmissionID: submission.ID}).
 		Find(&submissionTestcases)

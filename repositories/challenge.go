@@ -11,7 +11,7 @@ type ChallengeRepository interface {
 	// CreateChallenge creates a new challenge.
 	CreateChallenge(challenge *entities.Challenge) (*entities.Challenge, error)
 	// CreateChallengeWithTestcase creates a new challenge with testcases.
-	CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []entities.ChallengeTestcase) (*entities.Challenge, error)
+	CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []*entities.ChallengeTestcase) (*entities.Challenge, error)
 	// UpdateChallenge updates a challenge.
 	UpdateChallenge(challenge *entities.Challenge) error
 	// DeleteChallenge deletes a challenge.
@@ -86,7 +86,7 @@ OFFSET ?
 }
 
 // CreateChallengeWithTestcase implements ChallengeRepository.
-func (r *challengeRepository) CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []entities.ChallengeTestcase) (*entities.Challenge, error) {
+func (r *challengeRepository) CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []*entities.ChallengeTestcase) (*entities.Challenge, error) {
 	challenge.Testcases = testcases
 	result := r.db.Create(challenge)
 	return challenge, result.Error

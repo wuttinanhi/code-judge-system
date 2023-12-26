@@ -12,10 +12,10 @@ type SubmissionService interface {
 	CreateSubmission(submission *entities.Submission) (*entities.Submission, error)
 	DeleteSubmission(submission *entities.Submission) error
 	GetSubmissionByID(submissionID uint) (*entities.Submission, error)
-	GetSubmissionByUser(user *entities.User) ([]entities.Submission, error)
-	GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error)
+	GetSubmissionByUser(user *entities.User) ([]*entities.Submission, error)
+	GetSubmissionByChallenge(challenge *entities.Challenge) ([]*entities.Submission, error)
 	CreateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error)
-	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error)
+	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]*entities.SubmissionTestcase, error)
 	SubmitSubmission(submission *entities.Submission) (*entities.Submission, error)
 	ProcessSubmission(submission *entities.Submission) (*entities.Submission, error)
 }
@@ -144,7 +144,7 @@ func (s *submissionService) DeleteSubmission(submission *entities.Submission) er
 }
 
 // GetSubmissionByChallenge implements SubmissionService.
-func (s *submissionService) GetSubmissionByChallenge(challenge *entities.Challenge) ([]entities.Submission, error) {
+func (s *submissionService) GetSubmissionByChallenge(challenge *entities.Challenge) ([]*entities.Submission, error) {
 	submissions, err := s.submissionRepository.GetSubmissionByChallenge(challenge)
 	return submissions, err
 }
@@ -156,13 +156,13 @@ func (s *submissionService) GetSubmissionByID(submissionID uint) (*entities.Subm
 }
 
 // GetSubmissionByUser implements SubmissionService.
-func (s *submissionService) GetSubmissionByUser(user *entities.User) ([]entities.Submission, error) {
+func (s *submissionService) GetSubmissionByUser(user *entities.User) ([]*entities.Submission, error) {
 	submissions, err := s.submissionRepository.GetSubmissionByUser(user)
 	return submissions, err
 }
 
 // GetSubmissionTestcaseBySubmission implements SubmissionService.
-func (s *submissionService) GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]entities.SubmissionTestcase, error) {
+func (s *submissionService) GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]*entities.SubmissionTestcase, error) {
 	submissionTestcases, err := s.submissionRepository.GetSubmissionTestcaseBySubmission(submission)
 	return submissionTestcases, err
 }

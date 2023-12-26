@@ -42,9 +42,9 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
-	testcases := make([]entities.ChallengeTestcase, len(dto.Testcases))
+	testcases := make([]*entities.ChallengeTestcase, len(dto.Testcases))
 	for i, dtotestcase := range dto.Testcases {
-		testcases[i] = entities.ChallengeTestcase{
+		testcases[i] = &entities.ChallengeTestcase{
 			Input:          dtotestcase.Input,
 			ExpectedOutput: dtotestcase.ExpectedOutput,
 			LimitMemory:    dtotestcase.LimitMemory,

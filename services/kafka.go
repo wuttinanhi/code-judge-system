@@ -35,6 +35,29 @@ func getKafkaReader(host, topic, groupID string) *kafka.Reader {
 	})
 }
 
+func (s *kafkaService) IsTopicExist(topic string) bool {
+	conn, err := kafka.DialContext(s.ctx, "tcp", s.host)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+
+	partitions, err := conn.ReadPartitions(topic)
+	if err != nil {
+		return false
+	}
+
+	if len(partitions) == 0 {
+		return false
+	}
+
+	return true
+}
+
+func (s *kafkaService) OverriddenHost(host string) {
+	s.host = host
+}
+
 // Produce implements KafkaService.
 func (s *kafkaService) Produce(topic string, message string) error {
 	if s.host == "" {
@@ -75,29 +98,6 @@ func (s *kafkaService) Consume(topic string, groupID string) (chan string, chan 
 	}()
 
 	return messageC, errorC
-}
-
-func (s *kafkaService) IsTopicExist(topic string) bool {
-	conn, err := kafka.DialContext(s.ctx, "tcp", s.host)
-	if err != nil {
-		return false
-	}
-	defer conn.Close()
-
-	partitions, err := conn.ReadPartitions(topic)
-	if err != nil {
-		return false
-	}
-
-	if len(partitions) == 0 {
-		return false
-	}
-
-	return true
-}
-
-func (s *kafkaService) OverriddenHost(host string) {
-	s.host = host
 }
 
 func NewKafkaService(host string) KafkaService {

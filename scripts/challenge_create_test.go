@@ -18,7 +18,8 @@ func TestChallengeCreate(t *testing.T) {
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")
 	app := controllers.SetupWeb(testServiceKit)
 
-	db.Migrator().DropTable(&entities.Challenge{},
+	db.Migrator().DropTable(
+		&entities.Challenge{},
 		entities.ChallengeTestcase{},
 		entities.Submission{},
 		entities.SubmissionTestcase{},
