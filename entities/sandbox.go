@@ -1,54 +1,81 @@
 package entities
 
+import (
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/volume"
+)
+
 const (
 	SandboxMemoryMB = 1024 * 1024
 	SandboxMemoryGB = 1024 * SandboxMemoryMB
 )
 
 type SandboxInstance struct {
-	Code            string
-	Stdin           string
+	RunID           string
 	Language        string
-	Stdout          string
-	Stderr          string
-	Timeout         uint
-	MemoryLimit     uint
-	Error           error
-	ExitCode        int
-	CodeFilePath    string
-	StdinFilePath   string
+	ImageName       string
+	Volume          volume.Volume
+	VolumeID        string
+	VolumeMount     []mount.Mount
+	Instruction     *SandboxInstruction
+	CompileExitCode int
 	CompileStdout   string
 	CompileStderr   string
-	CompileExitCode int
-	Note            string
+}
+
+type SandboxRunResult struct {
+	Stdout   string
+	Stderr   string
+	ExitCode int
+	Timeout  bool
+	Err      error
 }
 
 type SandboxInstruction struct {
-	Language    string
-	DockerImage string
-	CompileCmd  string
-	RunCmd      string
+	Language       string
+	DockerImage    string
+	CompileCmd     string
+	RunCmd         string
+	CompileTimeout uint
+}
+
+var LanguageInstructionMap = map[string]SandboxInstruction{
+	"python": PythonInstructionBook,
+	"go":     GoInstructionBook,
+	"c":      CInstructionBook,
+}
+
+func GetSandboxInstructionByLanguage(language string) *SandboxInstruction {
+	// check if language exist
+	instruction, ok := LanguageInstructionMap[language]
+	if !ok {
+		return nil
+	}
+	return &instruction
 }
 
 var PythonInstructionBook = SandboxInstruction{
-	Language:    "python",
-	DockerImage: "docker.io/library/python:3.10",
-	CompileCmd:  "cp /sandbox/code /sandbox/code.py",
-	RunCmd:      "python3 /sandbox/code.py < /sandbox/stdin",
+	Language:       "python",
+	DockerImage:    "docker.io/library/python:3.10",
+	CompileCmd:     "cp /sandbox/code /sandbox/code.py",
+	RunCmd:         "python3 /sandbox/code.py < /sandbox/stdin",
+	CompileTimeout: 0,
 }
 
 var GoInstructionBook = SandboxInstruction{
-	Language:    "go",
-	DockerImage: "docker.io/library/golang:1.21",
-	CompileCmd:  "cd /sandbox && cp /sandbox/code /sandbox/main.go && (go mod init sandbox > /dev/null 2>&1) && go build -o main",
-	RunCmd:      "/sandbox/main < /sandbox/stdin",
+	Language:       "go",
+	DockerImage:    "docker.io/library/golang:1.21",
+	CompileCmd:     "cd /sandbox && cp /sandbox/code /sandbox/main.go && go mod init sandbox && go build -o main",
+	RunCmd:         "/sandbox/main < /sandbox/stdin",
+	CompileTimeout: 10000,
 }
 
 var CInstructionBook = SandboxInstruction{
-	Language:    "c",
-	DockerImage: "docker.io/library/gcc:12.3.0",
-	CompileCmd:  "cp /sandbox/code /sandbox/main.c && cd /sandbox/ && gcc -o /sandbox/main /sandbox/main.c > /dev/null",
-	RunCmd:      "/sandbox/main < /sandbox/stdin",
+	Language:       "c",
+	DockerImage:    "docker.io/library/gcc:12.3.0",
+	CompileCmd:     "cp /sandbox/code /sandbox/main.c && gcc -o /sandbox/main /sandbox/main.c",
+	RunCmd:         "/sandbox/main < /sandbox/stdin",
+	CompileTimeout: 10000,
 }
 
 var PythonCodeExample = `
@@ -106,18 +133,3 @@ int main() {
 
     return 0;
 }`
-
-var LanguageInstructionMap = map[string]SandboxInstruction{
-	"python": PythonInstructionBook,
-	"go":     GoInstructionBook,
-	"c":      CInstructionBook,
-}
-
-func GetSandboxInstructionByLanguage(language string) *SandboxInstruction {
-	// check if language exist
-	instruction, ok := LanguageInstructionMap[language]
-	if !ok {
-		return nil
-	}
-	return &instruction
-}

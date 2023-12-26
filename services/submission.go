@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"log"
 	"sync"
 
@@ -30,6 +31,12 @@ type submissionService struct {
 func (s *submissionService) ProcessSubmission(submission *entities.Submission) (*entities.Submission, error) {
 	submissionTestcases := submission.SubmissionTestcases
 
+	sandbox, err := s.sandboxService.CreateSandbox(submission.Language, submission.SourceCode)
+	if err != nil {
+		return nil, errors.New("failed to create sandbox")
+	}
+	defer s.sandboxService.CleanUp(sandbox)
+
 	wg := sync.WaitGroup{}
 
 	for _, testcase := range submissionTestcases {
@@ -44,19 +51,19 @@ func (s *submissionService) ProcessSubmission(submission *entities.Submission) (
 				return
 			}
 
-			sandboxInstance, err := s.sandboxService.Run(&entities.SandboxInstance{
-				Code:     submission.SourceCode,
-				Stdin:    challengeTestcase.Input,
-				Language: submission.Language,
-				Timeout:  challengeTestcase.LimitTimeMs,
-			})
-			if err != nil {
+			result := s.sandboxService.Run(
+				sandbox,
+				challengeTestcase.Input,
+				challengeTestcase.LimitMemory,
+				challengeTestcase.LimitTimeMs,
+			)
+			if result.Err != nil {
 				testcase.Status = entities.SubmissionStatusWrong
 			}
 
-			testcase.Output = sandboxInstance.Stdout + sandboxInstance.Stderr
+			testcase.Output = result.Stdout + result.Stderr
 
-			if sandboxInstance.ExitCode != 0 {
+			if result.ExitCode != 0 {
 				testcase.Status = entities.SubmissionStatusWrong
 			}
 
@@ -82,7 +89,7 @@ func (s *submissionService) ProcessSubmission(submission *entities.Submission) (
 		submission.Status = entities.SubmissionStatusWrong
 	}
 
-	submission, err := s.submissionRepository.UpdateSubmission(submission)
+	submission, err = s.submissionRepository.UpdateSubmission(submission)
 	if err != nil {
 		return nil, err
 	}

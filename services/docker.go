@@ -24,8 +24,8 @@ type DockerService interface {
 	GetContainerExitCode(containerID string) (int, error)
 	CreateVolume(name string) (volume.Volume, error)
 	DeleteVolume(v volume.Volume) error
-	CopyToContainer(containerID, targetPath string, content io.Reader) error
-	CreateContainer(imageName string, command []string, volumes []mount.Mount, memoryLimit int64) (response container.CreateResponse, err error)
+	CopyToContainer(containerID, targetPath string, content []byte) error
+	CreateContainer(imageName string, command []string, volumes []mount.Mount, memoryLimit int64, containerName string) (response container.CreateResponse, err error)
 	StartContainer(containerID string) error
 	StopContainer(containerID string) error
 	RemoveContainer(containerID string) error
@@ -123,13 +123,7 @@ func (s dockerService) DeleteVolume(v volume.Volume) error {
 	return err
 }
 
-func (s dockerService) CopyToContainer(containerID, targetPath string, content io.Reader) error {
-
-	data, err := io.ReadAll(content)
-	if err != nil {
-		return err
-	}
-
+func (s dockerService) CopyToContainer(containerID, targetPath string, data []byte) error {
 	targetDir := filepath.Dir(targetPath)
 	fileName := filepath.Base(targetPath)
 
@@ -144,7 +138,7 @@ func (s dockerService) CopyToContainer(containerID, targetPath string, content i
 	tw.Write(data)
 	tw.Close()
 
-	err = s.DockerClient.CopyToContainer(s.ctx, containerID, targetDir, &buf, types.CopyToContainerOptions{
+	err := s.DockerClient.CopyToContainer(s.ctx, containerID, targetDir, &buf, types.CopyToContainerOptions{
 		AllowOverwriteDirWithFile: false,
 		CopyUIDGID:                false,
 	})
@@ -152,7 +146,7 @@ func (s dockerService) CopyToContainer(containerID, targetPath string, content i
 	return err
 }
 
-func (s dockerService) CreateContainer(imageName string, command []string, volumes []mount.Mount, memoryLimit int64) (response container.CreateResponse, err error) {
+func (s dockerService) CreateContainer(imageName string, command []string, volumes []mount.Mount, memoryLimit int64, containerName string) (response container.CreateResponse, err error) {
 	response, err = s.DockerClient.ContainerCreate(s.ctx, &container.Config{
 		Image:           imageName,
 		NetworkDisabled: true,
@@ -172,7 +166,7 @@ func (s dockerService) CreateContainer(imageName string, command []string, volum
 		},
 		nil,
 		nil,
-		"",
+		containerName,
 	)
 	return
 }
@@ -193,7 +187,7 @@ func (s dockerService) StopContainer(containerID string) error {
 
 func (s dockerService) RemoveContainer(containerID string) error {
 	err := s.DockerClient.ContainerRemove(s.ctx, containerID, types.ContainerRemoveOptions{
-		RemoveVolumes: true,
+		RemoveVolumes: false,
 		Force:         true,
 	})
 	return err

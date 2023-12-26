@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types/mount"
@@ -12,27 +11,66 @@ import (
 )
 
 type SandboxService interface {
-	Run(instance *entities.SandboxInstance) (*entities.SandboxInstance, error)
+	CreateSandbox(lang, code string) (*entities.SandboxInstance, error)
+	Run(instance *entities.SandboxInstance, stdin string, memoryLimit, timeLimit uint) (result *entities.SandboxRunResult)
+	CleanUp(instance *entities.SandboxInstance) error
 }
 
 type sandboxService struct {
 	dockerService DockerService
 }
 
-// Run implements SandboxService.
-func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.SandboxInstance, error) {
-	instruction := entities.GetSandboxInstructionByLanguage(instance.Language)
-	if instruction == nil {
+func (s *sandboxService) copyFileToContainer(instance *entities.SandboxInstance, fileContentMap map[string]string) error {
+	// create container to store necessary files
+	resp, err := s.dockerService.CreateContainer(
+		instance.ImageName,
+		[]string{"/bin/sh", "-c", "chmod 777 -R /sandbox && sleep 9999"},
+		instance.VolumeMount,
+		entities.SandboxMemoryMB*256,
+		instance.RunID+"-copy",
+	)
+	if err != nil {
+		return err
+	}
+	defer s.dockerService.RemoveContainer(resp.ID)
+
+	// start container
+	err = s.dockerService.StartContainer(resp.ID)
+	if err != nil {
+		return errors.New("copy: failed to start container")
+	}
+
+	<-time.After(1 * time.Second)
+
+	// copy file to container
+	for path, content := range fileContentMap {
+		err = s.dockerService.CopyToContainer(resp.ID, path, []byte(content))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// CreateSandbox implements SandboxService.
+func (s *sandboxService) CreateSandbox(lang string, code string) (*entities.SandboxInstance, error) {
+	instance := &entities.SandboxInstance{
+		Language: lang,
+	}
+
+	instance.Instruction = entities.GetSandboxInstructionByLanguage(instance.Language)
+	if instance.Instruction == nil {
 		return nil, fmt.Errorf("language %s not supported", instance.Language)
 	}
 
-	imageName := instruction.DockerImage
-	if imageName == "" {
+	instance.ImageName = instance.Instruction.DockerImage
+	if instance.ImageName == "" {
 		return nil, fmt.Errorf("language %s not supported", instance.Language)
 	}
 
 	// check if image exist
-	exist, err := s.dockerService.ImageExist(imageName)
+	exist, err := s.dockerService.ImageExist(instance.ImageName)
 	if err != nil {
 		return nil, err
 	}
@@ -40,77 +78,44 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	// if image not exist, pull image
 	if !exist {
 		// pull image
-		err := s.dockerService.PullImage(imageName)
+		err := s.dockerService.PullImage(instance.ImageName)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	// create volume mount
-	runID := strconv.Itoa(int(time.Now().UnixNano()))
-	volumeID := "code-judge-system-" + runID
-	volumeMount := []mount.Mount{
-		{Type: mount.TypeVolume, Source: volumeID, Target: "/sandbox"},
+	instance.RunID = strconv.Itoa(int(time.Now().UnixNano()))
+	instance.VolumeID = "code-judge-system-" + instance.RunID
+	instance.VolumeMount = []mount.Mount{
+		{Type: mount.TypeVolume, Source: instance.VolumeID, Target: "/sandbox"},
 	}
 
 	// create volume
-	volume, err := s.dockerService.CreateVolume(volumeID)
+	instance.Volume, err = s.dockerService.CreateVolume(instance.VolumeID)
 	if err != nil {
-		return nil, errors.New("failed to create volume")
-	}
-	defer s.dockerService.DeleteVolume(volume)
-
-	// create container to create necessary files
-	resp, err := s.dockerService.CreateContainer(
-		imageName,
-		[]string{"/bin/bash", "-c", "chmod 777 -R /sandbox && sleep 9999"},
-		volumeMount,
-		entities.SandboxMemoryMB*128,
-	)
-	if err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer s.dockerService.RemoveContainer(resp.ID)
-
-	// start container
-	err = s.dockerService.StartContainer(resp.ID)
-	if err != nil {
-		return nil, errors.New("create stage: failed to start container")
+		return nil, errors.New("create stage: failed to create volume")
 	}
 
-	time.Sleep(1 * time.Second)
-
-	// copy code file to container
-	err = s.dockerService.CopyToContainer(resp.ID, "/sandbox/code", strings.NewReader(instance.Code))
+	err = s.copyFileToContainer(instance, map[string]string{
+		"/sandbox/code": code,
+	})
 	if err != nil {
-		return nil, err
-	}
-	// copy stdin file to container
-	err = s.dockerService.CopyToContainer(resp.ID, "/sandbox/stdin", strings.NewReader(instance.Stdin))
-	if err != nil {
-		return nil, err
+		return nil, errors.New("create stage: failed to copy file to container")
 	}
 
-	// stop container
-	err = s.dockerService.StopContainer(resp.ID)
-	if err != nil {
-		return nil, errors.New("create stage: failed to stop container")
-	}
-
-	// remove container
-	err = s.dockerService.StopContainer(resp.ID)
-	if err != nil {
-		return nil, errors.New("create stage: failed to remove container")
-	}
-
-	// compile stage
-	compileCommand := instruction.CompileCmd
+	// compile info
+	compileCommand := instance.Instruction.CompileCmd
+	compileTimeout := instance.Instruction.CompileTimeout
 
 	// create container to compile
-	resp, err = s.dockerService.CreateContainer(imageName, []string{"/bin/bash", "-c", compileCommand}, volumeMount, entities.SandboxMemoryMB*256)
+	resp, err := s.dockerService.CreateContainer(
+		instance.ImageName,
+		[]string{"/bin/sh", "-c", compileCommand},
+		instance.VolumeMount,
+		entities.SandboxMemoryMB*256,
+		instance.RunID+"-compile",
+	)
 	if err != nil {
 		return nil, errors.New("compile stage: failed to create container")
 	}
@@ -123,7 +128,7 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	}
 
 	// wait container to finish
-	waitResult := s.dockerService.WaitContainer(resp.ID, instance.Timeout)
+	waitResult := s.dockerService.WaitContainer(resp.ID, compileTimeout)
 	if waitResult == WaitResultError {
 		return nil, errors.New("compile stage: failed to compile code")
 	}
@@ -149,69 +154,101 @@ func (s *sandboxService) Run(instance *entities.SandboxInstance) (*entities.Sand
 	instance.CompileStderr = compileStdErr
 
 	// if exit code is not 0, return error
-	if exitCode != 0 {
+	if instance.CompileExitCode != 0 {
 		return nil, errors.New("compile stage: failed to compile code")
 	}
 
-	// stop and remove container
-	err = s.dockerService.RemoveContainer(resp.ID)
+	return instance, nil
+}
+
+// Run implements SandboxService.
+func (s *sandboxService) Run(instance *entities.SandboxInstance, stdin string, memoryLimit, timeLimit uint) (result *entities.SandboxRunResult) {
+	result = &entities.SandboxRunResult{}
+	runCommand := instance.Instruction.RunCmd
+
+	// copy stdin to container
+	err := s.copyFileToContainer(instance, map[string]string{
+		"/sandbox/stdin": stdin,
+	})
 	if err != nil {
-		return nil, errors.New("compile stage: failed to stop and remove container")
+		result.Err = errors.New("run stage: failed to copy stdin to container")
+		return
 	}
 
-	// run stage
-	runCommand := instruction.RunCmd
-
 	// create container to run
-	resp, err = s.dockerService.CreateContainer(imageName, []string{"/bin/bash", "-c", runCommand}, volumeMount, int64(instance.MemoryLimit))
+	resp, err := s.dockerService.CreateContainer(
+		instance.ImageName,
+		[]string{"/bin/sh", "-c", runCommand},
+		instance.VolumeMount,
+		int64(memoryLimit),
+		instance.RunID+"-run",
+	)
 	if err != nil {
-		return nil, errors.New("run stage: failed to create container")
+		result.Err = errors.New("run stage: failed to create container")
+		return
 	}
 	defer s.dockerService.RemoveContainer(resp.ID)
 
 	// start container
 	err = s.dockerService.StartContainer(resp.ID)
 	if err != nil {
-		return nil, errors.New("run stage: failed to start container")
+		result.Err = errors.New("run stage: failed to start container")
+		return
 	}
 
-	// waitResult for container to finish
-	waitResult = s.dockerService.WaitContainer(resp.ID, instance.Timeout)
+	// wait for container to finish
+	waitResult := s.dockerService.WaitContainer(resp.ID, timeLimit)
 	if waitResult == WaitResultError {
-		return nil, errors.New("run stage: failed to wait container")
+		result.Err = errors.New("run stage: failed to wait container")
+		return
 	}
 	if waitResult == WaitResultTimeout {
 		err = s.dockerService.StopContainer(resp.ID)
 		if err != nil {
-			return nil, errors.New("run stage: failed to stop container")
+			result.Err = errors.New("run stage: failed to stop container")
+			return
 		}
 	}
 
 	// get container exit code
-	exitCode, err = s.dockerService.GetContainerExitCode(resp.ID)
+	exitCode, err := s.dockerService.GetContainerExitCode(resp.ID)
 	if err != nil {
-		return nil, errors.New("run stage: failed to get container exit code")
+		result.Err = errors.New("run stage: failed to get container exit code")
+		return
 	}
 
 	// get container stdout
 	stdout, err := s.dockerService.GetLog(resp.ID, true, false)
 	if err != nil {
-		return nil, errors.New("run stage: failed to get container stderr")
+		result.Err = errors.New("run stage: failed to get container stderr")
+		return
 	}
 
 	// get container stderr
 	stderr, err := s.dockerService.GetLog(resp.ID, false, true)
 	if err != nil {
-		return nil, errors.New("run stage: failed to get container stderr")
+		result.Err = errors.New("run stage: failed to get container stderr")
+		return
 	}
 
-	instance.ExitCode = exitCode
-	instance.Stdout = stdout
-	instance.Stderr = stderr
-	instance.Note = waitResult
+	result.ExitCode = exitCode
+	result.Stdout = stdout
+	result.Stderr = stderr
+	result.Timeout = waitResult == WaitResultTimeout
 
 	// return instance
-	return instance, nil
+	return
+}
+
+// CleanUp implements SandboxService.
+func (s *sandboxService) CleanUp(instance *entities.SandboxInstance) error {
+	// remove volume
+	err := s.dockerService.DeleteVolume(instance.Volume)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewSandboxService() SandboxService {
