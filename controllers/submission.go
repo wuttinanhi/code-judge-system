@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -76,6 +77,24 @@ func (h *submissionHandler) GetSubmissionByChallenge(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(submissions)
+}
+
+func (h *submissionHandler) Pagination(c *fiber.Ctx) error {
+	options := ParsePaginationOptions(c)
+
+	userID := ParseIntQuery(c, "user_id")
+	challengeID := ParseIntQuery(c, "challenge_id")
+
+	submission, err := h.serviceKit.SubmissionService.Pagination(&entities.SubmissionPaginationOptions{
+		PaginationOptions: *options,
+		User:              &entities.User{ID: uint(userID)},
+		Challenge:         &entities.Challenge{ID: uint(challengeID)},
+	})
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
+	}
+
+	return c.Status(http.StatusOK).JSON(submission)
 }
 
 func NewSubmissionHandler(serviceKit *services.ServiceKit) *submissionHandler {

@@ -47,59 +47,53 @@ func TestChallengeWithStatus(t *testing.T) {
 		})
 	}
 
-	{
-		testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
-			ChallengeID: 1,
-			UserID:      user.ID,
-			Language:    "go",
-			SourceCode:  "test sourcecode",
-			Status:      entities.SubmissionStatusCorrect,
-		})
+	testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
+		ChallengeID: 1,
+		UserID:      user.ID,
+		Language:    "go",
+		SourceCode:  "test sourcecode",
+		Status:      entities.SubmissionStatusCorrect,
+	})
 
-		testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
-			ChallengeID: 1,
-			UserID:      user.ID,
-			Language:    "go",
-			SourceCode:  "test sourcecode",
-			Status:      entities.SubmissionStatusPending,
-		})
-	}
+	testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
+		ChallengeID: 1,
+		UserID:      user.ID,
+		Language:    "go",
+		SourceCode:  "test sourcecode",
+		Status:      entities.SubmissionStatusPending,
+	})
 
-	{
-		testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
-			ChallengeID: 2,
-			UserID:      user.ID,
-			Language:    "go",
-			SourceCode:  "test sourcecode",
-			Status:      entities.SubmissionStatusCorrect,
-		})
+	testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
+		ChallengeID: 2,
+		UserID:      user.ID,
+		Language:    "go",
+		SourceCode:  "test sourcecode",
+		Status:      entities.SubmissionStatusCorrect,
+	})
 
-		testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
-			ChallengeID: 2,
-			UserID:      user.ID,
-			Language:    "go",
-			SourceCode:  "test sourcecode",
-			Status:      entities.SubmissionStatusCorrect,
-		})
-	}
+	testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
+		ChallengeID: 2,
+		UserID:      user.ID,
+		Language:    "go",
+		SourceCode:  "test sourcecode",
+		Status:      entities.SubmissionStatusCorrect,
+	})
 
-	{
-		testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
-			ChallengeID: 3,
-			UserID:      user.ID,
-			Language:    "go",
-			SourceCode:  "test sourcecode",
-			Status:      entities.SubmissionStatusCorrect,
-		})
+	testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
+		ChallengeID: 3,
+		UserID:      user.ID,
+		Language:    "go",
+		SourceCode:  "test sourcecode",
+		Status:      entities.SubmissionStatusCorrect,
+	})
 
-		testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
-			ChallengeID: 3,
-			UserID:      user.ID,
-			Language:    "go",
-			SourceCode:  "test sourcecode",
-			Status:      entities.SubmissionStatusWrong,
-		})
-	}
+	testServiceKit.SubmissionService.SubmitSubmission(&entities.Submission{
+		ChallengeID: 3,
+		UserID:      user.ID,
+		Language:    "go",
+		SourceCode:  "test sourcecode",
+		Status:      entities.SubmissionStatusWrong,
+	})
 
 	challenges, err := testServiceKit.ChallengeService.PaginationChallengesWithStatus(&entities.ChallengePaginationOptions{
 		PaginationOptions: entities.PaginationOptions{Page: 1, Limit: 10, Order: "ASC", Sort: "id"},

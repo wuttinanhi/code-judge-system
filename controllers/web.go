@@ -51,6 +51,7 @@ func SetupWeb(serviceKit *services.ServiceKit) *fiber.App {
 	submissionGroup := app.Group("/submission")
 	submissionGroup.Use(UserMiddleware(serviceKit))
 	submissionGroup.Post("/submit", submissionHandler.SubmitSubmission)
+	submissionGroup.Get("/pagination", submissionHandler.Pagination)
 	submissionGroup.Get("/get/user", submissionHandler.GetSubmissionByUser)
 	submissionGroup.Get("/get/challenge/:id", submissionHandler.GetSubmissionByChallenge)
 	submissionGroup.Get("/get/submission/:id", submissionHandler.GetSubmissionByID)

@@ -19,12 +19,19 @@ type SubmissionService interface {
 	GetSubmissionTestcaseBySubmission(submission *entities.Submission) ([]*entities.SubmissionTestcase, error)
 	SubmitSubmission(submission *entities.Submission) (*entities.Submission, error)
 	ProcessSubmission(submission *entities.Submission) (*entities.Submission, error)
+	Pagination(options *entities.SubmissionPaginationOptions) (result *entities.PaginationResult[*entities.Submission], err error)
 }
 
 type submissionService struct {
 	submissionRepository repositories.SubmissionRepository
 	challengeService     ChallengeService
 	sandboxService       SandboxService
+}
+
+// Pagination implements SubmissionService.
+func (s *submissionService) Pagination(options *entities.SubmissionPaginationOptions) (result *entities.PaginationResult[*entities.Submission], err error) {
+	result, err = s.submissionRepository.Pagination(options)
+	return
 }
 
 // ProcessSubmission implements SubmissionService.

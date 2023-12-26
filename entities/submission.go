@@ -50,3 +50,9 @@ func (s *Submission) IsCorrect() bool {
 
 	return true
 }
+
+type SubmissionPaginationOptions struct {
+	PaginationOptions
+	User      *User
+	Challenge *Challenge
+}

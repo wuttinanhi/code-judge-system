@@ -1,6 +1,9 @@
 package repositories
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/gorm"
 )
@@ -16,10 +19,68 @@ type SubmissionRepository interface {
 	// CreateSubmissionWithTestcase(submission *entities.Submission, submissionTestcases []entities.SubmissionTestcase) (*entities.Submission, error)
 	UpdateSubmission(submission *entities.Submission) (*entities.Submission, error)
 	UpdateSubmissionTestcase(submissionTestcase *entities.SubmissionTestcase) (*entities.SubmissionTestcase, error)
+	Pagination(options *entities.SubmissionPaginationOptions) (result *entities.PaginationResult[*entities.Submission], err error)
 }
 
 type submissionRepository struct {
 	db *gorm.DB
+}
+
+func (r *submissionRepository) Pagination(options *entities.SubmissionPaginationOptions) (result *entities.PaginationResult[*entities.Submission], err error) {
+	result = &entities.PaginationResult[*entities.Submission]{
+		Items: make([]*entities.Submission, 0),
+		Total: 0,
+	}
+
+	// calculate offset for pagination
+	offset := (options.Page - 1) * options.Limit
+
+	// convert options.Order to uppercase
+	options.Order = strings.ToUpper(options.Order)
+
+	// if options.Order is not ASC or DESC then throw error
+	if options.Order != "ASC" && options.Order != "DESC" {
+		err = fmt.Errorf("invalid order option")
+		return
+	}
+
+	// if user or challenge is nil then set it to 0
+	if options.User == nil {
+		options.User = &entities.User{ID: 0}
+	}
+	if options.Challenge == nil {
+		options.Challenge = &entities.Challenge{ID: 0}
+	}
+
+	var submissions []*entities.Submission
+	submissionQuery := r.db.Model(&entities.Submission{}).
+		Preload("SubmissionTestcases").
+		Where(&entities.Submission{
+			UserID:      options.User.ID,
+			ChallengeID: options.Challenge.ID,
+		}).
+		Limit(options.Limit).
+		Offset(offset).
+		Order("id " + options.Order).
+		Find(&submissions)
+	if submissionQuery.Error != nil {
+		err = submissionQuery.Error
+		return
+	}
+
+	// Query to count total submissions
+	var totalCount int64
+	r.db.Model(&entities.Submission{}).
+		Where(&entities.Submission{
+			UserID:      options.User.ID,
+			ChallengeID: options.Challenge.ID,
+		}).
+		Count(&totalCount)
+
+	result.Items = submissions
+	result.Total = int(totalCount)
+
+	return
 }
 
 // CreateSubmission implements SubmissionRepository.

@@ -15,10 +15,15 @@ func GetUserFromRequest(c *fiber.Ctx) *entities.User {
 }
 
 func ParseIntParam(c *fiber.Ctx, paramName string) int {
-	value, err := c.ParamsInt(paramName)
+	value, err := c.ParamsInt(paramName, 0)
 	if err != nil {
 		panic(err)
 	}
+	return value
+}
+
+func ParseIntQuery(c *fiber.Ctx, paramName string) int {
+	value := c.QueryInt(paramName, 0)
 	return value
 }
 
