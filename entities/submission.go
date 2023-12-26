@@ -18,7 +18,7 @@ type Submission struct {
 	User                *User                 `json:"user"`
 	ChallengeID         uint                  `json:"challenge_id"`
 	Challenge           *Challenge            `json:"challenge"`
-	SubmissionTestcases []*SubmissionTestcase `json:"submission_testcases" gorm:"foreignKey:SubmissionID"`
+	SubmissionTestcases []*SubmissionTestcase `json:"submission_testcases" gorm:"foreignKey:SubmissionID;constraint:OnDelete:CASCADE"`
 }
 
 type SubmissionCreateDTO struct {

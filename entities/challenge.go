@@ -3,12 +3,13 @@ package entities
 import "github.com/gofiber/fiber/v2"
 
 type Challenge struct {
-	ID          uint                `json:"challenge_id" gorm:"primaryKey"`
-	Name        string              `json:"name"`
-	Description string              `json:"description"`
-	UserID      uint                `json:"user_id"`
-	User        User                `json:"user" gorm:"foreignKey:UserID"`
-	Testcases   []ChallengeTestcase `json:"testcases" gorm:"foreignKey:ChallengeID"`
+	ID          uint                 `json:"challenge_id" gorm:"primaryKey"`
+	Name        string               `json:"name"`
+	Description string               `json:"description"`
+	UserID      uint                 `json:"user_id"`
+	User        *User                `json:"user" gorm:"foreignKey:UserID"`
+	Testcases   []*ChallengeTestcase `json:"testcases" gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE"`
+	Submission  []*Submission        `json:"submission" gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE"`
 }
 
 type ChallengeCreateDTO struct {

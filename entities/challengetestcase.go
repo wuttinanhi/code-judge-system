@@ -3,14 +3,14 @@ package entities
 import "github.com/gofiber/fiber/v2"
 
 type ChallengeTestcase struct {
-	ID                  uint                 `json:"testcase_id" gorm:"primaryKey"`
-	Input               string               `json:"input"`
-	ExpectedOutput      string               `json:"expected_output"`
-	ChallengeID         uint                 `json:"challenge_id"`
-	Challenge           Challenge            `json:"challenge"`
-	SubmissionTestcases []SubmissionTestcase `json:"submission_testcases"`
-	LimitMemory         uint                 `json:"limit_memory"`
-	LimitTimeMs         uint                 `json:"limit_time_ms"`
+	ID                  uint                  `json:"testcase_id" gorm:"primaryKey"`
+	Input               string                `json:"input"`
+	ExpectedOutput      string                `json:"expected_output"`
+	ChallengeID         uint                  `json:"challenge_id"`
+	Challenge           *Challenge            `json:"challenge"`
+	SubmissionTestcases []*SubmissionTestcase `json:"submission_testcases"`
+	LimitMemory         uint                  `json:"limit_memory"`
+	LimitTimeMs         uint                  `json:"limit_time_ms"`
 }
 
 type ChallengeTestcaseCreateDTO struct {
