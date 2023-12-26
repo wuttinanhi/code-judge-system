@@ -8,47 +8,18 @@ type Challenge struct {
 	Description string               `json:"description"`
 	UserID      uint                 `json:"user_id"`
 	User        *User                `json:"user" gorm:"foreignKey:UserID"`
-	Testcases   []*ChallengeTestcase `json:"testcases" gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE"`
-	Submission  []*Submission        `json:"submission" gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE"`
+	Testcases   []*ChallengeTestcase `json:"testcases" gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+	Submission  []*Submission        `json:"submission" gorm:"foreignKey:ChallengeID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
 }
 
-type ChallengeCreateDTO struct {
-	Name        string `json:"name" validate:"required,min=3,max=255"`
-	Description string `json:"description" validate:"max=255"`
+type ChallengeExtended struct {
+	Challenge
+	SubmissionStatus string
 }
 
-func ValidateChallengeCreateDTO(c *fiber.Ctx) ChallengeCreateDTO {
-	var dto ChallengeCreateDTO
-
-	if err := c.BodyParser(&dto); err != nil {
-		panic(err)
-	}
-
-	if err := validate.Struct(&dto); err != nil {
-		panic(err)
-	}
-
-	return dto
-}
-
-type ChallengeUpdateDTO struct {
-	ChallengeID uint   `json:"challenge_id" validate:"required"`
-	Name        string `json:"name" validate:"required,min=3,max=255"`
-	Description string `json:"description" validate:"max=255"`
-}
-
-func ValidateChallengeUpdateDTO(c *fiber.Ctx) ChallengeUpdateDTO {
-	var dto ChallengeUpdateDTO
-
-	if err := c.BodyParser(&dto); err != nil {
-		panic(err)
-	}
-
-	if err := validate.Struct(&dto); err != nil {
-		panic(err)
-	}
-
-	return dto
+type ChallengePaginationOptions struct {
+	PaginationOptions
+	User *User
 }
 
 type ChallengeCreateResponse struct {
@@ -58,8 +29,9 @@ type ChallengeCreateResponse struct {
 }
 
 type ChallengeCreateWithTestcaseDTO struct {
-	ChallengeCreateDTO
-	Testcases []ChallengeTestcaseCreateDTO `json:"testcases" validate:"required"`
+	Name        string                 `json:"name" validate:"required,min=3,max=255"`
+	Description string                 `json:"description" validate:"max=255"`
+	Testcases   []ChallengeTestcaseDTO `json:"testcases" validate:"required"`
 }
 
 func ValidateChallengeCreateWithTestcaseDTO(c *fiber.Ctx) ChallengeCreateWithTestcaseDTO {
@@ -76,12 +48,35 @@ func ValidateChallengeCreateWithTestcaseDTO(c *fiber.Ctx) ChallengeCreateWithTes
 	return dto
 }
 
-type ChallengeExtended struct {
-	Challenge
-	SubmissionStatus string
+type ChallengeUpdateWithTestcaseDTO struct {
+	Name        string                 `json:"name" validate:"required,min=3,max=255"`
+	Description string                 `json:"description" validate:"max=255"`
+	Testcases   []ChallengeTestcaseDTO `json:"testcases" validate:"required"`
 }
 
-type ChallengePaginationOptions struct {
-	PaginationOptions
-	User *User
+func (s *ChallengeUpdateWithTestcaseDTO) GetTestcases() []*ChallengeTestcase {
+	var testcases []*ChallengeTestcase
+	for _, testcase := range s.Testcases {
+		testcases = append(testcases, &ChallengeTestcase{
+			Input:          testcase.Input,
+			ExpectedOutput: testcase.ExpectedOutput,
+			LimitMemory:    testcase.LimitMemory,
+			LimitTimeMs:    testcase.LimitTimeMs,
+		})
+	}
+	return testcases
+}
+
+func ValidateChallengeUpdateWithTestcaseDTO(c *fiber.Ctx) ChallengeUpdateWithTestcaseDTO {
+	var dto ChallengeUpdateWithTestcaseDTO
+
+	if err := c.BodyParser(&dto); err != nil {
+		panic(err)
+	}
+
+	if err := validate.Struct(&dto); err != nil {
+		panic(err)
+	}
+
+	return dto
 }

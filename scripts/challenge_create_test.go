@@ -40,11 +40,9 @@ func TestChallengeCreate(t *testing.T) {
 	}
 
 	dto := entities.ChallengeCreateWithTestcaseDTO{
-		ChallengeCreateDTO: entities.ChallengeCreateDTO{
-			Name:        "Test Challenge",
-			Description: "Test Description",
-		},
-		Testcases: []entities.ChallengeTestcaseCreateDTO{
+		Name:        "Test Challenge",
+		Description: "Test Description",
+		Testcases: []entities.ChallengeTestcaseDTO{
 			{Input: "1\n2\n", ExpectedOutput: "3\n", LimitMemory: 268435456, LimitTimeMs: 1000},
 			{Input: "2\n3\n", ExpectedOutput: "5\n", LimitMemory: 268435456, LimitTimeMs: 1000},
 		},

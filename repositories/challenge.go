@@ -13,7 +13,7 @@ type ChallengeRepository interface {
 	// CreateChallengeWithTestcase creates a new challenge with testcases.
 	CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []*entities.ChallengeTestcase) (*entities.Challenge, error)
 	// UpdateChallenge updates a challenge.
-	UpdateChallenge(challenge *entities.Challenge) error
+	// UpdateChallenge(challenge *entities.Challenge) error
 	// DeleteChallenge deletes a challenge.
 	DeleteChallenge(challenge *entities.Challenge) error
 	// FindChallengeByID returns a challenge by given ID.
@@ -34,10 +34,34 @@ type ChallengeRepository interface {
 	FindTestcaseByID(id uint) (testcase *entities.ChallengeTestcase, err error)
 	// PaginationChallengesWithStatus returns all challenges with status.
 	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
+	// UpdateChallengeWithTestcase updates a challenge with testcases.
+	UpdateChallengeWithTestcase(challenge *entities.Challenge) error
 }
 
 type challengeRepository struct {
 	db *gorm.DB
+}
+
+// UpdateChallengeWithTestcase implements ChallengeRepository.
+func (r *challengeRepository) UpdateChallengeWithTestcase(challenge *entities.Challenge) error {
+	err := r.db.Transaction(func(tx *gorm.DB) (err error) {
+		// Load the Testcases
+		oldTestcases := []*entities.ChallengeTestcase{}
+		tx.Model(challenge).Association("Testcases").Find(&oldTestcases)
+
+		for _, testcase := range oldTestcases {
+			err = tx.Model(testcase).Delete(testcase, testcase.ID).Error
+			if err != nil {
+				return err
+			}
+		}
+
+		err = tx.Session(&gorm.Session{FullSaveAssociations: true}).Save(challenge).Error
+
+		return err
+	})
+
+	return err
 }
 
 // PaginationChallengesWithStatus implements ChallengeRepository.
@@ -92,12 +116,6 @@ func (r *challengeRepository) CreateChallengeWithTestcase(challenge *entities.Ch
 	return challenge, result.Error
 }
 
-// AddTestcase implements ChallengeRepository.
-func (r *challengeRepository) AddTestcase(challenge *entities.Challenge, testcase *entities.ChallengeTestcase) (*entities.ChallengeTestcase, error) {
-	err := r.db.Model(challenge).Association("Testcases").Append(testcase)
-	return testcase, err
-}
-
 // CreateChallenge implements ChallengeRepository.
 func (r *challengeRepository) CreateChallenge(challenge *entities.Challenge) (*entities.Challenge, error) {
 	result := r.db.Create(challenge)
@@ -108,12 +126,6 @@ func (r *challengeRepository) CreateChallenge(challenge *entities.Challenge) (*e
 func (r *challengeRepository) AllChallenges() (challenges []*entities.Challenge, err error) {
 	result := r.db.Find(&challenges)
 	return challenges, result.Error
-}
-
-// AllTestcases implements ChallengeRepository.
-func (r *challengeRepository) AllTestcases(challenge *entities.Challenge) (testcases []*entities.ChallengeTestcase, err error) {
-	err = r.db.Model(challenge).Association("Testcases").Find(&testcases)
-	return testcases, err
 }
 
 // DeleteChallenge implements ChallengeRepository.
@@ -134,29 +146,11 @@ func (r *challengeRepository) FindChallengesByAuthor(author *entities.User) (cha
 	return challenges, result.Error
 }
 
-// FindTestcaseByID implements ChallengeRepository.
-func (r *challengeRepository) FindTestcaseByID(id uint) (testcase *entities.ChallengeTestcase, err error) {
-	result := r.db.First(&testcase, id)
-	return testcase, result.Error
-}
-
-// DeleteTestcase implements ChallengeRepository.
-func (r *challengeRepository) DeleteTestcase(testcase *entities.ChallengeTestcase) error {
-	result := r.db.Delete(testcase)
-	return result.Error
-}
-
 // UpdateChallenge implements ChallengeRepository.
-func (r *challengeRepository) UpdateChallenge(challenge *entities.Challenge) error {
-	result := r.db.Save(challenge)
-	return result.Error
-}
-
-// UpdateTestcase implements ChallengeRepository.
-func (r *challengeRepository) UpdateTestcase(testcase *entities.ChallengeTestcase) error {
-	result := r.db.Save(testcase)
-	return result.Error
-}
+// func (r *challengeRepository) UpdateChallenge(challenge *entities.Challenge) error {
+// 	result := r.db.Save(challenge)
+// 	return result.Error
+// }
 
 func NewChallengeRepository(db *gorm.DB) ChallengeRepository {
 	return &challengeRepository{db}

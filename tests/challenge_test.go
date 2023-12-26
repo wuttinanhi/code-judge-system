@@ -13,8 +13,6 @@ import (
 )
 
 func TestChallengeRoute(t *testing.T) {
-	// testServiceKit := services.CreateTestServiceKit()
-
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	app := controllers.SetupWeb(testServiceKit)
@@ -49,13 +47,11 @@ func TestChallengeRoute(t *testing.T) {
 
 	t.Run("/challenge/create", func(t *testing.T) {
 		dto := entities.ChallengeCreateWithTestcaseDTO{
-			ChallengeCreateDTO: entities.ChallengeCreateDTO{
-				Name:        "Test Challenge",
-				Description: "Test Description",
-			},
-			Testcases: []entities.ChallengeTestcaseCreateDTO{
-				{Input: "1 2", ExpectedOutput: "3"},
-				{Input: "2 3", ExpectedOutput: "5"},
+			Name:        "Test Challenge",
+			Description: "Test Description",
+			Testcases: []entities.ChallengeTestcaseDTO{
+				{Input: "1 2", ExpectedOutput: "3", LimitMemory: 1, LimitTimeMs: 1},
+				{Input: "2 3", ExpectedOutput: "5", LimitMemory: 2, LimitTimeMs: 2},
 			},
 		}
 		requestBody, _ := json.Marshal(dto)
@@ -122,14 +118,17 @@ func TestChallengeRoute(t *testing.T) {
 	})
 
 	t.Run("/challenge/update", func(t *testing.T) {
-		dto := entities.ChallengeUpdateDTO{
-			ChallengeID: 1,
-			Name:        "Test Update Challenge",
-			Description: "Test Update Description",
+		dto := entities.ChallengeUpdateWithTestcaseDTO{
+			Name:        "Test Challenge Updated",
+			Description: "Test Description Updated",
+			Testcases: []entities.ChallengeTestcaseDTO{
+				{Input: "1", ExpectedOutput: "1", LimitMemory: 1, LimitTimeMs: 1},
+				{Input: "2", ExpectedOutput: "2", LimitMemory: 2, LimitTimeMs: 2},
+			},
 		}
 		requestBody, _ := json.Marshal(dto)
 
-		request, _ := http.NewRequest(http.MethodPut, "/challenge/update", bytes.NewBuffer(requestBody))
+		request, _ := http.NewRequest(http.MethodPut, "/challenge/update/1", bytes.NewBuffer(requestBody))
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", "Bearer "+adminAccessToken)
 
@@ -137,7 +136,6 @@ func TestChallengeRoute(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-
 		if response.StatusCode != http.StatusOK {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
 		}
@@ -151,6 +149,27 @@ func TestChallengeRoute(t *testing.T) {
 		}
 		if updatedChallenge.Description != dto.Description {
 			t.Errorf("Expected description %v, got %v", dto.Description, updatedChallenge.Description)
+		}
+
+		// expect 2 testcases
+		if len(updatedChallenge.Testcases) != 2 {
+			t.Errorf("Expected 2 testcases, got %v", len(updatedChallenge.Testcases))
+		}
+
+		// expect testcases to be updated
+		for i, testcase := range dto.Testcases {
+			if testcase.Input != updatedChallenge.Testcases[i].Input {
+				t.Errorf("Expected input %v, got %v", testcase.Input, updatedChallenge.Testcases[i].Input)
+			}
+			if testcase.ExpectedOutput != updatedChallenge.Testcases[i].ExpectedOutput {
+				t.Errorf("Expected expected output %v, got %v", testcase.ExpectedOutput, updatedChallenge.Testcases[i].ExpectedOutput)
+			}
+			if testcase.LimitMemory != updatedChallenge.Testcases[i].LimitMemory {
+				t.Errorf("Expected limit memory %v, got %v", testcase.LimitMemory, updatedChallenge.Testcases[i].LimitMemory)
+			}
+			if testcase.LimitTimeMs != updatedChallenge.Testcases[i].LimitTimeMs {
+				t.Errorf("Expected limit time ms %v, got %v", testcase.LimitTimeMs, updatedChallenge.Testcases[i].LimitTimeMs)
+			}
 		}
 	})
 
@@ -193,11 +212,9 @@ func TestChallengeRoute(t *testing.T) {
 
 	t.Run("/challenge/create user should not be able to create challenge", func(t *testing.T) {
 		dto := entities.ChallengeCreateWithTestcaseDTO{
-			ChallengeCreateDTO: entities.ChallengeCreateDTO{
-				Name:        "Test Challenge",
-				Description: "Test Description",
-			},
-			Testcases: []entities.ChallengeTestcaseCreateDTO{
+			Name:        "Test Challenge",
+			Description: "Test Description",
+			Testcases: []entities.ChallengeTestcaseDTO{
 				{Input: "1 2", ExpectedOutput: "3"},
 				{Input: "2 3", ExpectedOutput: "5"},
 			},

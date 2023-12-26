@@ -6,11 +6,11 @@ type ChallengeTestcase struct {
 	ID                  uint                  `json:"testcase_id" gorm:"primaryKey"`
 	Input               string                `json:"input"`
 	ExpectedOutput      string                `json:"expected_output"`
-	ChallengeID         uint                  `json:"challenge_id"`
-	Challenge           *Challenge            `json:"challenge"`
-	SubmissionTestcases []*SubmissionTestcase `json:"submission_testcases"`
 	LimitMemory         uint                  `json:"limit_memory"`
 	LimitTimeMs         uint                  `json:"limit_time_ms"`
+	SubmissionTestcases []*SubmissionTestcase `json:"submission_testcases"`
+	ChallengeID         uint                  `json:"challenge_id"`
+	Challenge           *Challenge            `json:"challenge"`
 }
 
 type ChallengeTestcaseCreateDTO struct {
@@ -60,4 +60,20 @@ type ChallengeTestcaseCreateResponse struct {
 	Input          string `json:"input"`
 	ExpectedOutput string `json:"expected_output"`
 	ChallengeID    uint   `json:"challenge_id"`
+}
+
+type ChallengeTestcaseDTO struct {
+	Input          string `json:"input" validate:"required,max=1024"`
+	ExpectedOutput string `json:"expected_output" validate:"required,max=1024"`
+	LimitMemory    uint   `json:"limit_memory" validate:"required"`
+	LimitTimeMs    uint   `json:"limit_time_ms" validate:"required"`
+}
+
+func (t *ChallengeTestcaseDTO) ToTestcase() *ChallengeTestcase {
+	return &ChallengeTestcase{
+		Input:          t.Input,
+		ExpectedOutput: t.ExpectedOutput,
+		LimitMemory:    t.LimitMemory,
+		LimitTimeMs:    t.LimitTimeMs,
+	}
 }
