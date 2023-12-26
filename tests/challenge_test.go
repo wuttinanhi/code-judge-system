@@ -118,13 +118,9 @@ func TestChallengeRoute(t *testing.T) {
 	})
 
 	t.Run("/challenge/update", func(t *testing.T) {
-		dto := entities.ChallengeUpdateWithTestcaseDTO{
+		dto := entities.ChallengeUpdateDTO{
 			Name:        "Test Challenge Updated",
 			Description: "Test Description Updated",
-			Testcases: []entities.ChallengeTestcaseDTO{
-				{Input: "1", ExpectedOutput: "1", LimitMemory: 1, LimitTimeMs: 1},
-				{Input: "2", ExpectedOutput: "2", LimitMemory: 2, LimitTimeMs: 2},
-			},
 		}
 		requestBody, _ := json.Marshal(dto)
 
@@ -154,22 +150,6 @@ func TestChallengeRoute(t *testing.T) {
 		// expect 2 testcases
 		if len(updatedChallenge.Testcases) != 2 {
 			t.Errorf("Expected 2 testcases, got %v", len(updatedChallenge.Testcases))
-		}
-
-		// expect testcases to be updated
-		for i, testcase := range dto.Testcases {
-			if testcase.Input != updatedChallenge.Testcases[i].Input {
-				t.Errorf("Expected input %v, got %v", testcase.Input, updatedChallenge.Testcases[i].Input)
-			}
-			if testcase.ExpectedOutput != updatedChallenge.Testcases[i].ExpectedOutput {
-				t.Errorf("Expected expected output %v, got %v", testcase.ExpectedOutput, updatedChallenge.Testcases[i].ExpectedOutput)
-			}
-			if testcase.LimitMemory != updatedChallenge.Testcases[i].LimitMemory {
-				t.Errorf("Expected limit memory %v, got %v", testcase.LimitMemory, updatedChallenge.Testcases[i].LimitMemory)
-			}
-			if testcase.LimitTimeMs != updatedChallenge.Testcases[i].LimitTimeMs {
-				t.Errorf("Expected limit time ms %v, got %v", testcase.LimitTimeMs, updatedChallenge.Testcases[i].LimitTimeMs)
-			}
 		}
 	})
 

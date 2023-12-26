@@ -86,7 +86,7 @@ func (s *challengeService) FindTestcaseByID(testcaseID uint) (testcase *entities
 
 // UpdateChallenge implements ChallengeService.
 func (s *challengeService) UpdateChallenge(challenge *entities.Challenge) (err error) {
-	err = s.challengeRepo.UpdateChallengeWithTestcase(challenge)
+	err = s.challengeRepo.UpdateChallenge(challenge)
 	return err
 }
 

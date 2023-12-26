@@ -27,6 +27,7 @@ func SetupWeb(serviceKit *services.ServiceKit) *fiber.App {
 	authHandler := NewAuthHandler(serviceKit)
 	challengeHandler := NewChallengeHandler(serviceKit)
 	submissionHandler := NewSubmissionHandler(serviceKit)
+	challengeTestcaseHandler := NewChallengeTestcaseHandler(serviceKit)
 
 	userGroup := app.Group("/user")
 	userGroup.Post("/register", authHandler.Register)
@@ -39,6 +40,13 @@ func SetupWeb(serviceKit *services.ServiceKit) *fiber.App {
 	challengeGroup.Get("/get/:id", challengeHandler.GetChallengeByID)
 	challengeGroup.Put("/update/:id", challengeHandler.UpdateChallenge)
 	challengeGroup.Delete("/delete/:id", challengeHandler.DeleteChallenge)
+
+	testcaseGroup := app.Group("/testcase")
+	testcaseGroup.Use(UserMiddleware(serviceKit))
+	testcaseGroup.Post("/create", challengeTestcaseHandler.CreateTestcase)
+	testcaseGroup.Get("/get/:id", challengeTestcaseHandler.GetTestcaseByID)
+	testcaseGroup.Put("/update", challengeTestcaseHandler.UpdateTestcase)
+	testcaseGroup.Delete("/delete/:id", challengeTestcaseHandler.DeleteTestcase)
 
 	submissionGroup := app.Group("/submission")
 	submissionGroup.Use(UserMiddleware(serviceKit))

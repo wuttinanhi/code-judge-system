@@ -27,7 +27,20 @@ func (h *challengeTestcaseHandler) CreateTestcase(c *fiber.Ctx) error {
 		Input:          dto.Input,
 		ExpectedOutput: dto.ExpectedOutput,
 		ChallengeID:    challenge.ID,
+		LimitMemory:    dto.LimitMemory,
+		LimitTimeMs:    dto.LimitTimeMs,
 	})
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(testcase)
+}
+
+func (h *challengeTestcaseHandler) GetTestcaseByID(c *fiber.Ctx) error {
+	id := ParseIntParam(c, "id")
+
+	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
@@ -53,6 +66,9 @@ func (h *challengeTestcaseHandler) UpdateTestcase(c *fiber.Ctx) error {
 		Input:          dto.Input,
 		ExpectedOutput: dto.ExpectedOutput,
 		ChallengeID:    testcase.ChallengeID,
+		LimitMemory:    testcase.LimitMemory,
+		LimitTimeMs:    testcase.LimitTimeMs,
+		
 	})
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
@@ -80,22 +96,6 @@ func (h *challengeTestcaseHandler) DeleteTestcase(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(fiber.StatusOK)
-}
-
-func (h *challengeTestcaseHandler) GetTestcaseByID(c *fiber.Ctx) error {
-	user := GetUserFromRequest(c)
-	if user.Role != entities.UserRoleAdmin {
-		return c.SendStatus(fiber.StatusForbidden)
-	}
-
-	id := ParseIntParam(c, "id")
-
-	testcase, err := h.serviceKit.ChallengeService.FindTestcaseByID(uint(id))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(testcase)
 }
 
 func NewChallengeTestcaseHandler(serviceKit *services.ServiceKit) *challengeTestcaseHandler {

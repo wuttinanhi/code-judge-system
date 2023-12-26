@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ type ChallengeRepository interface {
 	// CreateChallengeWithTestcase creates a new challenge with testcases.
 	CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []*entities.ChallengeTestcase) (*entities.Challenge, error)
 	// UpdateChallenge updates a challenge.
-	// UpdateChallenge(challenge *entities.Challenge) error
+	UpdateChallenge(challenge *entities.Challenge) error
 	// DeleteChallenge deletes a challenge.
 	DeleteChallenge(challenge *entities.Challenge) error
 	// FindChallengeByID returns a challenge by given ID.
@@ -35,7 +36,7 @@ type ChallengeRepository interface {
 	// PaginationChallengesWithStatus returns all challenges with status.
 	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 	// UpdateChallengeWithTestcase updates a challenge with testcases.
-	UpdateChallengeWithTestcase(challenge *entities.Challenge) error
+	// UpdateChallengeWithTestcase(challenge *entities.Challenge) error
 }
 
 type challengeRepository struct {
@@ -69,6 +70,15 @@ func (r *challengeRepository) PaginationChallengesWithStatus(options *entities.C
 	result = &entities.PaginationResult[*entities.ChallengeExtended]{
 		Items: make([]*entities.ChallengeExtended, 0),
 		Total: 0,
+	}
+
+	// convert options.Order to uppercase
+	options.Order = strings.ToUpper(options.Order)
+
+	// if options.Order is not ASC or DESC then throw error
+	if options.Order != "ASC" && options.Order != "DESC" {
+		err = fmt.Errorf("invalid order option")
+		return
 	}
 
 	challengeQuery := fmt.Sprintf(`
@@ -147,10 +157,10 @@ func (r *challengeRepository) FindChallengesByAuthor(author *entities.User) (cha
 }
 
 // UpdateChallenge implements ChallengeRepository.
-// func (r *challengeRepository) UpdateChallenge(challenge *entities.Challenge) error {
-// 	result := r.db.Save(challenge)
-// 	return result.Error
-// }
+func (r *challengeRepository) UpdateChallenge(challenge *entities.Challenge) error {
+	result := r.db.Save(challenge)
+	return result.Error
+}
 
 func NewChallengeRepository(db *gorm.DB) ChallengeRepository {
 	return &challengeRepository{db}

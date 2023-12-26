@@ -67,7 +67,7 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 
 func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 	user := GetUserFromRequest(c)
-	dto := entities.ValidateChallengeUpdateWithTestcaseDTO(c)
+	dto := entities.ValidateChallengeUpdateDTO(c)
 	id := ParseIntParam(c, "id")
 
 	// only user with role admin can update challenge
@@ -75,16 +75,18 @@ func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
+	// load challenge
 	challenge, err := h.serviceKit.ChallengeService.FindChallengeByID(uint(id))
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
+	// update challenge
 	err = h.serviceKit.ChallengeService.UpdateChallenge(&entities.Challenge{
 		ID:          challenge.ID,
 		Name:        dto.Name,
 		Description: dto.Description,
-		Testcases:   dto.GetTestcases(),
+		Testcases:   challenge.Testcases,
 	})
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})

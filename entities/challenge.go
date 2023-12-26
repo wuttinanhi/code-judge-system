@@ -48,27 +48,13 @@ func ValidateChallengeCreateWithTestcaseDTO(c *fiber.Ctx) ChallengeCreateWithTes
 	return dto
 }
 
-type ChallengeUpdateWithTestcaseDTO struct {
-	Name        string                 `json:"name" validate:"required,min=3,max=255"`
-	Description string                 `json:"description" validate:"max=255"`
-	Testcases   []ChallengeTestcaseDTO `json:"testcases" validate:"required"`
+type ChallengeUpdateDTO struct {
+	Name        string `json:"name" validate:"required,min=3,max=255"`
+	Description string `json:"description" validate:"max=255"`
 }
 
-func (s *ChallengeUpdateWithTestcaseDTO) GetTestcases() []*ChallengeTestcase {
-	var testcases []*ChallengeTestcase
-	for _, testcase := range s.Testcases {
-		testcases = append(testcases, &ChallengeTestcase{
-			Input:          testcase.Input,
-			ExpectedOutput: testcase.ExpectedOutput,
-			LimitMemory:    testcase.LimitMemory,
-			LimitTimeMs:    testcase.LimitTimeMs,
-		})
-	}
-	return testcases
-}
-
-func ValidateChallengeUpdateWithTestcaseDTO(c *fiber.Ctx) ChallengeUpdateWithTestcaseDTO {
-	var dto ChallengeUpdateWithTestcaseDTO
+func ValidateChallengeUpdateDTO(c *fiber.Ctx) ChallengeUpdateDTO {
+	var dto ChallengeUpdateDTO
 
 	if err := c.BodyParser(&dto); err != nil {
 		panic(err)
