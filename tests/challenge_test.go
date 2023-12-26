@@ -173,6 +173,32 @@ func TestChallengeRoute(t *testing.T) {
 		}
 	})
 
+	t.Run("/challenge/create user should not be able to create challenge", func(t *testing.T) {
+		dto := entities.ChallengeCreateWithTestcaseDTO{
+			Name:        "Test Challenge",
+			Description: "Test Description",
+			Testcases: []entities.ChallengeTestcaseDTO{
+				{Input: "1 2", ExpectedOutput: "3"},
+				{Input: "2 3", ExpectedOutput: "5"},
+			},
+		}
+		requestBody, _ := json.Marshal(dto)
+
+		request, _ := http.NewRequest(http.MethodPost, "/challenge/create", bytes.NewBuffer(requestBody))
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", "Bearer "+userAccessToken)
+
+		response, err := app.Test(request, -1)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// expect forbidden status code
+		if response.StatusCode != http.StatusForbidden {
+			t.Errorf("Expected status Forbidden, got %v", response.StatusCode)
+		}
+	})
+
 	t.Run("/challenge/delete/:id user should not be able to delete challenge", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodDelete, "/challenge/delete/1", nil)
 		request.Header.Set("Content-Type", "application/json")
@@ -203,37 +229,13 @@ func TestChallengeRoute(t *testing.T) {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
 		}
 
-		// get challenge by id must return error
-		_, err = testServiceKit.ChallengeService.FindChallengeByID(1)
-		if err == nil {
-			t.Error("Expected error, got nil")
-		}
-	})
-
-	t.Run("/challenge/create user should not be able to create challenge", func(t *testing.T) {
-		dto := entities.ChallengeCreateWithTestcaseDTO{
-			Name:        "Test Challenge",
-			Description: "Test Description",
-			Testcases: []entities.ChallengeTestcaseDTO{
-				{Input: "1 2", ExpectedOutput: "3"},
-				{Input: "2 3", ExpectedOutput: "5"},
-			},
-		}
-		requestBody, _ := json.Marshal(dto)
-
-		request, _ := http.NewRequest(http.MethodPost, "/challenge/create", bytes.NewBuffer(requestBody))
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", "Bearer "+userAccessToken)
-
-		response, err := app.Test(request, -1)
+		// challenge count should be 0
+		challenges, err := testServiceKit.ChallengeService.AllChallenges()
 		if err != nil {
 			t.Error(err)
 		}
-
-		// expect forbidden status code
-		if response.StatusCode != http.StatusForbidden {
-			t.Errorf("Expected status Forbidden, got %v", response.StatusCode)
+		if len(challenges) != 0 {
+			t.Errorf("Expected 0 challenge, got %v", len(challenges))
 		}
 	})
-
 }

@@ -1,4 +1,4 @@
-package tests
+package tests_test
 
 import (
 	"bytes"
@@ -13,11 +13,12 @@ import (
 	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
+	"github.com/wuttinanhi/code-judge-system/tests"
 )
 
 func TestSubmissionRoute(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 	app := controllers.SetupWeb(testServiceKit)
 
 	// create user
@@ -26,39 +27,34 @@ func TestSubmissionRoute(t *testing.T) {
 		t.Error(err)
 	}
 
-	// get user access token
+	// get user access token1
 	userAccessToken, err := testServiceKit.JWTService.GenerateToken(*user)
 	if err != nil {
 		t.Error(err)
 	}
 
+	SUBMISSION_LANGUAGE := "go"
+	SUBMISSION_SOURCE_CODE := "test source code"
+
 	// create challenge
 	challenge, err := testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        "Test Challenge",
 		Description: "Test Description",
+		Testcases: []*entities.ChallengeTestcase{
+			{Input: "1", ExpectedOutput: "1", LimitMemory: 1, LimitTimeMs: 1},
+			{Input: "2", ExpectedOutput: "2", LimitMemory: 2, LimitTimeMs: 2},
+			{Input: "3", ExpectedOutput: "3", LimitMemory: 3, LimitTimeMs: 3},
+		},
 	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	// create testcases
-	challengetestcases := []entities.ChallengeTestcase{
-		{Input: "1 2", ExpectedOutput: "3"},
-		{Input: "2 3", ExpectedOutput: "5"},
-		{Input: "3 4", ExpectedOutput: "7"},
-	}
-	for _, challengetestcase := range challengetestcases {
-		_, err := testServiceKit.ChallengeService.AddTestcase(challenge, &challengetestcase)
-		if err != nil {
-			t.Error(err)
-		}
-	}
-
 	t.Run("/submission/submit", func(t *testing.T) {
 		dto := entities.SubmissionCreateDTO{
 			ChallengeID: challenge.ID,
-			Language:    "go",
-			SourceCode:  "test source code",
+			Language:    SUBMISSION_LANGUAGE,
+			SourceCode:  SUBMISSION_SOURCE_CODE,
 		}
 		requestBody, _ := json.Marshal(dto)
 
@@ -98,10 +94,10 @@ func TestSubmissionRoute(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if len(submissionTestcases) != len(challengetestcases) {
-			t.Errorf("Expected %v submission testcases, got %v", len(challengetestcases), len(submissionTestcases))
+		if len(submissionTestcases) != len(challenge.Testcases) {
+			t.Errorf("Expected %v submission testcases, got %v", len(challenge.Testcases), len(submissionTestcases))
 		}
-		for i := range challengetestcases {
+		for i := range challenge.Testcases {
 			submissionTestcase := submissionTestcases[i]
 			if submissionTestcase.ID != uint(i+1) {
 				t.Errorf("Expected challenge testcase id %v, got %v", uint(i+1), submissionTestcase.ID)
@@ -129,7 +125,7 @@ func TestSubmissionRoute(t *testing.T) {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
 		}
 
-		bodyBytes := ResponseBodyToBytes(response)
+		bodyBytes := tests.ResponseBodyToBytes(response)
 
 		var submission entities.Submission
 		err = json.Unmarshal(bodyBytes, &submission)
@@ -146,8 +142,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
 		}
-		if submission.SourceCode != "test source code" {
-			t.Errorf("Expected source code %v, got %v", "test source code", submission.SourceCode)
+		if submission.SourceCode != SUBMISSION_SOURCE_CODE {
+			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.SourceCode)
 		}
 	})
 
@@ -190,8 +186,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
 		}
-		if submission.SourceCode != "test source code" {
-			t.Errorf("Expected source code %v, got %v", "test source code", submission.SourceCode)
+		if submission.SourceCode != SUBMISSION_SOURCE_CODE {
+			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.SourceCode)
 		}
 	})
 
@@ -234,8 +230,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
 		}
-		if submission.SourceCode != "test source code" {
-			t.Errorf("Expected source code %v, got %v", "test source code", submission.SourceCode)
+		if submission.SourceCode != SUBMISSION_SOURCE_CODE {
+			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.SourceCode)
 		}
 	})
 }

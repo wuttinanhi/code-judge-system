@@ -16,7 +16,7 @@ type ServiceKit struct {
 	KafkaService      KafkaService
 }
 
-func newServiceKit(db *gorm.DB) *ServiceKit {
+func CreateServiceKit(db *gorm.DB) *ServiceKit {
 	userRepo := repositories.NewUserRepository(db)
 	challengeRepo := repositories.NewChallengeRepository(db)
 	submissionRepo := repositories.NewSubmissionRepository(db)
@@ -47,6 +47,24 @@ func newServiceKit(db *gorm.DB) *ServiceKit {
 	}
 }
 
-func CreateServiceKit(db *gorm.DB) *ServiceKit {
-	return newServiceKit(db)
+func CreateTestServiceKit(db *gorm.DB) *ServiceKit {
+	userRepo := repositories.NewUserRepository(db)
+	challengeRepo := repositories.NewChallengeRepository(db)
+	submissionRepo := repositories.NewSubmissionRepository(db)
+
+	jwtService := NewJWTService("test")
+	userService := NewUserService(userRepo)
+	challengeService := NewChallengeService(challengeRepo)
+	sandboxService := NewSandboxService()
+	submissionService := NewSubmissionService(submissionRepo, challengeService, sandboxService)
+	kafkaService := NewKafkaMockService()
+
+	return &ServiceKit{
+		JWTService:        jwtService,
+		UserService:       userService,
+		ChallengeService:  challengeService,
+		SubmissionService: submissionService,
+		SandboxService:    sandboxService,
+		KafkaService:      kafkaService,
+	}
 }
