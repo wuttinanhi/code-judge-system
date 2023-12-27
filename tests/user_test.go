@@ -15,7 +15,7 @@ import (
 func TestUserRoutes(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
-	app := controllers.SetupWeb(testServiceKit)
+	app := controllers.SetupAPI(testServiceKit)
 
 	t.Run("/user/register", func(t *testing.T) {
 		dto := entities.UserRegisterDTO{

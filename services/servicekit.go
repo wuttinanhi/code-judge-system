@@ -1,8 +1,7 @@
 package services
 
 import (
-	"os"
-
+	"github.com/spf13/viper"
 	"github.com/wuttinanhi/code-judge-system/repositories"
 	"gorm.io/gorm"
 )
@@ -23,12 +22,12 @@ func CreateServiceKit(db *gorm.DB) *ServiceKit {
 
 	// read env var "JWT_SECRET" and pass it to JWTService
 	// if JWT_SECRET is empty, use default value
-	jwtSecret := os.Getenv("JWT_SECRET")
+	jwtSecret := viper.GetString("AUTH_JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "secret"
 	}
 
-	kafkaHost := os.Getenv("KAFKA_HOST")
+	kafkaHost := viper.GetString("KAFKA_HOST")
 
 	jwtService := NewJWTService(jwtSecret)
 	userService := NewUserService(userRepo)

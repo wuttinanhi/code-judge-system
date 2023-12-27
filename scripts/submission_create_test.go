@@ -19,7 +19,7 @@ func TestSubmissionCreate(t *testing.T) {
 	testServiceKit := services.CreateServiceKit(db)
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")
 
-	app := controllers.SetupWeb(testServiceKit)
+	app := controllers.SetupAPI(testServiceKit)
 
 	// get a challenge
 	challenge, err := testServiceKit.ChallengeService.FindChallengeByID(1)

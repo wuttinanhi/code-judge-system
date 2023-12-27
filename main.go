@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
-
+	"github.com/spf13/viper"
+	"github.com/wuttinanhi/code-judge-system/configs"
 	"github.com/wuttinanhi/code-judge-system/consumers"
 	"github.com/wuttinanhi/code-judge-system/controllers"
 	"github.com/wuttinanhi/code-judge-system/databases"
@@ -10,16 +10,18 @@ import (
 )
 
 func main() {
+	configs.LoadConfig()
+
 	db := databases.NewMySQLDatabase()
 	serviceKit := services.CreateServiceKit(db)
 
-	MODE := os.Getenv("MODE")
+	APP_MODE := viper.GetString("APP_MODE")
 
-	if MODE == "CONSUMER" {
+	if APP_MODE == "CONSUMER" {
 		consumers.StartSubmissionConsumer(serviceKit)
 		return
 	}
 
-	app := controllers.SetupWeb(serviceKit)
-	app.Listen(":3000")
+	api := controllers.SetupAPI(serviceKit)
+	api.Listen(":3000")
 }

@@ -16,7 +16,7 @@ func TestChallengeCreate(t *testing.T) {
 	db := databases.NewMySQLDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")
-	app := controllers.SetupWeb(testServiceKit)
+	app := controllers.SetupAPI(testServiceKit)
 
 	db.Migrator().DropTable(
 		&entities.Challenge{},

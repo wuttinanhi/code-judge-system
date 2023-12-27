@@ -2,24 +2,24 @@ package consumers
 
 import (
 	"log"
-	"os"
 	"strconv"
 
+	"github.com/spf13/viper"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func StartSubmissionConsumer(serviceKit *services.ServiceKit) {
-	kafkaHost := os.Getenv("KAFKA_HOST")
+	kafkaHost := viper.GetString("KAFKA_HOST")
 	if kafkaHost == "" {
 		log.Fatal("KAFKA_HOST is not set")
 	}
 
-	topicName := os.Getenv("SUBMISSION_TOPIC")
+	topicName := viper.GetString("KAFKA_SUBMISSION_TOPIC")
 	if topicName == "" {
 		log.Fatal("SUBMISSION_TOPIC is not set")
 	}
 
-	groupID := os.Getenv("SUBMISSION_GROUP")
+	groupID := viper.GetString("KAFKA_SUBMISSION_GROUP")
 	if groupID == "" {
 		log.Fatal("SUBMISSION_GROUP is not set")
 	}

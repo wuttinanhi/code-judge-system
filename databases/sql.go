@@ -1,15 +1,27 @@
 package databases
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"gorm.io/driver/mysql"
 
+	"github.com/spf13/viper"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
+
+func StartMigration(db *gorm.DB) error {
+	return db.AutoMigrate(
+		&entities.ChallengeTestcase{},
+		&entities.Challenge{},
+		&entities.SubmissionTestcase{},
+		&entities.Submission{},
+		&entities.User{},
+	)
+}
 
 func NewSQLiteDatabase() *gorm.DB {
 	cwd, err := os.Getwd()
@@ -44,7 +56,20 @@ func NewTempSQLiteDatabase() *gorm.DB {
 }
 
 func NewMySQLDatabase() *gorm.DB {
-	dsn := "root:root@tcp(127.0.0.1:3306)/codejudgesystem?charset=utf8&parseTime=True&loc=Local"
+	DB_HOST := viper.GetString("DB_HOST")
+	DB_PORT := viper.GetString("DB_PORT")
+	DB_USER := viper.GetString("DB_USER")
+	DB_PASSWORD := viper.GetString("DB_PASSWORD")
+	DB_NAME := viper.GetString("DB_NAME")
+
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		DB_USER,
+		DB_PASSWORD,
+		DB_HOST,
+		DB_PORT,
+		DB_NAME,
+	)
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -57,14 +82,4 @@ func NewMySQLDatabase() *gorm.DB {
 	}
 
 	return db
-}
-
-func StartMigration(db *gorm.DB) error {
-	return db.AutoMigrate(
-		&entities.ChallengeTestcase{},
-		&entities.Challenge{},
-		&entities.SubmissionTestcase{},
-		&entities.Submission{},
-		&entities.User{},
-	)
 }

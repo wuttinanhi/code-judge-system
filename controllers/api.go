@@ -7,7 +7,7 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func SetupWeb(serviceKit *services.ServiceKit) *fiber.App {
+func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: ErrorHandler,
 	})
@@ -52,9 +52,9 @@ func SetupWeb(serviceKit *services.ServiceKit) *fiber.App {
 	submissionGroup.Use(UserMiddleware(serviceKit))
 	submissionGroup.Post("/submit", submissionHandler.SubmitSubmission)
 	submissionGroup.Get("/pagination", submissionHandler.Pagination)
-	submissionGroup.Get("/get/user", submissionHandler.GetSubmissionByUser)
-	submissionGroup.Get("/get/challenge/:id", submissionHandler.GetSubmissionByChallenge)
-	submissionGroup.Get("/get/submission/:id", submissionHandler.GetSubmissionByID)
+	// submissionGroup.Get("/get/user", submissionHandler.GetSubmissionByUser)
+	// submissionGroup.Get("/get/challenge/:id", submissionHandler.GetSubmissionByChallenge)
+	// submissionGroup.Get("/get/submission/:id", submissionHandler.GetSubmissionByID)
 
 	return app
 }

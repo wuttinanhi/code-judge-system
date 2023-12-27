@@ -15,7 +15,7 @@
                 "MODE": "CONSUMER",
                 "SUBMISSION_TOPIC": "submission-topic",
                 "SUBMISSION_GROUP": "submission-processor",
-            }
+            },
         },
         {
             "name": "Launch Package",

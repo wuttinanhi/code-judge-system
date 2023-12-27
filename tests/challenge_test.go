@@ -15,7 +15,7 @@ import (
 func TestChallengeRoute(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
-	app := controllers.SetupWeb(testServiceKit)
+	app := controllers.SetupAPI(testServiceKit)
 
 	// create admin user
 	adminUser, err := testServiceKit.UserService.Register("admin@example.com", "testpassword", "admin")
