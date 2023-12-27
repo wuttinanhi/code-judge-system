@@ -12,15 +12,11 @@ export class UserService {
     }
   }
 
-  static async register(
-    username: string,
-    password: string,
-    displayname: string
-  ) {
+  static async register(email: string, password: string, displayname: string) {
     const response = await fetch("http://localhost:3000/user/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, displayname }),
+      body: JSON.stringify({ email, password, displayname }),
     });
     if (response.ok) {
       return (await response.json()) as UserRegisterResponse;

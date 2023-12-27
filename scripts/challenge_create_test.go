@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/wuttinanhi/code-judge-system/configs"
 	"github.com/wuttinanhi/code-judge-system/controllers"
 	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
@@ -13,19 +14,21 @@ import (
 )
 
 func TestChallengeCreate(t *testing.T) {
+	configs.LoadConfig()
+
 	db := databases.NewMySQLDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")
 	app := controllers.SetupAPI(testServiceKit)
 
-	db.Migrator().DropTable(
-		&entities.Challenge{},
-		entities.ChallengeTestcase{},
-		entities.Submission{},
-		entities.SubmissionTestcase{},
-	)
+	// db.Migrator().DropTable(
+	// 	&entities.Challenge{},
+	// 	entities.ChallengeTestcase{},
+	// 	entities.Submission{},
+	// 	entities.SubmissionTestcase{},
+	// )
 
-	databases.StartMigration(db)
+	// databases.StartMigration(db)
 
 	// get a user
 	user, err := testServiceKit.UserService.FindUserByID(1)

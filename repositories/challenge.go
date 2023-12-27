@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/gorm"
@@ -82,8 +83,9 @@ func (r *challengeRepository) PaginationChallengesWithStatus(options *entities.C
 	}
 
 	challengeQuery := fmt.Sprintf(`
-SELECT t.*, COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status, (SELECT COUNT(*) FROM challenges) AS total_challenges
+SELECT t.*, u.*, COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status
 FROM challenges AS t
+LEFT JOIN users AS u ON t.user_id = u.id
 LEFT JOIN (
 	SELECT
 		challenge_id,
@@ -108,6 +110,12 @@ OFFSET ?
 		offset,
 	).
 		Scan(&storeVaule).Error
+
+	// omit user password
+	for _, challenge := range storeVaule {
+		challenge.User.Password = ""
+		challenge.User.CreatedAt = time.Time{}
+	}
 
 	// Query to count total challenges
 	var totalChallenges int64

@@ -8,15 +8,28 @@ import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { UserService } from "../apis/user";
 
 export function SignUpPage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const form = new FormData(event.currentTarget);
+
+    UserService.register(
+      form.get("email") as string,
+      form.get("password") as string,
+      form.get("displayname") as string
+    )
+      .then((res) => {
+        toast.success("Successfully registered!");
+
+        // window.location.href = "/signin";
+      })
+      .catch((err) => {
+        toast.error("Failed to register!");
+      });
   };
 
   return (

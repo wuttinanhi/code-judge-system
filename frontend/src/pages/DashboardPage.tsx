@@ -16,7 +16,7 @@ export default function DashboardPage() {
       <Navbar />
 
       <Container>
-        <Paper sx={{ mt: 20, padding: 5 }}>
+        <Paper sx={{ padding: 3, mt: 15 }}>
           <Typography variant="h4" component="h1" align="left">
             Challenge
           </Typography>

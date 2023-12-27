@@ -14,7 +14,8 @@ type Challenge struct {
 
 type ChallengeExtended struct {
 	Challenge
-	SubmissionStatus string
+	User             `json:"user"`
+	SubmissionStatus string `json:"submission_status"`
 }
 
 type ChallengePaginationOptions struct {

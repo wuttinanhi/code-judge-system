@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/wuttinanhi/code-judge-system/configs"
 	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func TestSubmissionProcess(t *testing.T) {
+	configs.LoadConfig()
+
 	db := databases.NewMySQLDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")

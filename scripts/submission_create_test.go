@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/wuttinanhi/code-judge-system/configs"
 	"github.com/wuttinanhi/code-judge-system/controllers"
 	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
@@ -15,6 +16,8 @@ import (
 )
 
 func TestSubmissionCreate(t *testing.T) {
+	configs.LoadConfig()
+
 	db := databases.NewMySQLDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")

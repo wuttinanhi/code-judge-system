@@ -10,6 +10,8 @@ func LoadConfig() {
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("../")
+
 	err = viper.ReadInConfig()
 	if err != nil {
 		panic("Error reading .env file")
