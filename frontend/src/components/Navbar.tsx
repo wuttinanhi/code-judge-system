@@ -25,7 +25,10 @@ export function Navbar() {
           CODE JUDGE SYSTEM
         </Typography>
 
-        <Button sx={{ my: 2, color: "white", display: "block" }} href="/">
+        <Button
+          sx={{ my: 2, color: "white", display: "block" }}
+          href="/challenge"
+        >
           Challenge
         </Button>
 

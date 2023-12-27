@@ -1,4 +1,6 @@
 import useSWR from "swr";
+import { PaginationResult } from "../types/pagination";
+import { Submission } from "../types/submission";
 import { fetcherWithAuth } from "./fetcher";
 
 export function useSubmission(
@@ -6,21 +8,21 @@ export function useSubmission(
   limit: number,
   sort: string,
   order: string,
-  challengeId: string,
-  userId: string
+  challengeID: number,
+  userID: number
 ) {
-  let url = `/challenge/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}`;
-  if (challengeId) {
-    url += `&challengeId=${challengeId}`;
+  let url = `/submission/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}`;
+  if (challengeID) {
+    url += `&challengeId=${challengeID}`;
   }
-  if (userId) {
-    url += `&userId=${userId}`;
+  if (userID) {
+    url += `&userId=${userID}`;
   }
 
-  const { data, error, isLoading } = useSWR(url, fetcherWithAuth);
+  const { data, error, isLoading } = useSWR(() => url, fetcherWithAuth);
 
   return {
-    user: data,
+    data: data as PaginationResult<Submission>,
     isLoading,
     isError: error,
   };

@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"gorm.io/gorm"
@@ -54,7 +55,9 @@ func (r *submissionRepository) Pagination(options *entities.SubmissionPagination
 
 	var submissions []*entities.Submission
 	submissionQuery := r.db.Model(&entities.Submission{}).
+		Preload("User").
 		Preload("SubmissionTestcases").
+		Preload("Challenge").
 		Where(&entities.Submission{
 			UserID:      options.User.ID,
 			ChallengeID: options.Challenge.ID,
@@ -66,6 +69,12 @@ func (r *submissionRepository) Pagination(options *entities.SubmissionPagination
 	if submissionQuery.Error != nil {
 		err = submissionQuery.Error
 		return
+	}
+
+	// omit user password
+	for _, submission := range submissions {
+		submission.User.Password = ""
+		submission.User.CreatedAt = time.Time{}
 	}
 
 	// Query to count total submissions
