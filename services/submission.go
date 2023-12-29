@@ -38,7 +38,7 @@ func (s *submissionService) Pagination(options *entities.SubmissionPaginationOpt
 func (s *submissionService) ProcessSubmission(submission *entities.Submission) (*entities.Submission, error) {
 	submissionTestcases := submission.SubmissionTestcases
 
-	sandbox, err := s.sandboxService.CreateSandbox(submission.Language, submission.SourceCode)
+	sandbox, err := s.sandboxService.CreateSandbox(submission.Language, submission.Code)
 	if err != nil {
 		return nil, errors.New("failed to create sandbox")
 	}
@@ -66,13 +66,14 @@ func (s *submissionService) ProcessSubmission(submission *entities.Submission) (
 			)
 			if result.Err != nil {
 				testcase.Status = entities.SubmissionStatusWrong
+				testcase.Note = result.Err.Error()
 			}
-
-			testcase.Output = result.Stdout + result.Stderr
 
 			if result.ExitCode != 0 {
 				testcase.Status = entities.SubmissionStatusWrong
 			}
+
+			testcase.Output = result.Stdout + result.Stderr
 
 			if testcase.Output == challengeTestcase.ExpectedOutput {
 				testcase.Status = entities.SubmissionStatusCorrect

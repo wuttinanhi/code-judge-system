@@ -85,8 +85,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != dto.Language {
 			t.Errorf("Expected language %v, got %v", dto.Language, submission.Language)
 		}
-		if submission.SourceCode != dto.Code {
-			t.Errorf("Expected source code %v, got %v", dto.Code, submission.SourceCode)
+		if submission.Code != dto.Code {
+			t.Errorf("Expected source code %v, got %v", dto.Code, submission.Code)
 		}
 
 		// validate submission testcases
@@ -142,8 +142,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
 		}
-		if submission.SourceCode != SUBMISSION_SOURCE_CODE {
-			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.SourceCode)
+		if submission.Code != SUBMISSION_SOURCE_CODE {
+			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.Code)
 		}
 	})
 
@@ -186,8 +186,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
 		}
-		if submission.SourceCode != SUBMISSION_SOURCE_CODE {
-			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.SourceCode)
+		if submission.Code != SUBMISSION_SOURCE_CODE {
+			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.Code)
 		}
 	})
 
@@ -230,8 +230,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != "go" {
 			t.Errorf("Expected language %v, got %v", "go", submission.Language)
 		}
-		if submission.SourceCode != SUBMISSION_SOURCE_CODE {
-			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.SourceCode)
+		if submission.Code != SUBMISSION_SOURCE_CODE {
+			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.Code)
 		}
 	})
 }

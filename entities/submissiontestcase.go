@@ -8,4 +8,5 @@ type SubmissionTestcase struct {
 	Submission          *Submission        `json:"submission"`
 	ChallengeTestcaseID uint               `json:"challenge_testcase_id"`
 	ChallengeTestcase   *ChallengeTestcase `json:"challenge_testcase"`
+	Note                string             `json:"note"`
 }

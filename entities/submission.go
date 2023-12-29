@@ -12,7 +12,7 @@ const (
 type Submission struct {
 	ID                  uint                  `json:"submission_id" gorm:"primaryKey"`
 	Language            string                `json:"language"`
-	SourceCode          string                `json:"source_code"`
+	Code                string                `json:"code"`
 	Status              string                `json:"status" gorm:"default:PENDING"`
 	UserID              uint                  `json:"user_id"`
 	User                *User                 `json:"user"`

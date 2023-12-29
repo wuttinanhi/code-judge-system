@@ -28,7 +28,7 @@ func (h *submissionHandler) SubmitSubmission(c *fiber.Ctx) error {
 		ChallengeID: challenge.ID,
 		UserID:      user.ID,
 		Language:    dto.Language,
-		SourceCode:  dto.Code,
+		Code:        dto.Code,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})

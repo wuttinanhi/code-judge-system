@@ -1,7 +1,6 @@
 package scripts_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/wuttinanhi/code-judge-system/configs"
@@ -21,8 +20,8 @@ func TestSubmissionProcess(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Println(submission.ID)
-	fmt.Println(len(submission.SubmissionTestcases))
+	// fmt.Println(submission.ID)
+	// fmt.Println(len(submission.SubmissionTestcases))
 
 	testServiceKit.SubmissionService.ProcessSubmission(submission)
 }

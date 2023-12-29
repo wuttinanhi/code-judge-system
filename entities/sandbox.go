@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/volume"
 )
 
@@ -14,9 +13,7 @@ type SandboxInstance struct {
 	RunID           string
 	Language        string
 	ImageName       string
-	Volume          volume.Volume
-	VolumeID        string
-	VolumeMount     []mount.Mount
+	ProgramVolume   volume.Volume
 	Instruction     *SandboxInstruction
 	CompileExitCode int
 	CompileStdout   string
@@ -58,7 +55,7 @@ var PythonInstructionBook = SandboxInstruction{
 	Language:       "python",
 	DockerImage:    "docker.io/library/python:3.10",
 	CompileCmd:     "cp /sandbox/code /sandbox/code.py",
-	RunCmd:         "python3 /sandbox/code.py < /sandbox/stdin",
+	RunCmd:         "python3 /sandbox/code.py < /stdin/stdin",
 	CompileTimeout: 0,
 }
 
@@ -66,7 +63,7 @@ var GoInstructionBook = SandboxInstruction{
 	Language:       "go",
 	DockerImage:    "docker.io/library/golang:1.21",
 	CompileCmd:     "cd /sandbox && cp /sandbox/code /sandbox/main.go && go mod init sandbox && go build -o main",
-	RunCmd:         "/sandbox/main < /sandbox/stdin",
+	RunCmd:         "/sandbox/main < /stdin/stdin",
 	CompileTimeout: 10000,
 }
 
@@ -74,7 +71,7 @@ var CInstructionBook = SandboxInstruction{
 	Language:       "c",
 	DockerImage:    "docker.io/library/gcc:12.3.0",
 	CompileCmd:     "cp /sandbox/code /sandbox/main.c && gcc -o /sandbox/main /sandbox/main.c",
-	RunCmd:         "/sandbox/main < /sandbox/stdin",
+	RunCmd:         "/sandbox/main < /stdin/stdin",
 	CompileTimeout: 10000,
 }
 

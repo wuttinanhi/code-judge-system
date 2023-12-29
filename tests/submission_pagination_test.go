@@ -59,7 +59,7 @@ func TestSubmissionPagination(t *testing.T) {
 		ChallengeID: 1,
 		UserID:      admin.ID,
 		Language:    "go",
-		SourceCode:  "test sourcecode",
+		Code:        "test sourcecode",
 		Status:      entities.SubmissionStatusCorrect,
 	})
 
@@ -67,7 +67,7 @@ func TestSubmissionPagination(t *testing.T) {
 		ChallengeID: 1,
 		UserID:      admin.ID,
 		Language:    "go",
-		SourceCode:  "test sourcecode",
+		Code:        "test sourcecode",
 		Status:      entities.SubmissionStatusPending,
 	})
 
@@ -75,7 +75,7 @@ func TestSubmissionPagination(t *testing.T) {
 		ChallengeID: 2,
 		UserID:      user.ID,
 		Language:    "go",
-		SourceCode:  "test sourcecode",
+		Code:        "test sourcecode",
 		Status:      entities.SubmissionStatusCorrect,
 	})
 
@@ -83,7 +83,7 @@ func TestSubmissionPagination(t *testing.T) {
 		ChallengeID: 2,
 		UserID:      user.ID,
 		Language:    "go",
-		SourceCode:  "test sourcecode",
+		Code:        "test sourcecode",
 		Status:      entities.SubmissionStatusCorrect,
 	})
 
@@ -91,7 +91,7 @@ func TestSubmissionPagination(t *testing.T) {
 		ChallengeID: 2,
 		UserID:      user.ID,
 		Language:    "go",
-		SourceCode:  "test sourcecode",
+		Code:        "test sourcecode",
 		Status:      entities.SubmissionStatusCorrect,
 	})
 

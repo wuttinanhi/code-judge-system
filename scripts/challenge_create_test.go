@@ -21,14 +21,14 @@ func TestChallengeCreate(t *testing.T) {
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")
 	app := controllers.SetupAPI(testServiceKit)
 
-	// db.Migrator().DropTable(
-	// 	&entities.Challenge{},
-	// 	entities.ChallengeTestcase{},
-	// 	entities.Submission{},
-	// 	entities.SubmissionTestcase{},
-	// )
+	db.Migrator().DropTable(
+		&entities.Challenge{},
+		entities.ChallengeTestcase{},
+		entities.Submission{},
+		entities.SubmissionTestcase{},
+	)
 
-	// databases.StartMigration(db)
+	databases.StartMigration(db)
 
 	// get a user
 	user, err := testServiceKit.UserService.FindUserByID(1)
