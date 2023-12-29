@@ -1,9 +1,14 @@
 package controllers
 
 import (
+	"runtime"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/storage/redis"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
@@ -11,6 +16,32 @@ func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: ErrorHandler,
 	})
+
+	redisStore := redis.New(redis.Config{
+		Host:      "127.0.0.1",
+		Port:      6379,
+		Username:  "",
+		Password:  "redis",
+		Database:  0,
+		Reset:     false,
+		TLSConfig: nil,
+		PoolSize:  10 * runtime.GOMAXPROCS(0),
+	})
+
+	app.Use(limiter.New(limiter.Config{
+		Max:        100,
+		Expiration: 60 * time.Second,
+		KeyGenerator: func(c *fiber.Ctx) string {
+			if c.IP() != "" {
+				return c.IP()
+			}
+			return c.Get("x-forwarded-for")
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			return c.SendStatus(fiber.StatusTooManyRequests)
+		},
+		Storage: redisStore,
+	}))
 
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:5173",
