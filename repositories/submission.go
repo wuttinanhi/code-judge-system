@@ -153,7 +153,9 @@ func (r *submissionRepository) GetSubmissionByChallenge(challenge *entities.Chal
 func (r *submissionRepository) GetSubmissionByID(submissionID uint) (*entities.Submission, error) {
 	var submission *entities.Submission
 	result := r.db.Model(&entities.Submission{}).
+		Preload("Challenge").
 		Preload("SubmissionTestcases").
+		Preload("SubmissionTestcases.ChallengeTestcase").
 		Find(&submission, submissionID)
 	return submission, result.Error
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func ErrorHandler(c *fiber.Ctx, err error) error {
-	// if got panic "user not found"
+	// if error is "user not found"
 	if err.Error() == "user not found" {
 		return c.Status(fiber.StatusUnauthorized).JSON(entities.HttpError{
 			Message: "Unauthorized",

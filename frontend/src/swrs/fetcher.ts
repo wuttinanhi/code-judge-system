@@ -11,5 +11,7 @@ export const fetcherWithAuth = (url: string) => {
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  }).then((res) => res.json());
+  }).then((res) => {
+    return res.json();
+  });
 };

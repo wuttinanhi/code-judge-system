@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/spf13/viper"
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
@@ -27,13 +28,13 @@ func (h *submissionHandler) SubmitSubmission(c *fiber.Ctx) error {
 		ChallengeID: challenge.ID,
 		UserID:      user.ID,
 		Language:    dto.Language,
-		SourceCode:  dto.SourceCode,
+		SourceCode:  dto.Code,
 	})
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
-	err = h.serviceKit.KafkaService.Produce("submission-topic", strconv.Itoa(int(submission.ID)))
+	err = h.serviceKit.KafkaService.Produce(viper.GetString("KAFKA_SUBMISSION_PROCESS_TOPIC"), strconv.Itoa(int(submission.ID)))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{Message: "failed to add submission to queue"})
 	}

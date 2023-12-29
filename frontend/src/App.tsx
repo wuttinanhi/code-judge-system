@@ -10,6 +10,7 @@ import { UserProvider } from "./contexts/user.provider";
 import DashboardPage from "./pages/DashboardPage";
 import { SignInPage } from "./pages/SigninPage";
 import { SignUpPage } from "./pages/SignupPage";
+import SolvePage from "./pages/SolvePage";
 import SubmissionPage from "./pages/SubmissionPage";
 import UserSettingPage from "./pages/UserSettingPage";
 
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "/submission",
     element: <SubmissionPage />,
+  },
+  {
+    path: "/solve/:id",
+    element: <SolvePage />,
   },
   {
     path: "/settings",

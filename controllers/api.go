@@ -56,13 +56,19 @@ func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 	})
 
 	authHandler := NewAuthHandler(serviceKit)
+	userHandler := NewUserHandler(serviceKit)
 	challengeHandler := NewChallengeHandler(serviceKit)
 	submissionHandler := NewSubmissionHandler(serviceKit)
 	challengeTestcaseHandler := NewChallengeTestcaseHandler(serviceKit)
 
+	authGroup := app.Group("/auth")
+	authGroup.Post("/register", authHandler.Register)
+	authGroup.Post("/login", authHandler.Login)
+	authGroup.Get("/me", authHandler.Me)
+
 	userGroup := app.Group("/user")
-	userGroup.Post("/register", authHandler.Register)
-	userGroup.Post("/login", authHandler.Login)
+	userGroup.Use(UserMiddleware(serviceKit))
+	userGroup.Get("/me", userHandler.Me)
 
 	challengeGroup := app.Group("/challenge")
 	challengeGroup.Use(UserMiddleware(serviceKit))
@@ -83,9 +89,9 @@ func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 	submissionGroup.Use(UserMiddleware(serviceKit))
 	submissionGroup.Post("/submit", submissionHandler.SubmitSubmission)
 	submissionGroup.Get("/pagination", submissionHandler.Pagination)
+	submissionGroup.Get("/get/:id", submissionHandler.GetSubmissionByID)
 	// submissionGroup.Get("/get/user", submissionHandler.GetSubmissionByUser)
 	// submissionGroup.Get("/get/challenge/:id", submissionHandler.GetSubmissionByChallenge)
-	// submissionGroup.Get("/get/submission/:id", submissionHandler.GetSubmissionByID)
 
 	return app
 }

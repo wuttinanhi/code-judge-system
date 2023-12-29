@@ -3,7 +3,7 @@ import { PaginationResult } from "../types/pagination";
 import { Submission } from "../types/submission";
 import { fetcherWithAuth } from "./fetcher";
 
-export function useSubmission(
+export function usePaginationSubmission(
   page: number,
   limit: number,
   sort: string,
@@ -23,6 +23,19 @@ export function useSubmission(
 
   return {
     data: data as PaginationResult<Submission>,
+    isLoading,
+    isError: error,
+  };
+}
+
+export function useSubmission(submissionID: any) {
+  const { data, error, isLoading } = useSWR(
+    () => `/submission/get/${submissionID}`,
+    fetcherWithAuth
+  );
+
+  return {
+    data: data as Submission,
     isLoading,
     isError: error,
   };

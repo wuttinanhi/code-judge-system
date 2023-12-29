@@ -1,6 +1,4 @@
-import CancelIcon from "@mui/icons-material/Cancel";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+
 import { Button, TablePagination } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -10,26 +8,17 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { useState } from "react";
-import { useChallenge } from "../swrs/challenge";
+import { usePaginationChallenge } from "../swrs/challenge";
 import { Challenge } from "../types/challenge";
+import { ShowStatusIcon } from "./StatusIcon";
 
-function ShowStatusIcon(status: string) {
-  switch (status) {
-    case "CORRECT":
-      return <CheckBoxIcon color="success" />;
-    case "PENDING":
-      return <HourglassEmptyIcon color="warning" />;
-    default:
-      return <CancelIcon color="error" />;
-  }
-}
 
 export function ChallengeTable() {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
   const [order, _] = useState("asc");
 
-  const { data, isLoading, isError } = useChallenge(
+  const { data, isLoading, isError } = usePaginationChallenge(
     page + 1,
     limit,
     order,
@@ -38,6 +27,7 @@ export function ChallengeTable() {
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error</div>;
+  if (data.items === null) return null;
 
   return (
     <Paper sx={{ width: "100%", overflow: "hidden" }}>
@@ -91,7 +81,11 @@ function ChallengeTableRow(challenge: Challenge) {
         {ShowStatusIcon(challenge.submission_status)}
       </TableCell>
       <TableCell align="right">
-        <Button variant="contained" color="primary">
+        <Button
+          variant="contained"
+          color="primary"
+          href={`/solve/${challenge.challenge_id}`}
+        >
           Solve
         </Button>
       </TableCell>

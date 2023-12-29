@@ -47,7 +47,7 @@ func TestSubmissionCreate(t *testing.T) {
 		Language:    "python",
 		// for testing wrong answer please add
 		// + "\nprint('')"
-		SourceCode: entities.PythonCodeExample,
+		Code: entities.PythonCodeExample,
 	}
 	requestBody, _ := json.Marshal(dto)
 

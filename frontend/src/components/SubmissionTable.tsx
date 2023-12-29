@@ -11,7 +11,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { useState } from "react";
-import { useSubmission } from "../swrs/submission";
+import { usePaginationSubmission } from "../swrs/submission";
 import { Submission } from "../types/submission";
 
 function ShowStatusIcon(status: string) {
@@ -30,7 +30,7 @@ export function SubmissionTable() {
   const [limit, setLimit] = useState(10);
   const [order, _] = useState("asc");
 
-  const { data, isLoading, isError } = useSubmission(
+  const { data, isLoading, isError } = usePaginationSubmission(
     page + 1,
     limit,
     "id",

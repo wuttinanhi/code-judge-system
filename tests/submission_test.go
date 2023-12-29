@@ -54,7 +54,7 @@ func TestSubmissionRoute(t *testing.T) {
 		dto := entities.SubmissionCreateDTO{
 			ChallengeID: challenge.ID,
 			Language:    SUBMISSION_LANGUAGE,
-			SourceCode:  SUBMISSION_SOURCE_CODE,
+			Code:        SUBMISSION_SOURCE_CODE,
 		}
 		requestBody, _ := json.Marshal(dto)
 
@@ -85,8 +85,8 @@ func TestSubmissionRoute(t *testing.T) {
 		if submission.Language != dto.Language {
 			t.Errorf("Expected language %v, got %v", dto.Language, submission.Language)
 		}
-		if submission.SourceCode != dto.SourceCode {
-			t.Errorf("Expected source code %v, got %v", dto.SourceCode, submission.SourceCode)
+		if submission.SourceCode != dto.Code {
+			t.Errorf("Expected source code %v, got %v", dto.Code, submission.SourceCode)
 		}
 
 		// validate submission testcases

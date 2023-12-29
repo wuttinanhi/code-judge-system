@@ -12,12 +12,12 @@ import (
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func TestUserRoutes(t *testing.T) {
+func TestAuthRoutes(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	app := controllers.SetupAPI(testServiceKit)
 
-	t.Run("/user/register", func(t *testing.T) {
+	t.Run("/auth/register", func(t *testing.T) {
 		dto := entities.UserRegisterDTO{
 			DisplayName: "Test User",
 			Email:       "testuser@example.com",
@@ -25,7 +25,7 @@ func TestUserRoutes(t *testing.T) {
 		}
 		requestBody, _ := json.Marshal(dto)
 
-		request, _ := http.NewRequest(http.MethodPost, "/user/register", bytes.NewBuffer(requestBody))
+		request, _ := http.NewRequest(http.MethodPost, "/auth/register", bytes.NewBuffer(requestBody))
 		request.Header.Set("Content-Type", "application/json")
 
 		response, err := app.Test(request, -1)
@@ -38,14 +38,14 @@ func TestUserRoutes(t *testing.T) {
 		}
 	})
 
-	t.Run("/user/login", func(t *testing.T) {
+	t.Run("/auth/login", func(t *testing.T) {
 		dto := entities.UserLoginDTO{
 			Email:    "testuser@example.com",
 			Password: "testpassword",
 		}
 		requestBody, _ := json.Marshal(dto)
 
-		request, _ := http.NewRequest(http.MethodPost, "/user/login", bytes.NewBuffer(requestBody))
+		request, _ := http.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer(requestBody))
 		request.Header.Set("Content-Type", "application/json")
 
 		response, err := app.Test(request, -1)

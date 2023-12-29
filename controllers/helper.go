@@ -8,7 +8,7 @@ import (
 func GetUserFromRequest(c *fiber.Ctx) *entities.User {
 	user, ok := c.Locals("user").(*entities.User)
 	if !ok {
-		panic("User not found")
+		panic("user not found")
 	}
 
 	return user

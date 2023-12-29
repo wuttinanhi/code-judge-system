@@ -5,23 +5,26 @@ import (
 	"strconv"
 
 	"github.com/spf13/viper"
+	"github.com/wuttinanhi/code-judge-system/configs"
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
 func StartSubmissionConsumer(serviceKit *services.ServiceKit) {
+	configs.LoadConfig()
+
 	kafkaHost := viper.GetString("KAFKA_HOST")
 	if kafkaHost == "" {
 		log.Fatal("KAFKA_HOST is not set")
 	}
 
-	topicName := viper.GetString("KAFKA_SUBMISSION_TOPIC")
+	topicName := viper.GetString("KAFKA_SUBMISSION_PROCESS_TOPIC")
 	if topicName == "" {
-		log.Fatal("SUBMISSION_TOPIC is not set")
+		log.Fatal("KAFKA_SUBMISSION_PROCESS_TOPIC is not set")
 	}
 
-	groupID := viper.GetString("KAFKA_SUBMISSION_GROUP")
+	groupID := viper.GetString("KAFKA_SUBMISSION_PROCESS_GROUP")
 	if groupID == "" {
-		log.Fatal("SUBMISSION_GROUP is not set")
+		log.Fatal("KAFKA_SUBMISSION_PROCESS_GROUP is not set")
 	}
 
 	if serviceKit.KafkaService == nil {

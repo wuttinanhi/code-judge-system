@@ -24,7 +24,7 @@ type Submission struct {
 type SubmissionCreateDTO struct {
 	ChallengeID uint   `json:"challenge_id" validate:"required"`
 	Language    string `json:"language" validate:"required"`
-	SourceCode  string `json:"source_code" validate:"required"`
+	Code        string `json:"code" validate:"required"`
 }
 
 func ValidateSubmissionCreateDTO(c *fiber.Ctx) SubmissionCreateDTO {

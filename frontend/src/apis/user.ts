@@ -1,6 +1,8 @@
+import { API_URL } from "./API_URL";
+
 export class UserService {
   static async login(email: string, password: string) {
-    const response = await fetch("http://localhost:3000/user/login", {
+    const response = await fetch(API_URL + "/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -13,7 +15,7 @@ export class UserService {
   }
 
   static async register(email: string, password: string, displayname: string) {
-    const response = await fetch("http://localhost:3000/user/register", {
+    const response = await fetch(API_URL + "/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, displayname }),

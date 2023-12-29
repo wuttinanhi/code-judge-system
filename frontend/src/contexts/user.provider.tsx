@@ -5,7 +5,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import { UserLoginResponse } from "../apis/user";
+import { API_URL } from "../apis/API_URL";
+import { UserMeResponse } from "../types/user";
 
 type UserDataType = {
   accessToken: string;
@@ -29,17 +30,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // try load accessToken from local storage
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
-    const userData = localStorage.getItem("user");
 
-    if (userData && accessToken) {
-      const parsedUserData = JSON.parse(userData) as UserLoginResponse;
-
-      setUser({
-        accessToken,
-        displayName: parsedUserData.displayname,
-        email: parsedUserData.email,
+    // validate token
+    const validateURL = API_URL + "/user/me";
+    fetch(validateURL, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json();
+        }
+      })
+      .then((json: UserMeResponse) => {
+        setUser({
+          accessToken: accessToken as string,
+          displayName: json.DisplayName,
+          email: json.Email,
+        });
       });
-    }
   }, []);
 
   return (

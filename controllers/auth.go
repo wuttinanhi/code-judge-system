@@ -62,6 +62,12 @@ func (h *authHandler) Login(c *fiber.Ctx) error {
 	})
 }
 
+func (h *authHandler) Me(c *fiber.Ctx) error {
+	user := GetUserFromRequest(c)
+
+	return c.Status(fiber.StatusOK).JSON(user)
+}
+
 func NewAuthHandler(serviceKit *services.ServiceKit) *authHandler {
 	return &authHandler{
 		serviceKit: serviceKit,
