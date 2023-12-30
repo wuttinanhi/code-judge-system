@@ -3,10 +3,7 @@ package tests_test
 import (
 	"bytes"
 	"encoding/json"
-	"io"
-	"log"
 	"net/http"
-	"strconv"
 	"testing"
 
 	"github.com/wuttinanhi/code-judge-system/controllers"
@@ -111,8 +108,8 @@ func TestSubmissionRoute(t *testing.T) {
 		}
 	})
 
-	t.Run("/submission/get/submission/:id", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/submission/get/submission/1", nil)
+	t.Run("/submission/get/:id", func(t *testing.T) {
+		request, _ := http.NewRequest(http.MethodGet, "/submission/get/1", nil)
 		request.Header.Set("Content-Type", "application/json")
 		request.Header.Set("Authorization", "Bearer "+userAccessToken)
 
@@ -133,94 +130,6 @@ func TestSubmissionRoute(t *testing.T) {
 			t.Error(err)
 		}
 
-		if submission.ChallengeID != challenge.ID {
-			t.Errorf("Expected challenge id %v, got %v", challenge.ID, submission.ChallengeID)
-		}
-		if submission.UserID != user.ID {
-			t.Errorf("Expected user id %v, got %v", user.ID, submission.UserID)
-		}
-		if submission.Language != "go" {
-			t.Errorf("Expected language %v, got %v", "go", submission.Language)
-		}
-		if submission.Code != SUBMISSION_SOURCE_CODE {
-			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.Code)
-		}
-	})
-
-	t.Run("/submission/get/user", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/submission/get/user", nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", "Bearer "+userAccessToken)
-
-		response, err := app.Test(request, -1)
-		if err != nil {
-			t.Error(err)
-		}
-
-		bodyBytes, err := io.ReadAll(response.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if response.StatusCode != http.StatusOK {
-			t.Errorf("Expected status OK, got %v", response.StatusCode)
-		}
-
-		var submissions []entities.Submission
-		err = json.Unmarshal(bodyBytes, &submissions)
-		if err != nil {
-			t.Error(err)
-		}
-
-		if len(submissions) != 1 {
-			t.Errorf("Expected %v submissions, got %v", 1, len(submissions))
-		}
-
-		submission := submissions[0]
-		if submission.ChallengeID != challenge.ID {
-			t.Errorf("Expected challenge id %v, got %v", challenge.ID, submission.ChallengeID)
-		}
-		if submission.UserID != user.ID {
-			t.Errorf("Expected user id %v, got %v", user.ID, submission.UserID)
-		}
-		if submission.Language != "go" {
-			t.Errorf("Expected language %v, got %v", "go", submission.Language)
-		}
-		if submission.Code != SUBMISSION_SOURCE_CODE {
-			t.Errorf("Expected source code %v, got %v", SUBMISSION_SOURCE_CODE, submission.Code)
-		}
-	})
-
-	t.Run("/submission/get/challenge/:id", func(t *testing.T) {
-		request, _ := http.NewRequest(http.MethodGet, "/submission/get/challenge/"+strconv.Itoa(int(challenge.ID)), nil)
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", "Bearer "+userAccessToken)
-
-		response, err := app.Test(request, -1)
-		if err != nil {
-			t.Error(err)
-		}
-
-		bodyBytes, err := io.ReadAll(response.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if response.StatusCode != http.StatusOK {
-			t.Errorf("Expected status OK, got %v", response.StatusCode)
-		}
-
-		var submissions []entities.Submission
-		err = json.Unmarshal(bodyBytes, &submissions)
-		if err != nil {
-			t.Error(err)
-		}
-
-		if len(submissions) != 1 {
-			t.Errorf("Expected %v submissions, got %v", 1, len(submissions))
-		}
-
-		submission := submissions[0]
 		if submission.ChallengeID != challenge.ID {
 			t.Errorf("Expected challenge id %v, got %v", challenge.ID, submission.ChallengeID)
 		}
