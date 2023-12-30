@@ -28,11 +28,11 @@ export function SignInPage() {
           accessToken: response.token,
           displayName: response.displayname,
           email: response.email,
+          role: response.role,
         });
 
         // save token and user data to local storage
         localStorage.setItem("accessToken", response.token);
-        localStorage.setItem("user", JSON.stringify(response));
 
         // redirect to dashboard
         window.location.href = "/";

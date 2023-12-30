@@ -7,11 +7,13 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "./App.css";
 import { UserProvider } from "./contexts/user.provider";
+import ChallengeCreatePage from "./pages/ChallengeCreatePage";
 import DashboardPage from "./pages/DashboardPage";
 import { SignInPage } from "./pages/SigninPage";
 import { SignUpPage } from "./pages/SignupPage";
 import SolvePage from "./pages/SolvePage";
 import SubmissionPage from "./pages/SubmissionPage";
+import SubmissionViewPage from "./pages/SubmissionViewPage";
 import UserSettingPage from "./pages/UserSettingPage";
 
 // TODO remove, this demo shouldn't need to reset the theme.
@@ -31,6 +33,10 @@ const router = createBrowserRouter([
     element: <SignUpPage />,
   },
   {
+    path: "/challenge/create",
+    element: <ChallengeCreatePage />,
+  },
+  {
     path: "/challenge",
     element: <DashboardPage />,
   },
@@ -41,6 +47,10 @@ const router = createBrowserRouter([
   {
     path: "/solve/:id",
     element: <SolvePage />,
+  },
+  {
+    path: "/submission/:id",
+    element: <SubmissionViewPage />,
   },
   {
     path: "/settings",

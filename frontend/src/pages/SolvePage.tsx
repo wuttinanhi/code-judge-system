@@ -36,14 +36,23 @@ export default function SolvePage() {
   if (isError) return <div>Error</div>;
   if (!user) return <div>Not logged in</div>;
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     console.log(language);
     console.log(code);
 
     try {
       setSubmitButtonDisabled(true);
-      SubmissionService.submit(user.accessToken, id, code, language);
-      toast.success("Submitted!");
+      const resp = await SubmissionService.submit(
+        user.accessToken,
+        id,
+        code,
+        language
+      ).then();
+
+      if (resp && resp.submission_id) {
+        toast.success("Submitted!");
+        window.location.href = `/submission/${resp.submission_id}`;
+      }
     } catch (error) {
       toast.error("Failed to submit " + error);
     } finally {

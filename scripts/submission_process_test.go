@@ -15,7 +15,7 @@ func TestSubmissionProcess(t *testing.T) {
 	testServiceKit := services.CreateServiceKit(db)
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")
 
-	submission, err := testServiceKit.SubmissionService.GetSubmissionByID(1)
+	submission, err := testServiceKit.SubmissionService.GetSubmissionByID(3)
 	if err != nil {
 		t.Error(err)
 	}

@@ -12,6 +12,7 @@ type UserDataType = {
   accessToken: string;
   displayName: string;
   email: string;
+  role: string;
 };
 
 interface UserContextType {
@@ -42,15 +43,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       .then((res) => {
         if (res.status === 200) {
           return res.json();
+        } else {
+          localStorage.removeItem("accessToken");
+          setUser(undefined);
+          throw new Error("Invalid token");
         }
       })
       .then((json: UserMeResponse) => {
         setUser({
           accessToken: accessToken as string,
-          displayName: json.DisplayName,
-          email: json.Email,
+          displayName: json.displayname,
+          email: json.email,
+          role: json.role,
         });
-      });
+      })
+      .catch((_) => {});
   }, []);
 
   return (

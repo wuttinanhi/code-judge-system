@@ -1,4 +1,6 @@
 import {
+  Box,
+  Button,
   Container,
   CssBaseline,
   Divider,
@@ -28,13 +30,21 @@ export default function SubmissionViewPage() {
 
       <Container>
         <Paper sx={{ padding: 3, mt: 15 }}>
-          <Typography variant="h4" component="h1" align="left">
-            #{data.submission_id} {data.challenge.name}
-          </Typography>
+          <Box justifyContent="space-between" display="flex">
+            <Typography variant="body1" align="left">
+              Submission #{data.submission_id} {data.challenge.name}
+            </Typography>
+
+            <Button
+              variant="contained"
+              color="primary"
+              href={`/solve/${data.challenge_id}`}
+            >
+              Go to Challenge
+            </Button>
+          </Box>
           <Divider sx={{ my: 3 }} />
-          <Typography variant="body1" align="left">
-            {data.challenge.description}
-          </Typography>
+          {data.challenge.description}
         </Paper>
 
         <Paper sx={{ padding: 3, mt: 5 }}>
@@ -42,19 +52,18 @@ export default function SubmissionViewPage() {
             Testcase Results
           </Typography>
           <Divider sx={{ my: 3 }} />
-          <Typography variant="body1" align="left">
-            <TestcaseRenderer
-              testcases={data.submission_testcases.map((t) => {
-                return {
-                  testcase_id: t.challenge_testcase.testcase_id,
-                  correct: t.status,
-                  input: t.challenge_testcase.input,
-                  output: t.output,
-                  expected_output: t.challenge_testcase.expected_output,
-                } as ITestcase;
-              })}
-            />
-          </Typography>
+
+          <TestcaseRenderer
+            testcases={data.submission_testcases.map((t) => {
+              return {
+                testcase_id: t.challenge_testcase.testcase_id,
+                correct: t.status,
+                input: t.challenge_testcase.input,
+                output: t.output === "" ? "<EMPTY OUTPUT>" : t.output,
+                expected_output: t.challenge_testcase.expected_output,
+              } as ITestcase;
+            })}
+          />
         </Paper>
       </Container>
     </Container>

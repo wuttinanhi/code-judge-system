@@ -1,17 +1,16 @@
 import {
   Box,
-  Button,
   Container,
   CssBaseline,
   Divider,
   Paper,
   Typography,
 } from "@mui/material";
-import { ChallengeTable } from "../components/ChallengeTable";
+import { ChallengeEditor } from "../components/ChallengeEditor";
 import { Navbar } from "../components/Navbar";
 import { useUser } from "../contexts/user.provider";
 
-export default function DashboardPage() {
+export default function ChallengeCreatePage() {
   const { user } = useUser();
 
   return (
@@ -24,23 +23,13 @@ export default function DashboardPage() {
         <Paper sx={{ padding: 3, mt: 15 }}>
           <Box justifyContent="space-between" display="flex">
             <Typography variant="h4" component="h1" align="left">
-              Challenge
+              Create New Challenge
             </Typography>
-
-            {user && user.role === "ADMIN" ? (
-              <Button
-                variant="contained"
-                color="primary"
-                href={`/challenge/create`}
-              >
-                Create
-              </Button>
-            ) : null}
           </Box>
 
           <Divider sx={{ my: 3 }} />
 
-          <ChallengeTable />
+          <ChallengeEditor />
         </Paper>
       </Container>
     </Container>

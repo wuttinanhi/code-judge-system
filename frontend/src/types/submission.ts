@@ -24,3 +24,25 @@ export interface SubmissionTestcase {
   challenge_testcase_id: number;
   challenge_testcase: ChallengeTestcase;
 }
+
+export interface SubmissionTestcase {
+  submission_testcase_id: number;
+  status: string;
+  output: string;
+  submission_id: number;
+  submission: null;
+  challenge_testcase_id: number;
+  challenge_testcase: ChallengeTestcase;
+}
+
+export interface SubmissionSubmitResponse {
+  submission_id: number;
+  language: string;
+  source_code: string;
+  status: string;
+  user_id: number;
+  user: null;
+  challenge_id: number;
+  challenge: null;
+  submission_testcases: SubmissionTestcase[];
+}

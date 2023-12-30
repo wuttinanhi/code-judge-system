@@ -10,7 +10,7 @@ export function Testcase(props: TestcaseProps) {
     <Stack
       direction="row"
       justifyContent="space-evenly"
-      alignItems="center"
+      alignItems="stretch"
       spacing={5}
     >
       <Card sx={{ flexGrow: 1, flexBasis: "50%", width: "full" }}>

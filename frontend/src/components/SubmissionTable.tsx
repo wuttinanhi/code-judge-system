@@ -28,7 +28,7 @@ function ShowStatusIcon(status: string) {
 export function SubmissionTable() {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
-  const [order, _] = useState("asc");
+  const [order, _] = useState("desc");
 
   const { data, isLoading, isError } = usePaginationSubmission(
     page + 1,
@@ -41,8 +41,6 @@ export function SubmissionTable() {
 
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error</div>;
-
-  console.log(data);
 
   return (
     <Paper sx={{ width: "100%", overflow: "hidden" }}>
@@ -84,7 +82,7 @@ export function SubmissionTable() {
 function SubmissionTableRow(data: Submission) {
   return (
     <TableRow
-      key={data.challenge_id}
+      key={data.submission_id}
       sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
     >
       <TableCell component="th" scope="row">
@@ -98,7 +96,11 @@ function SubmissionTableRow(data: Submission) {
       </TableCell>
       <TableCell align="right">{ShowStatusIcon(data.status)}</TableCell>
       <TableCell align="right">
-        <Button variant="contained" color="primary">
+        <Button
+          variant="contained"
+          color="primary"
+          href={`/submission/${data.submission_id}`}
+        >
           <RemoveRedEyeIcon sx={{ marginRight: 2 }} /> View
         </Button>
       </TableCell>

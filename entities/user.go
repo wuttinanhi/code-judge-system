@@ -13,12 +13,12 @@ const (
 )
 
 type User struct {
-	ID          uint      `gorm:"primarykey"`
-	DisplayName string    `gorm:"unique;not null"`
-	Password    string    `gorm:"not null"`
-	Email       string    `gorm:"unique;not null"`
-	Role        string    `gorm:"not null;default:USER"`
-	CreatedAt   time.Time `gorm:"autoCreateTime"`
+	ID          uint      `json:"id" gorm:"primarykey" `
+	DisplayName string    `json:"displayname" gorm:"unique;not null" `
+	Password    string    `json:"-" gorm:"not null" `
+	Email       string    `json:"email" gorm:"unique;not null" `
+	Role        string    `json:"role" gorm:"not null;default:USER" `
+	CreatedAt   time.Time `json:"-" gorm:"autoCreateTime" `
 }
 
 type UserRegisterDTO struct {

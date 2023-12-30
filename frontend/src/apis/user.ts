@@ -33,6 +33,7 @@ export interface UserLoginResponse {
   userid: number;
   displayname: string;
   email: string;
+  role: string;
 }
 
 export interface UserRegisterResponse {

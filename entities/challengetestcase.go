@@ -67,6 +67,7 @@ type ChallengeTestcaseDTO struct {
 	ExpectedOutput string `json:"expected_output" validate:"required,max=1024"`
 	LimitMemory    uint   `json:"limit_memory" validate:"required"`
 	LimitTimeMs    uint   `json:"limit_time_ms" validate:"required"`
+	Action         string `json:"action" validate:"required,oneof=create update delete"`
 }
 
 func (t *ChallengeTestcaseDTO) ToTestcase() *ChallengeTestcase {

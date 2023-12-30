@@ -15,7 +15,6 @@ export default function UserSettingPage() {
   const onLogoutClick = () => {
     userContext.setUser(undefined);
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
     window.location.href = "/";
   };
 

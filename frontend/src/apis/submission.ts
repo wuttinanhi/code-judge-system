@@ -1,4 +1,5 @@
 import { toast } from "react-toastify";
+import { SubmissionSubmitResponse } from "../types/submission";
 import { API_URL } from "./API_URL";
 
 export class SubmissionService {
@@ -24,7 +25,7 @@ export class SubmissionService {
     const data = await response.json();
 
     if (response.ok) {
-      return data;
+      return data as SubmissionSubmitResponse;
     } else {
       toast.error(`Something went wrong ${data.message}`);
     }
