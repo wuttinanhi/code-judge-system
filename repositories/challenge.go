@@ -21,7 +21,7 @@ type ChallengeRepository interface {
 	// FindChallengeByID returns a challenge by given ID.
 	FindChallengeByID(id uint) (challenge *entities.Challenge, err error)
 	// FindChallengeByAuthor returns a challenge by given author.
-	FindChallengesByAuthor(author *entities.User) (challenges []*entities.Challenge, err error)
+	// FindChallengesByAuthor(author *entities.User) (challenges []*entities.Challenge, err error)
 	// AllChallenges returns all challenges.
 	AllChallenges() (challenges []*entities.Challenge, err error)
 	// AddTestcase adds a testcase to a challenge.
@@ -37,7 +37,7 @@ type ChallengeRepository interface {
 	// PaginationChallengesWithStatus returns all challenges with status.
 	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 	// UpdateChallengeWithTestcase updates a challenge with testcases.
-	// UpdateChallengeWithTestcase(challenge *entities.Challenge) error
+	UpdateChallengeWithTestcase(challenge *entities.Challenge) error
 }
 
 type challengeRepository struct {
@@ -47,21 +47,46 @@ type challengeRepository struct {
 // UpdateChallengeWithTestcase implements ChallengeRepository.
 func (r *challengeRepository) UpdateChallengeWithTestcase(challenge *entities.Challenge) error {
 	err := r.db.Transaction(func(tx *gorm.DB) (err error) {
-		// Load the Testcases
-		oldTestcases := []*entities.ChallengeTestcase{}
-		tx.Model(challenge).Association("Testcases").Find(&oldTestcases)
-
-		for _, testcase := range oldTestcases {
-			err = tx.Model(testcase).Delete(testcase, testcase.ID).Error
-			if err != nil {
-				return err
+		// loop new challenge testcase
+		for _, testcase := range challenge.Testcases {
+			// if testcase.ActionFlag is "create" then create new testcase
+			if testcase.ActionFlag == "create" {
+				testcase.ID = 0
+				testcase.ChallengeID = challenge.ID
+				err = tx.Model(&entities.ChallengeTestcase{}).Create(testcase).Error
+				if err != nil {
+					return err
+				}
+			}
+			// if testcase.ActionFlag is "update" then update testcase
+			if testcase.ActionFlag == "update" {
+				testcase.ChallengeID = challenge.ID
+				err = tx.Save(testcase).Error
+				if err != nil {
+					return err
+				}
+			}
+			// if testcase.ActionFlag is "delete" then delete testcase
+			if testcase.ActionFlag == "delete" {
+				err = tx.Delete(testcase).Error
+				if err != nil {
+					return err
+				}
 			}
 		}
 
-		err = tx.Session(&gorm.Session{FullSaveAssociations: true}).Save(challenge).Error
+		err = tx.Session(&gorm.Session{FullSaveAssociations: false}).Omit("Testcases").Save(challenge).Error
+		if err != nil {
+			return err
+		}
 
-		return err
+		return nil
 	})
+	if err != nil {
+		return err
+	}
+
+	cleanActionFlag(challenge)
 
 	return err
 }
@@ -137,6 +162,7 @@ func (r *challengeRepository) CreateChallengeWithTestcase(challenge *entities.Ch
 // CreateChallenge implements ChallengeRepository.
 func (r *challengeRepository) CreateChallenge(challenge *entities.Challenge) (*entities.Challenge, error) {
 	result := r.db.Create(challenge)
+	cleanActionFlag(challenge)
 	return challenge, result.Error
 }
 
@@ -155,6 +181,7 @@ func (r *challengeRepository) DeleteChallenge(challenge *entities.Challenge) err
 // FindChallengeByID implements ChallengeRepository.
 func (r *challengeRepository) FindChallengeByID(id uint) (challenge *entities.Challenge, err error) {
 	result := r.db.Preload("Testcases").First(&challenge, id)
+	cleanActionFlag(challenge)
 	return challenge, result.Error
 }
 
@@ -168,6 +195,12 @@ func (r *challengeRepository) FindChallengesByAuthor(author *entities.User) (cha
 func (r *challengeRepository) UpdateChallenge(challenge *entities.Challenge) error {
 	result := r.db.Save(challenge)
 	return result.Error
+}
+
+func cleanActionFlag(challenge *entities.Challenge) {
+	for _, testcase := range challenge.Testcases {
+		testcase.ActionFlag = ""
+	}
 }
 
 func NewChallengeRepository(db *gorm.DB) ChallengeRepository {

@@ -23,11 +23,11 @@ type ChallengePaginationOptions struct {
 	User *User
 }
 
-type ChallengeCreateResponse struct {
-	ChallengeID uint   `json:"challenge_id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
+// type ChallengeCreateResponse struct {
+// 	ChallengeID uint   `json:"challenge_id"`
+// 	Name        string `json:"name"`
+// 	Description string `json:"description"`
+// }
 
 type ChallengeCreateWithTestcaseDTO struct {
 	Name        string                 `json:"name" validate:"required,min=3,max=255"`
@@ -49,9 +49,18 @@ func ValidateChallengeCreateWithTestcaseDTO(c *fiber.Ctx) ChallengeCreateWithTes
 	return dto
 }
 
+func (c *ChallengeCreateWithTestcaseDTO) GetTestcases() []*ChallengeTestcase {
+	var testcases []*ChallengeTestcase
+	for _, testcase := range c.Testcases {
+		testcases = append(testcases, testcase.ToTestcase())
+	}
+	return testcases
+}
+
 type ChallengeUpdateDTO struct {
-	Name        string `json:"name" validate:"required,min=3,max=255"`
-	Description string `json:"description" validate:"max=255"`
+	Name        string                 `json:"name" validate:"required,min=3,max=255"`
+	Description string                 `json:"description" validate:"max=255"`
+	Testcases   []ChallengeTestcaseDTO `json:"testcases" validate:"required"`
 }
 
 func ValidateChallengeUpdateDTO(c *fiber.Ctx) ChallengeUpdateDTO {
@@ -66,4 +75,12 @@ func ValidateChallengeUpdateDTO(c *fiber.Ctx) ChallengeUpdateDTO {
 	}
 
 	return dto
+}
+
+func (c *ChallengeUpdateDTO) GetTestcases() []*ChallengeTestcase {
+	var testcases []*ChallengeTestcase
+	for _, testcase := range c.Testcases {
+		testcases = append(testcases, testcase.ToTestcase())
+	}
+	return testcases
 }

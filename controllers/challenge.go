@@ -42,21 +42,11 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
-	testcases := make([]*entities.ChallengeTestcase, len(dto.Testcases))
-	for i, dtotestcase := range dto.Testcases {
-		testcases[i] = &entities.ChallengeTestcase{
-			Input:          dtotestcase.Input,
-			ExpectedOutput: dtotestcase.ExpectedOutput,
-			LimitMemory:    dtotestcase.LimitMemory,
-			LimitTimeMs:    dtotestcase.LimitTimeMs,
-		}
-	}
-
 	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        dto.Name,
 		Description: dto.Description,
 		UserID:      user.ID,
-		Testcases:   testcases,
+		Testcases:   dto.GetTestcases(),
 	})
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
@@ -82,12 +72,10 @@ func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 	}
 
 	// update challenge
-	err = h.serviceKit.ChallengeService.UpdateChallenge(&entities.Challenge{
-		ID:          challenge.ID,
-		Name:        dto.Name,
-		Description: dto.Description,
-		Testcases:   challenge.Testcases,
-	})
+	challenge.Name = dto.Name
+	challenge.Description = dto.Description
+	challenge.Testcases = dto.GetTestcases()
+	err = h.serviceKit.ChallengeService.UpdateChallengeWithTestcase(challenge)
 	if err != nil {
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}

@@ -7,10 +7,10 @@ import (
 
 type ChallengeService interface {
 	CreateChallenge(challenge *entities.Challenge) (*entities.Challenge, error)
-	UpdateChallenge(challenge *entities.Challenge) (err error)
+	// UpdateChallenge(challenge *entities.Challenge) (err error)
 	DeleteChallenge(challenge *entities.Challenge) (err error)
 	FindChallengeByID(challengeID uint) (challenge *entities.Challenge, err error)
-	FindChallengesByAuthor(user *entities.User) (challenges []*entities.Challenge, err error)
+	// FindChallengesByAuthor(user *entities.User) (challenges []*entities.Challenge, err error)
 	AllChallenges() (challenges []*entities.Challenge, err error)
 	AddTestcase(challenge *entities.Challenge, testcase *entities.ChallengeTestcase) (*entities.ChallengeTestcase, error)
 	UpdateTestcase(testcase *entities.ChallengeTestcase) (err error)
@@ -18,10 +18,17 @@ type ChallengeService interface {
 	AllTestcases(challenge *entities.Challenge) (testcases []*entities.ChallengeTestcase, err error)
 	FindTestcaseByID(testcaseID uint) (testcase *entities.ChallengeTestcase, err error)
 	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
+	UpdateChallengeWithTestcase(challenge *entities.Challenge) (err error)
 }
 
 type challengeService struct {
 	challengeRepo repositories.ChallengeRepository
+}
+
+// UpdateChallengeWithTestcase implements ChallengeService.
+func (s *challengeService) UpdateChallengeWithTestcase(challenge *entities.Challenge) (err error) {
+	err = s.challengeRepo.UpdateChallengeWithTestcase(challenge)
+	return
 }
 
 // PaginationChallengesWithStatus implements ChallengeService.
@@ -73,10 +80,10 @@ func (s *challengeService) FindChallengeByID(challengeID uint) (challenge *entit
 }
 
 // FindChallengesByAuthor implements ChallengeService.
-func (s *challengeService) FindChallengesByAuthor(user *entities.User) (challenges []*entities.Challenge, err error) {
-	challenges, err = s.challengeRepo.FindChallengesByAuthor(user)
-	return challenges, err
-}
+// func (s *challengeService) FindChallengesByAuthor(user *entities.User) (challenges []*entities.Challenge, err error) {
+// 	challenges, err = s.challengeRepo.FindChallengesByAuthor(user)
+// 	return challenges, err
+// }
 
 // FindTestcaseByID implements ChallengeService.
 func (s *challengeService) FindTestcaseByID(testcaseID uint) (testcase *entities.ChallengeTestcase, err error) {

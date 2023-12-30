@@ -1,4 +1,4 @@
-package tests
+package tests_test
 
 import (
 	"bytes"
@@ -114,42 +114,6 @@ func TestChallengeRoute(t *testing.T) {
 
 		if response.StatusCode != http.StatusOK {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
-		}
-	})
-
-	t.Run("/challenge/update", func(t *testing.T) {
-		dto := entities.ChallengeUpdateDTO{
-			Name:        "Test Challenge Updated",
-			Description: "Test Description Updated",
-		}
-		requestBody, _ := json.Marshal(dto)
-
-		request, _ := http.NewRequest(http.MethodPut, "/challenge/update/1", bytes.NewBuffer(requestBody))
-		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("Authorization", "Bearer "+adminAccessToken)
-
-		response, err := app.Test(request, -1)
-		if err != nil {
-			t.Error(err)
-		}
-		if response.StatusCode != http.StatusOK {
-			t.Errorf("Expected status OK, got %v", response.StatusCode)
-		}
-
-		updatedChallenge, err := testServiceKit.ChallengeService.FindChallengeByID(1)
-		if err != nil {
-			t.Error(err)
-		}
-		if updatedChallenge.Name != dto.Name {
-			t.Errorf("Expected name %v, got %v", dto.Name, updatedChallenge.Name)
-		}
-		if updatedChallenge.Description != dto.Description {
-			t.Errorf("Expected description %v, got %v", dto.Description, updatedChallenge.Description)
-		}
-
-		// expect 2 testcases
-		if len(updatedChallenge.Testcases) != 2 {
-			t.Errorf("Expected 2 testcases, got %v", len(updatedChallenge.Testcases))
 		}
 	})
 

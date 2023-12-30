@@ -80,10 +80,10 @@ func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 
 	testcaseGroup := app.Group("/testcase")
 	testcaseGroup.Use(UserMiddleware(serviceKit))
-	testcaseGroup.Post("/create", challengeTestcaseHandler.CreateTestcase)
+	// testcaseGroup.Post("/create", challengeTestcaseHandler.CreateTestcase)
 	testcaseGroup.Get("/get/:id", challengeTestcaseHandler.GetTestcaseByID)
-	testcaseGroup.Put("/update", challengeTestcaseHandler.UpdateTestcase)
-	testcaseGroup.Delete("/delete/:id", challengeTestcaseHandler.DeleteTestcase)
+	// testcaseGroup.Put("/update", challengeTestcaseHandler.UpdateTestcase)
+	// testcaseGroup.Delete("/delete/:id", challengeTestcaseHandler.DeleteTestcase)
 
 	submissionGroup := app.Group("/submission")
 	submissionGroup.Use(UserMiddleware(serviceKit))
