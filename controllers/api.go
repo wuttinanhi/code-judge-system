@@ -1,31 +1,19 @@
 package controllers
 
 import (
-	"runtime"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/storage/redis"
+
 	"github.com/wuttinanhi/code-judge-system/services"
 )
 
-func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
+func SetupAPI(serviceKit *services.ServiceKit, ratelimitStorage fiber.Storage) *fiber.App {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: ErrorHandler,
-	})
-
-	redisStore := redis.New(redis.Config{
-		Host:      "127.0.0.1",
-		Port:      6379,
-		Username:  "",
-		Password:  "redis",
-		Database:  0,
-		Reset:     false,
-		TLSConfig: nil,
-		PoolSize:  10 * runtime.GOMAXPROCS(0),
 	})
 
 	app.Use(limiter.New(limiter.Config{
@@ -40,7 +28,7 @@ func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.SendStatus(fiber.StatusTooManyRequests)
 		},
-		Storage: redisStore,
+		Storage: ratelimitStorage,
 	}))
 
 	app.Use(cors.New(cors.Config{
@@ -59,7 +47,7 @@ func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 	userHandler := NewUserHandler(serviceKit)
 	challengeHandler := NewChallengeHandler(serviceKit)
 	submissionHandler := NewSubmissionHandler(serviceKit)
-	challengeTestcaseHandler := NewChallengeTestcaseHandler(serviceKit)
+	// challengeTestcaseHandler := NewChallengeTestcaseHandler(serviceKit)
 
 	authGroup := app.Group("/auth")
 	authGroup.Post("/register", authHandler.Register)
@@ -78,10 +66,10 @@ func SetupAPI(serviceKit *services.ServiceKit) *fiber.App {
 	challengeGroup.Put("/update/:id", challengeHandler.UpdateChallenge)
 	challengeGroup.Delete("/delete/:id", challengeHandler.DeleteChallenge)
 
-	testcaseGroup := app.Group("/testcase")
-	testcaseGroup.Use(UserMiddleware(serviceKit))
+	// testcaseGroup := app.Group("/testcase")
+	// testcaseGroup.Use(UserMiddleware(serviceKit))
 	// testcaseGroup.Post("/create", challengeTestcaseHandler.CreateTestcase)
-	testcaseGroup.Get("/get/:id", challengeTestcaseHandler.GetTestcaseByID)
+	// testcaseGroup.Get("/get/:id", challengeTestcaseHandler.GetTestcaseByID)
 	// testcaseGroup.Put("/update", challengeTestcaseHandler.UpdateTestcase)
 	// testcaseGroup.Delete("/delete/:id", challengeTestcaseHandler.DeleteTestcase)
 

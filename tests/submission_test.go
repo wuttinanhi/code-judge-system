@@ -16,7 +16,8 @@ import (
 func TestSubmissionRoute(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateTestServiceKit(db)
-	app := controllers.SetupAPI(testServiceKit)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
 	// create user
 	user, err := testServiceKit.UserService.Register("test-submission-route@example.com", "testpassword", "test-submission-route")

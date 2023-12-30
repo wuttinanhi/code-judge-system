@@ -38,9 +38,12 @@ github.com/go-sql-driver/mysql v1.7.0 h1:ueSltNNllEqE3qcWBTD0iQd3IpL/6U+mJxLkazJ
 github.com/go-sql-driver/mysql v1.7.0/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
 github.com/gofiber/fiber/v2 v2.51.0 h1:JNACcZy5e2tGApWB2QrRpenTWn0fq0hkFm6k0C86gKQ=
 github.com/gofiber/fiber/v2 v2.51.0/go.mod h1:xaQRZQJGqnKOQnbQw+ltvku3/h8QxvNi8o6JiJ7Ll0U=
+github.com/gofiber/storage/memory v1.3.4 h1:VxTq8Vrdvk73VsfvtTgc3LjXClbBrHXanzEo+w0cpgo=
+github.com/gofiber/storage/memory v1.3.4/go.mod h1:pYsCUle/+4exGfsG7IlpmFYBVmNntP8OIDBvmABU8PE=
 github.com/gofiber/storage/redis v1.3.4 h1:IUNx09vnLiI1wZ/z3Dl5lYPrFdFgtgkAqG26wyIrwNI=
 github.com/gofiber/storage/redis v1.3.4/go.mod h1:lidaD5cHTNzYwzudWN0LN0wGYsrwpMpXClwE795xWSo=
 github.com/gofiber/utils v1.0.1 h1:knct4cXwBipWQqFrOy1Pv6UcgPM+EXo9jDgc66V1Qio=
+github.com/gofiber/utils v1.0.1/go.mod h1:pacRFtghAE3UoknMOUiXh2Io/nLWSUHtQCi/3QASsOc=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
 github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69NZV8Q=
 github.com/golang-jwt/jwt/v5 v5.2.0 h1:d/ix8ftRUorsN+5eMIlF4T6J8CAt9rch3My2winC1Jw=

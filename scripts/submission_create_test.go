@@ -21,8 +21,8 @@ func TestSubmissionCreate(t *testing.T) {
 	db := databases.NewMySQLDatabase()
 	testServiceKit := services.CreateServiceKit(db)
 	testServiceKit.KafkaService.OverriddenHost("localhost:9094")
-
-	app := controllers.SetupAPI(testServiceKit)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
 	// get a challenge
 	challenge, err := testServiceKit.ChallengeService.FindChallengeByID(1)

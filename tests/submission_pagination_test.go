@@ -15,7 +15,8 @@ import (
 func TestSubmissionPagination(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
-	app := controllers.SetupAPI(testServiceKit)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
 	// register admin
 	admin, err := testServiceKit.UserService.Register("admin@example.com", "admin", "admin")

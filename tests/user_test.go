@@ -15,7 +15,8 @@ import (
 func TestAuthRoutes(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
-	app := controllers.SetupAPI(testServiceKit)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
 	t.Run("/auth/register", func(t *testing.T) {
 		dto := entities.UserRegisterDTO{

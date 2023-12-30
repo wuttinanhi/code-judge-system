@@ -16,7 +16,8 @@ import (
 func TestChallengeUpdate(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
-	app := controllers.SetupAPI(testServiceKit)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
 	// create admin user
 	adminUser, err := testServiceKit.UserService.Register("admin@example.com", "testpassword", "admin")

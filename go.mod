@@ -6,6 +6,7 @@ require (
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/gofiber/fiber/v2 v2.51.0
+	github.com/gofiber/storage/memory v1.3.4
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/segmentio/kafka-go v0.4.47
 	golang.org/x/crypto v0.16.0

@@ -22,6 +22,7 @@ func main() {
 		return
 	}
 
-	api := controllers.SetupAPI(serviceKit)
+	rateLimitStorage := controllers.GetRedisStorage()
+	api := controllers.SetupAPI(serviceKit, rateLimitStorage)
 	api.Listen(":3000")
 }
