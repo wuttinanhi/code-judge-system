@@ -17,7 +17,7 @@ func SetupAPI(serviceKit *services.ServiceKit, ratelimitStorage fiber.Storage) *
 	})
 
 	app.Use(limiter.New(limiter.Config{
-		Max:        100,
+		Max:        150,
 		Expiration: 60 * time.Second,
 		KeyGenerator: func(c *fiber.Ctx) string {
 			if c.IP() != "" {

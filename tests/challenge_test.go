@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/wuttinanhi/code-judge-system/controllers"
 	"github.com/wuttinanhi/code-judge-system/databases"
 	"github.com/wuttinanhi/code-judge-system/entities"
@@ -15,7 +16,8 @@ import (
 func TestChallengeRoute(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
 	testServiceKit := services.CreateServiceKit(db)
-	app := controllers.SetupAPI(testServiceKit)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
 	// create admin user
 	adminUser, err := testServiceKit.UserService.Register("admin@example.com", "testpassword", "admin")
@@ -182,4 +184,72 @@ func TestChallengeRoute(t *testing.T) {
 			t.Errorf("Expected 0 challenge, got %v", len(challenges))
 		}
 	})
+}
+
+func ChallengeCreateWrapper(app *fiber.App, userCreateToken string) (*http.Response, error) {
+
+	dto := entities.ChallengeCreateWithTestcaseDTO{
+		Name:        "Test Challenge",
+		Description: "Test Description",
+		Testcases: []entities.ChallengeTestcaseDTO{
+			{ID: 0,
+				Input:          "INPUT",
+				ExpectedOutput: "EXPECTED_OUTPUT",
+				LimitMemory:    1,
+				LimitTimeMs:    1,
+				Action:         "create",
+			},
+		},
+	}
+	requestBody, _ := json.Marshal(dto)
+
+	request, _ := http.NewRequest(http.MethodPost, "/challenge/create", bytes.NewBuffer(requestBody))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", "Bearer "+userCreateToken)
+
+	response, err := app.Test(request, -1)
+	return response, err
+}
+
+func TestChallengeCreateLimit(t *testing.T) {
+	db := databases.NewTempSQLiteDatabase()
+	testServiceKit := services.CreateServiceKit(db)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
+
+	// create admin user
+	adminUser, err := testServiceKit.UserService.Register("admin@example.com", "testpassword", "admin")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// set user role to admin
+	err = testServiceKit.UserService.UpdateRole(adminUser, entities.UserRoleAdmin)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// generate admin access token
+	adminAccessToken, err := testServiceKit.JWTService.GenerateToken(*adminUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// expect first challenge create 100 to be success
+	for i := 0; i < 200; i++ {
+		response, err := ChallengeCreateWrapper(app, adminAccessToken)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if i < 100 {
+			if response.StatusCode != http.StatusOK {
+				t.Errorf("Expected status OK, got %v", response.StatusCode)
+			}
+		} else {
+			if response.StatusCode != http.StatusTooManyRequests {
+				t.Errorf("Expected status TooManyRequests, got %v", response.StatusCode)
+			}
+		}
+	}
 }

@@ -38,10 +38,20 @@ type ChallengeRepository interface {
 	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 	// UpdateChallengeWithTestcase updates a challenge with testcases.
 	UpdateChallengeWithTestcase(challenge *entities.Challenge) error
+	// CountAllChallengesByUser returns total challenges by given user.
+	CountAllChallengesByUser(user *entities.User) (total int64, err error)
 }
 
 type challengeRepository struct {
 	db *gorm.DB
+}
+
+// CountAllChallengesByUser implements ChallengeRepository.
+func (r *challengeRepository) CountAllChallengesByUser(user *entities.User) (total int64, err error) {
+	result := r.db.Model(&entities.Challenge{}).
+		Where(&entities.Challenge{UserID: user.ID}).
+		Count(&total)
+	return total, result.Error
 }
 
 // UpdateChallengeWithTestcase implements ChallengeRepository.
@@ -78,6 +88,19 @@ func (r *challengeRepository) UpdateChallengeWithTestcase(challenge *entities.Ch
 		err = tx.Session(&gorm.Session{FullSaveAssociations: false}).Omit("Testcases").Save(challenge).Error
 		if err != nil {
 			return err
+		}
+
+		// limit testcases to 100 per challenge
+		var totalTestcases int64
+		err = tx.
+			Model(&entities.ChallengeTestcase{}).
+			Where(&entities.ChallengeTestcase{ChallengeID: challenge.ID}).
+			Count(&totalTestcases).Error
+		if err != nil {
+			return err
+		}
+		if totalTestcases > 100 {
+			return fmt.Errorf("testcases limit exceeded")
 		}
 
 		return nil

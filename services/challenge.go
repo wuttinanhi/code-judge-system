@@ -19,10 +19,17 @@ type ChallengeService interface {
 	FindTestcaseByID(testcaseID uint) (testcase *entities.ChallengeTestcase, err error)
 	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 	UpdateChallengeWithTestcase(challenge *entities.Challenge) (err error)
+	CountAllChallengesByUser(user *entities.User) (total int64, err error)
 }
 
 type challengeService struct {
 	challengeRepo repositories.ChallengeRepository
+}
+
+// CountAllChallengesByUser implements ChallengeService.
+func (s *challengeService) CountAllChallengesByUser(user *entities.User) (total int64, err error) {
+	total, err = s.challengeRepo.CountAllChallengesByUser(user)
+	return total, err
 }
 
 // UpdateChallengeWithTestcase implements ChallengeService.

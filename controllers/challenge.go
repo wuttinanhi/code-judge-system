@@ -42,6 +42,18 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
+	// limit challenges created by user to 100
+	total, err := h.serviceKit.ChallengeService.CountAllChallengesByUser(user)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).
+			JSON(entities.HttpError{Message: err.Error()})
+	}
+	if total >= 100 {
+		return c.Status(fiber.StatusTooManyRequests).
+			JSON(entities.HttpError{Message: "You have reached the limit of 100 challenges"})
+	}
+
+	// create challenge
 	challenge, err := h.serviceKit.ChallengeService.CreateChallenge(&entities.Challenge{
 		Name:        dto.Name,
 		Description: dto.Description,
