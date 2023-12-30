@@ -7,11 +7,9 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { useState } from "react";
-import { ChallengeService } from "../apis/challenge";
 import { useUser } from "../contexts/user.provider";
 import { usePaginationChallenge } from "../swrs/challenge";
 import { Challenge } from "../types/challenge";
-import AlertDialog from "./AlertDialog";
 import { ShowStatusIcon } from "./StatusIcon";
 
 export function ChallengeTable() {
@@ -77,41 +75,9 @@ interface ChallengeTableRowProps {
 
 function ChallengeTableRow({ challenge }: ChallengeTableRowProps) {
   const { user } = useUser();
-  const [isDeleted, setIsDeleted] = useState(false);
-  const [deleteButtonDisabled, setDeleteButtonDisabled] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  if (isDeleted) {
-    return null;
-  }
 
   return (
     <>
-      {user && (
-        <AlertDialog
-          title="Delete Challenge"
-          description="Are you sure you want to delete this challenge?"
-          open={deleteDialogOpen}
-          response={async (res) => {
-            if (res) {
-              setDeleteDialogOpen(false);
-              setDeleteButtonDisabled(true);
-
-              const result = await ChallengeService.delete(
-                user.accessToken,
-                challenge.challenge_id
-              );
-              if (result) {
-                setIsDeleted(true);
-              }
-            } else {
-              setDeleteDialogOpen(false);
-              setDeleteButtonDisabled(false);
-            }
-          }}
-        />
-      )}
-
       <TableRow
         key={challenge.challenge_id}
         sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
@@ -132,18 +98,9 @@ function ChallengeTableRow({ challenge }: ChallengeTableRowProps) {
                 <Button
                   variant="contained"
                   color="warning"
-                  href={`/solve/${challenge.challenge_id}`}
+                  href={`/challenge/edit/${challenge.challenge_id}`}
                 >
                   Edit
-                </Button>
-
-                <Button
-                  variant="contained"
-                  color="error"
-                  onClick={() => setDeleteDialogOpen(true)}
-                  disabled={deleteButtonDisabled}
-                >
-                  Delete
                 </Button>
               </>
             ) : null}

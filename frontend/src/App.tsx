@@ -7,7 +7,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "./App.css";
 import { UserProvider } from "./contexts/user.provider";
-import ChallengeCreatePage from "./pages/ChallengeCreatePage";
+import ChallengeModifyPage from "./pages/ChallengeModifyPage";
 import DashboardPage from "./pages/DashboardPage";
 import { SignInPage } from "./pages/SigninPage";
 import { SignUpPage } from "./pages/SignupPage";
@@ -33,24 +33,28 @@ const router = createBrowserRouter([
     element: <SignUpPage />,
   },
   {
-    path: "/challenge/create",
-    element: <ChallengeCreatePage />,
-  },
-  {
     path: "/challenge",
     element: <DashboardPage />,
+  },
+  {
+    path: "/challenge/:mode",
+    element: <ChallengeModifyPage />,
+  },
+  {
+    path: "/challenge/:mode/:id",
+    element: <ChallengeModifyPage />,
   },
   {
     path: "/submission",
     element: <SubmissionPage />,
   },
   {
-    path: "/solve/:id",
-    element: <SolvePage />,
-  },
-  {
     path: "/submission/:id",
     element: <SubmissionViewPage />,
+  },
+  {
+    path: "/solve/:id",
+    element: <SolvePage />,
   },
   {
     path: "/settings",
