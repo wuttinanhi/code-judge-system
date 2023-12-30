@@ -13,12 +13,12 @@ const (
 )
 
 type User struct {
-	ID          uint      `json:"id" gorm:"primarykey" `
-	DisplayName string    `json:"displayname" gorm:"unique;not null" `
-	Password    string    `json:"-" gorm:"not null" `
-	Email       string    `json:"email" gorm:"unique;not null" `
-	Role        string    `json:"role" gorm:"not null;default:USER" `
-	CreatedAt   time.Time `json:"-" gorm:"autoCreateTime" `
+	ID          uint      `json:"id" gorm:"primarykey"`
+	DisplayName string    `json:"displayname" gorm:"unique;not null"`
+	Password    string    `json:"-" gorm:"not null"`
+	Email       string    `json:"email" gorm:"unique;not null"`
+	Role        string    `json:"role" gorm:"not null;default:USER"`
+	CreatedAt   time.Time `json:"-" gorm:"autoCreateTime"`
 }
 
 type UserRegisterDTO struct {
@@ -70,4 +70,23 @@ func ValidateUserLoginDTO(c *fiber.Ctx) UserLoginDTO {
 type UserLoginResponse struct {
 	Token string `json:"token"`
 	UserRegisterResponse
+}
+
+type UserUpdateRoleDTO struct {
+	UserID uint   `json:"userid" validate:"required"`
+	Role   string `json:"role" validate:"required,oneof=ADMIN STAFF USER"`
+}
+
+func ValidateUserUpdateRoleDTO(c *fiber.Ctx) UserUpdateRoleDTO {
+	var dto UserUpdateRoleDTO
+
+	if err := c.BodyParser(&dto); err != nil {
+		panic(err)
+	}
+
+	if err := validate.Struct(&dto); err != nil {
+		panic(err)
+	}
+
+	return dto
 }

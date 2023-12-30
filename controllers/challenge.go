@@ -37,8 +37,8 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 	user := GetUserFromRequest(c)
 	dto := entities.ValidateChallengeCreateWithTestcaseDTO(c)
 
-	// only user with role admin can create challenge
-	if user.Role != entities.UserRoleAdmin {
+	// only user with role admin or staff can create challenge
+	if user.Role != entities.UserRoleAdmin && user.Role != entities.UserRoleStaff {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
@@ -72,8 +72,8 @@ func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 	dto := entities.ValidateChallengeUpdateDTO(c)
 	id := ParseIntParam(c, "id")
 
-	// only user with role admin can update challenge
-	if user.Role != entities.UserRoleAdmin {
+	// only user with role admin or staff can update challenge
+	if user.Role != entities.UserRoleAdmin && user.Role != entities.UserRoleStaff {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
@@ -99,7 +99,8 @@ func (h *challengeHandler) DeleteChallenge(c *fiber.Ctx) error {
 	user := GetUserFromRequest(c)
 	id := ParseIntParam(c, "id")
 
-	if user.Role != entities.UserRoleAdmin {
+	// only user with role admin or staff can delete challenge
+	if user.Role != entities.UserRoleAdmin && user.Role != entities.UserRoleStaff {
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
