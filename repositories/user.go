@@ -1,9 +1,12 @@
 package repositories
 
 import (
+	"strings"
+
 	"github.com/wuttinanhi/code-judge-system/entities"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepository interface {
@@ -19,10 +22,40 @@ type UserRepository interface {
 	UpdateUser(user *entities.User) error
 	// DeleteUser deletes a user.
 	DeleteUser(user *entities.User) error
+	// Pagination returns a list of users by given page and limit.
+	Pagination(options *entities.PaginationOptions) (result *entities.PaginationResult[*entities.User], err error)
 }
 
 type userRepository struct {
 	db *gorm.DB
+}
+
+// Pagination implements UserRepository.
+func (r *userRepository) Pagination(options *entities.PaginationOptions) (result *entities.PaginationResult[*entities.User], err error) {
+	offset := (options.Page - 1) * options.Limit
+	desc := strings.ToUpper(options.Order) == "DESC"
+
+	baseQuery := r.db.Model(&entities.User{})
+
+	findQuery := baseQuery.
+		Limit(options.Limit).
+		Offset(offset).
+		Order(clause.OrderByColumn{Column: clause.Column{Name: options.Sort}, Desc: desc})
+
+	var users []*entities.User
+	if err := findQuery.Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	var total int64
+	if err := baseQuery.Count(&total).Error; err != nil {
+		return nil, err
+	}
+
+	return &entities.PaginationResult[*entities.User]{
+		Total: int(total),
+		Items: users,
+	}, nil
 }
 
 // CreateUser implements repositories.UserRepository.

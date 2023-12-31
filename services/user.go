@@ -14,10 +14,17 @@ type UserService interface {
 	Login(email, password string) (user *entities.User, err error)
 	UpdateRole(user *entities.User, role string) (err error)
 	FindUserByID(id uint) (user *entities.User, err error)
+	Pagination(options *entities.PaginationOptions) (result *entities.PaginationResult[*entities.User], err error)
 }
 
 type userService struct {
 	userRepo repositories.UserRepository
+}
+
+// Pagination implements UserService.
+func (s *userService) Pagination(options *entities.PaginationOptions) (result *entities.PaginationResult[*entities.User], err error) {
+	result, err = s.userRepo.Pagination(options)
+	return
 }
 
 // FindUserByID implements UserService.
