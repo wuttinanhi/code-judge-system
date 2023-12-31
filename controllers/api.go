@@ -58,6 +58,7 @@ func SetupAPI(serviceKit *services.ServiceKit, ratelimitStorage fiber.Storage) *
 	userGroup.Use(UserMiddleware(serviceKit))
 	userGroup.Get("/me", userHandler.Me)
 	userGroup.Put("/update/role", userHandler.UpdateRole)
+	userGroup.Get("/pagination", userHandler.Pagination)
 
 	challengeGroup := app.Group("/challenge")
 	challengeGroup.Use(UserMiddleware(serviceKit))

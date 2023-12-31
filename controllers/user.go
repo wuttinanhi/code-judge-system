@@ -42,7 +42,7 @@ func (h *userHandler) UpdateRole(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (h *challengeHandler) Pagination(c *fiber.Ctx) error {
+func (h *userHandler) Pagination(c *fiber.Ctx) error {
 	user := GetUserFromRequest(c)
 	options := ParsePaginationOptions(c)
 
