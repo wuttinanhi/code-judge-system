@@ -92,7 +92,7 @@ function SubmissionTableRow(data: Submission) {
         {data.challenge.name}
       </TableCell>
       <TableCell component="th" scope="row" align="right">
-        {data.user.DisplayName}
+        {data.user.displayname}
       </TableCell>
       <TableCell align="right">{ShowStatusIcon(data.status)}</TableCell>
       <TableCell align="right">

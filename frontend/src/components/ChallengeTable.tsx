@@ -86,7 +86,7 @@ function ChallengeTableRow({ challenge }: ChallengeTableRowProps) {
           {challenge.name}
         </TableCell>
         <TableCell component="th" scope="row" align="right">
-          {challenge.user.DisplayName}
+          <strong>{challenge.user.displayname}</strong>
         </TableCell>
         <TableCell align="right">
           {ShowStatusIcon(challenge.submission_status)}

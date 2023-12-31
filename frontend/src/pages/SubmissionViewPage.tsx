@@ -31,7 +31,7 @@ export default function SubmissionViewPage() {
       <Container>
         <Paper sx={{ padding: 3, mt: 15 }}>
           <Box justifyContent="space-between" display="flex">
-            <Typography variant="body1" align="left">
+            <Typography variant="h4" align="left">
               Submission #{data.submission_id} {data.challenge.name}
             </Typography>
 
@@ -48,7 +48,7 @@ export default function SubmissionViewPage() {
         </Paper>
 
         <Paper sx={{ padding: 3, mt: 5 }}>
-          <Typography variant="h4" component="h1" align="left">
+          <Typography variant="h6" align="left">
             Testcase Results
           </Typography>
           <Divider sx={{ my: 3 }} />
