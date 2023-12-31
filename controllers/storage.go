@@ -12,10 +12,10 @@ import (
 
 func GetRedisStorage() fiber.Storage {
 	return redis.New(redis.Config{
-		Host:      viper.GetString("RATE_LIMITER_HOST"),
-		Port:      viper.GetInt("RATE_LIMITER_PORT"),
-		Username:  viper.GetString("RATE_LIMITER_USER"),
-		Password:  viper.GetString("RATE_LIMITER_PASSWORD"),
+		Host:      viper.GetString("RATE_LIMIT_HOST"),
+		Port:      viper.GetInt("RATE_LIMIT_PORT"),
+		Username:  viper.GetString("RATE_LIMIT_USER"),
+		Password:  viper.GetString("RATE_LIMIT_PASSWORD"),
 		Database:  0,
 		Reset:     false,
 		TLSConfig: nil,
