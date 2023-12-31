@@ -11,9 +11,9 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { API_URL } from "../apis/API_URL";
 import { ChallengeService } from "../apis/challenge";
 import { useUser } from "../contexts/user.provider";
+import { ChallengeUpdateDTO } from "../types/challenge";
 import { ITestcaseModify } from "../types/testcase";
 import AlertDialog from "./AlertDialog";
 
@@ -42,18 +42,12 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
   }
 
   const createMode = async () => {
-    const res = await fetch(`${API_URL}/challenge/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.accessToken}`,
-      },
-      body: JSON.stringify({
-        name: challengeName,
-        description: challengeDescription,
-        testcases: testcases,
-      }),
-    });
+    const res = await ChallengeService.create(
+      user.accessToken,
+      challengeName,
+      challengeDescription,
+      testcases
+    );
 
     const data = await res.json();
 
@@ -71,21 +65,11 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
       name: challengeName,
       description: challengeDescription,
       testcases: testcases,
-    };
+    } as ChallengeUpdateDTO;
 
     console.log(updateData);
 
-    const res = await fetch(
-      `${API_URL}/challenge/update/${props.editChallengeID}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.accessToken}`,
-        },
-        body: JSON.stringify(updateData),
-      }
-    );
+    const res = await ChallengeService.edit(user.accessToken, updateData);
 
     const data = await res.json();
 
@@ -126,14 +110,12 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
 
   useEffect(() => {
     if (props.mode === "edit") {
-      (async () => {
-        const res = await fetch(
-          `${API_URL}/challenge/get/${props.editChallengeID}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.accessToken}`,
-            },
-          }
+      async function loadEditChallenge() {
+        if (!user || !props.editChallengeID) return;
+
+        const res = await ChallengeService.get(
+          user.accessToken,
+          props.editChallengeID
         );
         const data = await res.json();
 
@@ -144,7 +126,9 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
           setChallengeDescription(data.description);
           setTestcases(data.testcases);
         }
-      })();
+      }
+
+      loadEditChallenge();
     }
   }, []);
 
@@ -159,17 +143,20 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
             setDeleteDialogOpen(false);
             setDeleteButtonDisabled(true);
 
-            const result = await ChallengeService.delete(
+            const response = await ChallengeService.delete(
               user.accessToken,
               props.editChallengeID!
             );
-            if (result) {
+
+            if (response.ok) {
               toast.success("Challenge deleted successfully");
               window.location.href = "/challenge";
+            } else {
+              const data = await response.json();
+              toast.error(`Something went wrong ${data.message}`);
+              setDeleteDialogOpen(false);
+              setDeleteButtonDisabled(false);
             }
-          } else {
-            setDeleteDialogOpen(false);
-            setDeleteButtonDisabled(false);
           }
         }}
       />

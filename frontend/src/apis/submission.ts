@@ -1,5 +1,3 @@
-import { toast } from "react-toastify";
-import { SubmissionSubmitResponse } from "../types/submission";
 import { API_URL } from "./API_URL";
 
 export class SubmissionService {
@@ -9,7 +7,7 @@ export class SubmissionService {
     code: string,
     language: string
   ) {
-    const response = await fetch(API_URL + "/submission/submit", {
+    return fetch(API_URL + "/submission/submit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -21,13 +19,5 @@ export class SubmissionService {
         code: code,
       }),
     });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      return data as SubmissionSubmitResponse;
-    } else {
-      toast.error(`Something went wrong ${data.message}`);
-    }
   }
 }

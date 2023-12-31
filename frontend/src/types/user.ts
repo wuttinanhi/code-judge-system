@@ -14,3 +14,17 @@ export interface UserMeResponse {
   email: string;
   role: string;
 }
+
+export interface UserLoginResponse {
+  token: string;
+  userid: number;
+  displayname: string;
+  email: string;
+  role: string;
+}
+
+export interface UserRegisterResponse {
+  userid: number;
+  displayname: string;
+  email: string;
+}

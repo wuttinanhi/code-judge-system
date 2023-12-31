@@ -11,35 +11,39 @@ import Typography from "@mui/material/Typography";
 import { toast } from "react-toastify";
 import { UserService } from "../apis/user";
 import { useUser } from "../contexts/user.provider";
+import { UserLoginResponse } from "../types/user";
 
 export function SignInPage() {
   const userContext = useUser();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
 
     const email = data.get("email") as string;
     const password = data.get("password") as string;
 
-    UserService.login(email, password).then((response) => {
-      if (response.token) {
-        userContext.setUser({
-          accessToken: response.token,
-          displayName: response.displayname,
-          email: response.email,
-          role: response.role,
-        });
+    const response = await UserService.login(email, password);
 
-        // save token and user data to local storage
-        localStorage.setItem("accessToken", response.token);
+    if (response.ok) {
+      const data: UserLoginResponse = await response.json();
 
-        // redirect to dashboard
-        window.location.href = "/";
-      } else {
-        toast.error("Invalid email or password");
-      }
-    });
+      // set user data to context
+      userContext.setUser({
+        accessToken: data.token,
+        displayName: data.displayname,
+        email: data.email,
+        role: data.role,
+      });
+
+      // save token and user data to local storage
+      localStorage.setItem("accessToken", data.token);
+
+      // redirect to dashboard
+      window.location.href = "/";
+    } else {
+      toast.error("Invalid email or password");
+    }
   };
 
   return (

@@ -5,8 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { API_URL } from "../apis/API_URL";
-import { UserMeResponse } from "../types/user";
+import { UserService } from "../apis/user";
 
 type UserDataType = {
   accessToken: string;
@@ -18,50 +17,51 @@ type UserDataType = {
 interface UserContextType {
   user: UserDataType | undefined;
   setUser: (user: UserDataType | undefined) => void;
+  logout: () => void;
 }
 
 const UserContext = createContext<UserContextType>({
   setUser: () => {},
   user: undefined,
+  logout: () => {},
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserDataType | undefined>(undefined);
 
+  const logout = () => {
+    localStorage.removeItem("accessToken");
+    setUser(undefined);
+  };
+
   // try load accessToken from local storage
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
+    async function validateToken() {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        return;
+      }
+      const res = await UserService.getUserInfo(accessToken);
 
-    // validate token
-    const validateURL = API_URL + "/user/me";
-    fetch(validateURL, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .then((res) => {
-        if (res.status === 200) {
-          return res.json();
-        } else {
-          localStorage.removeItem("accessToken");
-          setUser(undefined);
-          throw new Error("Invalid token");
-        }
-      })
-      .then((json: UserMeResponse) => {
+      if (res.status === 200) {
+        const data = await res.json();
+
         setUser({
           accessToken: accessToken as string,
-          displayName: json.displayname,
-          email: json.email,
-          role: json.role,
+          displayName: data.displayname,
+          email: data.email,
+          role: data.role,
         });
-      })
-      .catch((_) => {});
+      } else {
+        logout();
+      }
+    }
+
+    validateToken();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, logout }}>
       {children}
     </UserContext.Provider>
   );

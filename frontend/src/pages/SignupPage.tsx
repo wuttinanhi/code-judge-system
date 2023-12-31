@@ -13,23 +13,22 @@ import "react-toastify/dist/ReactToastify.css";
 import { UserService } from "../apis/user";
 
 export function SignUpPage() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
 
-    UserService.register(
+    const response = await UserService.register(
       form.get("email") as string,
       form.get("password") as string,
       form.get("displayname") as string
-    )
-      .then((res) => {
-        toast.success("Successfully registered!");
-
-        // window.location.href = "/signin";
-      })
-      .catch((err) => {
-        toast.error("Failed to register!");
-      });
+    );
+    if (response.ok) {
+      toast.success("Successfully registered!");
+      window.location.href = "/signin";
+    } else {
+      const data = await response.json();
+      toast.error("Failed to register! " + data.message);
+    }
   };
 
   return (

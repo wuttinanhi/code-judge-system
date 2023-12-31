@@ -18,6 +18,7 @@ import { Navbar } from "../components/Navbar";
 import { TestcaseRenderer } from "../components/TestcaseRenderer";
 import { useUser } from "../contexts/user.provider";
 import { useChallenge } from "../swrs/challenge";
+import { SubmissionSubmitResponse } from "../types/submission";
 import { ITestcase } from "../types/testcase";
 
 export default function SolvePage() {
@@ -40,24 +41,24 @@ export default function SolvePage() {
     console.log(language);
     console.log(code);
 
-    try {
-      setSubmitButtonDisabled(true);
-      const resp = await SubmissionService.submit(
-        user.accessToken,
-        id,
-        code,
-        language
-      ).then();
+    setSubmitButtonDisabled(true);
+    const response = await SubmissionService.submit(
+      user.accessToken,
+      id,
+      code,
+      language
+    ).then();
 
-      if (resp && resp.submission_id) {
-        toast.success("Submitted!");
-        window.location.href = `/submission/${resp.submission_id}`;
-      }
-    } catch (error) {
-      toast.error("Failed to submit " + error);
-    } finally {
-      setSubmitButtonDisabled(false);
+    if (response.ok) {
+      toast.success("Submitted!");
+      const data: SubmissionSubmitResponse = await response.json();
+      window.location.href = `/submission/${data.submission_id}`;
+    } else {
+      const data = await response.json();
+      toast.error(`Something went wrong ${data.message}`);
     }
+
+    setSubmitButtonDisabled(false);
   };
 
   return (
