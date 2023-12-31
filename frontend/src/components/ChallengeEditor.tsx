@@ -62,6 +62,7 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
 
   const editMode = async () => {
     const updateData = {
+      challenge_id: props.editChallengeID,
       name: challengeName,
       description: challengeDescription,
       testcases: testcases,
@@ -70,7 +71,6 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
     console.log(updateData);
 
     const res = await ChallengeService.edit(user.accessToken, updateData);
-
     const data = await res.json();
 
     if (!res.ok) {
@@ -182,11 +182,15 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
 
         <Box
           display="flex"
-          justifyContent="flex-end"
+          justifyContent="space-between"
           alignItems="center"
           mt={2}
           gap={2}
         >
+          <Typography variant="h5" align="left">
+            Testcases
+          </Typography>
+
           <Button
             variant="contained"
             color="primary"

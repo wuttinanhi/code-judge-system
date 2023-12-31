@@ -11,7 +11,9 @@ export function BackendPinger() {
       const error = err as Error;
 
       if (error.message === "Failed to fetch") {
-        toast.error("Failed to connect to server");
+        toast.error("Failed to connect to server", {
+          position: "bottom-center",
+        });
       }
     });
 

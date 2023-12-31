@@ -8,7 +8,7 @@ interface TestcaseProps {
 export function Testcase(props: TestcaseProps) {
   return (
     <Stack
-      direction="row"
+      direction={{ xs: "column", md: "row" }}
       justifyContent="space-evenly"
       alignItems="stretch"
       spacing={5}
