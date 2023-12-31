@@ -6,6 +6,7 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "./App.css";
+import { BackendPinger } from "./components/BackendPinger";
 import { UserProvider } from "./contexts/user.provider";
 import ChallengeModifyPage from "./pages/ChallengeModifyPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -72,6 +73,7 @@ function App() {
     <>
       <div>
         <ToastContainer />
+        <BackendPinger />
         <ThemeProvider theme={defaultTheme}>
           <UserProvider>
             <RouterProvider router={router} />
