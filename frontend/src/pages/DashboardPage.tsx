@@ -21,27 +21,45 @@ export default function DashboardPage() {
       <Navbar />
 
       <Container>
-        <Paper sx={{ padding: 3, mt: 15 }}>
-          <Box justifyContent="space-between" display="flex">
-            <Typography variant="h4" component="h1" align="left">
-              Challenge
-            </Typography>
+        {user ? (
+          <>
+            <Paper sx={{ padding: 3, mt: 15 }}>
+              <Box justifyContent="space-between" display="flex">
+                <Typography variant="h4" component="h1" align="left">
+                  Challenge
+                </Typography>
 
-            {user && user.role === "ADMIN" ? (
-              <Button
-                variant="contained"
-                color="primary"
-                href={`/challenge/create`}
-              >
-                Create
-              </Button>
-            ) : null}
-          </Box>
+                {user && user.role === "ADMIN" ? (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    href={`/challenge/create`}
+                  >
+                    Create
+                  </Button>
+                ) : null}
+              </Box>
 
-          <Divider sx={{ my: 3 }} />
+              <Divider sx={{ my: 3 }} />
 
-          <ChallengeTable />
-        </Paper>
+              <ChallengeTable />
+            </Paper>
+          </>
+        ) : (
+          <>
+            <Paper sx={{ padding: 3, mt: 15 }}>
+              <Typography variant="h4" component="h1" align="left">
+                Welcome to Code Judge System
+              </Typography>
+
+              <Divider sx={{ my: 3 }} />
+
+              <Typography variant="body1" align="left">
+                Please login to continue
+              </Typography>
+            </Paper>
+          </>
+        )}
       </Container>
     </Container>
   );

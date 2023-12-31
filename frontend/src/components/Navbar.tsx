@@ -25,19 +25,32 @@ export function Navbar() {
           CODE JUDGE SYSTEM
         </Typography>
 
-        <Button
-          sx={{ my: 2, color: "white", display: "block" }}
-          href="/challenge"
-        >
-          Challenge
-        </Button>
+        {userContext.user && (
+          <>
+            <Button
+              sx={{ my: 2, color: "white", display: "block" }}
+              href="/challenge"
+            >
+              Challenge
+            </Button>
 
-        <Button
-          sx={{ my: 2, color: "white", display: "block" }}
-          href="/submission"
-        >
-          Submission
-        </Button>
+            <Button
+              sx={{ my: 2, color: "white", display: "block" }}
+              href="/submission"
+            >
+              Submission
+            </Button>
+          </>
+        )}
+
+        {userContext.user && userContext.user.role === "ADMIN" ? (
+          <Button
+            sx={{ my: 2, color: "white", display: "block" }}
+            href="/admin/user"
+          >
+            User
+          </Button>
+        ) : null}
 
         {userContext.user ? (
           <Button color="inherit" sx={{ marginLeft: "auto" }} href="/settings">

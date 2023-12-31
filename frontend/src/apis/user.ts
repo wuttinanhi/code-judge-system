@@ -1,5 +1,11 @@
 import { API_URL } from "./API_URL";
 
+export enum EUserRole {
+  ADMIN = "ADMIN",
+  STAFF = "STAFF",
+  USER = "USER",
+}
+
 export class UserService {
   static async login(email: string, password: string) {
     const response = await fetch(API_URL + "/auth/login", {
@@ -25,6 +31,23 @@ export class UserService {
     } else {
       throw new Error("Something went wrong");
     }
+  }
+
+  static async updateRole(
+    token: string,
+    targetUserID: number,
+    role: EUserRole
+  ) {
+    const response = await fetch(API_URL + "/user/update/role", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({ userid: targetUserID, role }),
+    });
+
+    return response;
   }
 }
 

@@ -14,6 +14,7 @@ import { SignUpPage } from "./pages/SignupPage";
 import SolvePage from "./pages/SolvePage";
 import SubmissionPage from "./pages/SubmissionPage";
 import SubmissionViewPage from "./pages/SubmissionViewPage";
+import UserManagePage from "./pages/UserManagePage";
 import UserSettingPage from "./pages/UserSettingPage";
 
 // TODO remove, this demo shouldn't need to reset the theme.
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: <UserSettingPage />,
+  },
+  {
+    path: "/admin/user",
+    element: <UserManagePage />,
   },
 ]);
 
