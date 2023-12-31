@@ -143,6 +143,10 @@ LEFT JOIN (
 	WHERE user_id = ?
 	GROUP BY challenge_id
 ) AS subq ON t.id = subq.challenge_id
+WHERE 
+	t.name LIKE ? OR 
+	t.description LIKE ? OR
+	u.display_name LIKE ?
 ORDER BY ? %s
 LIMIT ?
 OFFSET ?
@@ -153,6 +157,9 @@ OFFSET ?
 	var storeVaule []*entities.ChallengeExtended
 	err = r.db.Raw(challengeQuery,
 		options.User.ID,
+		"%"+options.Search+"%",
+		"%"+options.Search+"%",
+		"%"+options.Search+"%",
 		options.Sort,
 		options.Limit,
 		offset,

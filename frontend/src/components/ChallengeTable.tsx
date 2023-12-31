@@ -1,4 +1,4 @@
-import { Box, Button, TablePagination } from "@mui/material";
+import { Box, Button, TablePagination, TextField } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -7,6 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { useState } from "react";
+import { useDebounce } from "use-debounce";
 import { useUser } from "../contexts/user.provider";
 import { usePaginationChallenge } from "../swrs/challenge";
 import { Challenge } from "../types/challenge";
@@ -17,55 +18,101 @@ export function ChallengeTable() {
 
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
   const [order, _] = useState("asc");
 
-  const { data, isLoading, isError } = usePaginationChallenge(
+  const [searchDebounce] = useDebounce(search, 500);
+
+  const { data, isError: error } = usePaginationChallenge(
     page + 1,
     limit,
     order,
-    "id"
+    "id",
+    searchDebounce
   );
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error</div>;
-  if (!data || data.items === null) return null;
   if (!user) return null;
 
+  function renderData() {
+    if (error) {
+      return (
+        <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+          <TableCell
+            component="th"
+            colSpan={4}
+            align="center"
+            sx={{ paddingY: 2 }}
+          >
+            Error
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (!data || !data.items) {
+      return (
+        <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+          <TableCell
+            component="th"
+            colSpan={4}
+            align="center"
+            sx={{ paddingY: 2 }}
+          >
+            Loading
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return data.items.map((c: Challenge) => (
+      <ChallengeTableRow challenge={c} key={c.challenge_id} />
+    ));
+  }
+
   return (
-    <Paper sx={{ width: "100%", overflow: "hidden" }}>
-      <TableContainer>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>Challenge Name</TableCell>
-              <TableCell align="right">Created By</TableCell>
-              <TableCell align="right">Status</TableCell>
-              <TableCell align="right">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data ? (
-              data.items.map((c) => (
-                <ChallengeTableRow challenge={c} key={c.challenge_id} />
-              ))
-            ) : (
-              <h1>Not Found</h1>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        align="right"
-        component="div"
-        count={data.total}
-        page={page}
-        rowsPerPage={limit}
-        onPageChange={(_, newPage) => {
-          setPage(newPage);
-        }}
-        onRowsPerPageChange={(e) => setLimit(parseInt(e.target.value, 10))}
-      />
-    </Paper>
+    <>
+      <Box my={2}>
+        <TextField
+          fullWidth
+          id="fullWidth"
+          label="Search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Box>
+
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <TableContainer>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Challenge Name</TableCell>
+                <TableCell align="right">Created By</TableCell>
+                <TableCell align="right">Status</TableCell>
+                <TableCell align="right">Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>{renderData()}</TableBody>
+          </Table>
+
+          {data && (
+            <TablePagination
+              align="right"
+              component="div"
+              count={data.total}
+              page={page}
+              rowsPerPage={limit}
+              onPageChange={(_, newPage) => {
+                setPage(newPage);
+              }}
+              onRowsPerPageChange={(e) =>
+                setLimit(parseInt(e.target.value, 10))
+              }
+            />
+          )}
+        </TableContainer>
+      </Paper>
+    </>
   );
 }
 

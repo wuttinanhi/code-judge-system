@@ -7,11 +7,12 @@ export function usePaginationChallenge(
   page: number,
   limit: number,
   order: string,
-  sort: string
+  sort: string,
+  search: string
 ) {
   const { data, error, isLoading } = useSWR(
     () =>
-      `/challenge/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}`,
+      `/challenge/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}&search=${search}`,
     fetcherWithAuth
   );
 
