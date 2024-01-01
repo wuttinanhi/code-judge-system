@@ -7,13 +7,14 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Navbar } from "../components/Navbar";
 import { TestcaseRenderer } from "../components/TestcaseRenderer";
 import { useSubmission } from "../swrs/submission";
 import { ITestcase } from "../types/testcase";
 
 export default function SubmissionViewPage() {
+  const navigate = useNavigate();
   const params = useParams<{ id: string }>();
   const id = parseInt(params.id as any);
 
@@ -38,7 +39,7 @@ export default function SubmissionViewPage() {
             <Button
               variant="contained"
               color="primary"
-              href={`/solve/${data.challenge_id}`}
+              onClick={() => navigate(`/solve/${data.challenge_id}`)}
             >
               Go to Challenge
             </Button>

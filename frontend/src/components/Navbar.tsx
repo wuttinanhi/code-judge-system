@@ -1,10 +1,13 @@
 import { AppBar, Button } from "@mui/material";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import { useNavigate } from "react-router-dom";
+import { EUserRole } from "../apis/user";
 import { useUser } from "../contexts/user.provider";
 
 export function Navbar() {
   const userContext = useUser();
+  const navigate = useNavigate();
 
   return (
     <AppBar sx={{ mb: 10 }}>
@@ -13,7 +16,7 @@ export function Navbar() {
           variant="h6"
           noWrap
           component="a"
-          href="/"
+          onClick={() => navigate("/")}
           sx={{
             mr: 5,
             display: { xs: "none", md: "flex" },
@@ -29,35 +32,43 @@ export function Navbar() {
           <>
             <Button
               sx={{ my: 2, color: "white", display: "block" }}
-              href="/challenge"
+              onClick={() => navigate("/challenge")}
             >
               Challenge
             </Button>
 
             <Button
               sx={{ my: 2, color: "white", display: "block" }}
-              href="/submission"
+              onClick={() => navigate("/submission")}
             >
               Submission
             </Button>
           </>
         )}
 
-        {userContext.user && userContext.user.role === "ADMIN" ? (
+        {userContext.user && userContext.user.role === EUserRole.ADMIN ? (
           <Button
             sx={{ my: 2, color: "white", display: "block" }}
-            href="/admin/user"
+            onClick={() => navigate("/admin/user")}
           >
             User
           </Button>
         ) : null}
 
         {userContext.user ? (
-          <Button color="inherit" sx={{ marginLeft: "auto" }} href="/settings">
+          <Button
+            color="inherit"
+            sx={{ marginLeft: "auto" }}
+            onClick={() => navigate("/settings")}
+          >
             {userContext.user.displayName}
           </Button>
         ) : (
-          <Button color="inherit" sx={{ marginLeft: "auto" }} href="/signin">
+          <Button
+            color="inherit"
+            sx={{ marginLeft: "auto" }}
+            onClick={() => navigate("/signin")}
+          >
             Login
           </Button>
         )}

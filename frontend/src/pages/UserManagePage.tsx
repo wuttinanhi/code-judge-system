@@ -25,8 +25,6 @@ export default function UserManagePage() {
             <Typography variant="h4" component="h1" align="left">
               User Management
             </Typography>
-
-            {user && user.role === "ADMIN" ? <></> : null}
           </Box>
 
           <Divider sx={{ my: 3 }} />

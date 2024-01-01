@@ -20,7 +20,7 @@ interface UserUpdateRoleDialogProps {
 export default function UserUpdateRoleDialog(props: UserUpdateRoleDialogProps) {
   const { user } = useUser();
   const [userRole, setUserRole] = useState<EUserRole>(
-    props.user.role as EUserRole
+    props.user.role.toUpperCase() as EUserRole
   );
 
   if (!user) return null;

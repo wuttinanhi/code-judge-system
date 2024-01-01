@@ -7,11 +7,14 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { EUserRole } from "../apis/user";
 import { ChallengeTable } from "../components/ChallengeTable";
 import { Navbar } from "../components/Navbar";
 import { useUser } from "../contexts/user.provider";
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const { user } = useUser();
 
   return (
@@ -29,11 +32,13 @@ export default function DashboardPage() {
                   Challenge
                 </Typography>
 
-                {user && user.role === "ADMIN" ? (
+                {user &&
+                (user.role === EUserRole.ADMIN ||
+                  user.role === EUserRole.STAFF) ? (
                   <Button
                     variant="contained"
                     color="primary"
-                    href={`/challenge/create`}
+                    onClick={() => navigate(`/challenge/create`)}
                   >
                     Create
                   </Button>

@@ -11,6 +11,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
 import { usePaginationSubmission } from "../swrs/submission";
 import { Submission } from "../types/submission";
@@ -134,6 +135,8 @@ interface SubmissionTableRowProps {
 }
 
 function SubmissionTableRow(props: SubmissionTableRowProps) {
+  const navigate = useNavigate();
+
   return (
     <TableRow
       key={props.submission.submission_id}
@@ -158,7 +161,9 @@ function SubmissionTableRow(props: SubmissionTableRowProps) {
         <Button
           variant="contained"
           color="primary"
-          href={`/submission/${props.submission.submission_id}`}
+          onClick={() =>
+            navigate(`/submission/${props.submission.submission_id}`)
+          }
         >
           <RemoveRedEyeIcon sx={{ marginRight: 2 }} /> View
         </Button>

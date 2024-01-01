@@ -13,7 +13,9 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDebounce } from "use-debounce";
+import { EUserRole } from "../apis/user";
 import { useUser } from "../contexts/user.provider";
 import { usePaginationChallenge } from "../swrs/challenge";
 import { Challenge } from "../types/challenge";
@@ -140,6 +142,7 @@ interface ChallengeTableRowProps {
 }
 
 function ChallengeTableRow({ challenge }: ChallengeTableRowProps) {
+  const navigate = useNavigate();
   const { user } = useUser();
 
   return (
@@ -159,12 +162,15 @@ function ChallengeTableRow({ challenge }: ChallengeTableRowProps) {
         </TableCell>
         <TableCell align="right">
           <Box display="flex" justifyContent="flex-end" gap={1}>
-            {user && user.role === "ADMIN" ? (
+            {user &&
+            (user.role === EUserRole.ADMIN || user.role === EUserRole.STAFF) ? (
               <>
                 <Button
                   variant="contained"
                   color="warning"
-                  href={`/challenge/edit/${challenge.challenge_id}`}
+                  onClick={() =>
+                    navigate(`/challenge/edit/${challenge.challenge_id}`)
+                  }
                 >
                   Edit
                 </Button>
@@ -175,7 +181,7 @@ function ChallengeTableRow({ challenge }: ChallengeTableRowProps) {
               <Button
                 variant="contained"
                 color="primary"
-                href={`/solve/${challenge.challenge_id}`}
+                onClick={() => navigate(`/solve/${challenge.challenge_id}`)}
               >
                 Solve
               </Button>

@@ -8,6 +8,7 @@ import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { UserService } from "../apis/user";
 import { useUser } from "../contexts/user.provider";
@@ -15,6 +16,7 @@ import { UserLoginResponse } from "../types/user";
 
 export function SignInPage() {
   const userContext = useUser();
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -100,13 +102,8 @@ export function SignInPage() {
           </Button>
 
           <Grid container justifyContent="flex-end">
-            {/* <Grid item xs>
-              <Link href="#" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid> */}
             <Grid item>
-              <Link href="/signup" variant="body2">
+              <Link variant="body2" onClick={() => navigate("/signup")}>
                 {"Sign Up"}
               </Link>
             </Grid>
