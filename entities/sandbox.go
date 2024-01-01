@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	SandboxMemoryMB = 1024 * 1024
-	SandboxMemoryGB = 1024 * SandboxMemoryMB
+	SandboxMemoryMB uint = 1024 * 1024
+	SandboxMemoryGB uint = 1024 * SandboxMemoryMB
 )
 
 type SandboxInstance struct {

@@ -14,10 +14,14 @@ type SandboxService interface {
 	CreateSandbox(lang, code string) (*entities.SandboxInstance, error)
 	Run(instance *entities.SandboxInstance, stdin string, memoryLimit, timeLimit uint) (result *entities.SandboxRunResult)
 	CleanUp(instance *entities.SandboxInstance) error
+	ValidateMemoryLimit(memoryLimit uint) (err error)
+	ValidateTimeLimit(timeLimit uint) (err error)
 }
 
 type sandboxService struct {
 	dockerService DockerService
+	memoryLimit   uint
+	timeLimit     uint
 }
 
 func (s *sandboxService) CopyFileToVolume(instance *entities.SandboxInstance, volumeMount []mount.Mount, fileContentMap map[string]string) error {
@@ -27,7 +31,7 @@ func (s *sandboxService) CopyFileToVolume(instance *entities.SandboxInstance, vo
 		instance.ImageName,
 		[]string{"/bin/sh", "-c", "chmod 777 -R /sandbox && sleep 9999"},
 		volumeMount,
-		entities.SandboxMemoryMB*256,
+		int64(entities.SandboxMemoryMB*256),
 		containerName,
 	)
 	if err != nil {
@@ -115,7 +119,7 @@ func (s *sandboxService) CreateSandbox(lang string, code string) (*entities.Sand
 		instance.ImageName,
 		[]string{"/bin/sh", "-c", compileCommand},
 		programVolumeMount,
-		entities.SandboxMemoryMB*256,
+		int64(entities.SandboxMemoryMB*256),
 		instance.RunID+"-compile",
 	)
 	if err != nil {
@@ -166,6 +170,19 @@ func (s *sandboxService) CreateSandbox(lang string, code string) (*entities.Sand
 // Run implements SandboxService.
 func (s *sandboxService) Run(instance *entities.SandboxInstance, stdin string, memoryLimit, timeLimit uint) (result *entities.SandboxRunResult) {
 	result = &entities.SandboxRunResult{}
+
+	maxMemoryErr := s.ValidateMemoryLimit(memoryLimit)
+	if maxMemoryErr != nil {
+		result.Err = errors.New("run stage: max memory exceeded sandbox limit")
+		return
+	}
+
+	maxTimeLimitErr := s.ValidateTimeLimit(timeLimit)
+	if maxTimeLimitErr != nil {
+		result.Err = errors.New("run stage: max run time exceeded sandbox limit")
+		return
+	}
+
 	runCommand := instance.Instruction.RunCmd
 
 	// create stdin volume
@@ -275,10 +292,27 @@ func (s *sandboxService) CleanUp(instance *entities.SandboxInstance) error {
 	return nil
 }
 
-func NewSandboxService() SandboxService {
+func (s *sandboxService) ValidateMemoryLimit(memoryLimit uint) (err error) {
+	if memoryLimit > entities.SandboxMemoryMB*s.memoryLimit {
+		err = errors.New("run stage: too large memory limit")
+	}
+	return
+}
+
+func (s *sandboxService) ValidateTimeLimit(timeLimit uint) (err error) {
+
+	if timeLimit > s.timeLimit {
+		err = errors.New("run stage: too large time limit")
+	}
+	return
+}
+
+func NewSandboxService(memoryLimit uint, timeLimit uint) SandboxService {
 	dockerService := NewDockerservice()
 
 	return &sandboxService{
 		dockerService: dockerService,
+		memoryLimit:   memoryLimit,
+		timeLimit:     timeLimit,
 	}
 }

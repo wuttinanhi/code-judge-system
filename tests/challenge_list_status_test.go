@@ -11,7 +11,7 @@ import (
 // Quick test to test functionality of PaginationChallengesWithStatus
 func TestChallengeWithStatus(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 
 	// register a user
 	testServiceKit.UserService.Register("admin@example.com", "admin", "admin")

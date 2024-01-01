@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/spf13/viper"
+	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/repositories"
 	"gorm.io/gorm"
 )
@@ -29,10 +30,13 @@ func CreateServiceKit(db *gorm.DB) *ServiceKit {
 
 	kafkaHost := viper.GetString("KAFKA_HOST")
 
+	maxMemoryLimit := viper.GetUint("SANDBOX_MAX_MEMORY_MB")
+	maxRuntimeMs := viper.GetUint("SANDBOX_MAX_TIME_MS")
+
 	jwtService := NewJWTService(jwtSecret)
 	userService := NewUserService(userRepo)
-	challengeService := NewChallengeService(challengeRepo)
-	sandboxService := NewSandboxService()
+	sandboxService := NewSandboxService(maxMemoryLimit, maxRuntimeMs)
+	challengeService := NewChallengeService(challengeRepo, sandboxService)
 	submissionService := NewSubmissionService(submissionRepo, challengeService, sandboxService)
 	kafkaService := NewKafkaService(kafkaHost)
 
@@ -51,10 +55,13 @@ func CreateTestServiceKit(db *gorm.DB) *ServiceKit {
 	challengeRepo := repositories.NewChallengeRepository(db)
 	submissionRepo := repositories.NewSubmissionRepository(db)
 
+	maxMemoryLimit := entities.SandboxMemoryMB * 256
+	maxRuntimeMs := uint(10000)
+
 	jwtService := NewJWTService("test")
 	userService := NewUserService(userRepo)
-	challengeService := NewChallengeService(challengeRepo)
-	sandboxService := NewSandboxService()
+	sandboxService := NewSandboxService(maxMemoryLimit, maxRuntimeMs)
+	challengeService := NewChallengeService(challengeRepo, sandboxService)
 	submissionService := NewSubmissionService(submissionRepo, challengeService, sandboxService)
 	kafkaService := NewKafkaMockService()
 

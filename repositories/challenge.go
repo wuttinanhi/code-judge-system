@@ -12,16 +12,12 @@ import (
 type ChallengeRepository interface {
 	// CreateChallenge creates a new challenge.
 	CreateChallenge(challenge *entities.Challenge) (*entities.Challenge, error)
-	// CreateChallengeWithTestcase creates a new challenge with testcases.
-	CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []*entities.ChallengeTestcase) (*entities.Challenge, error)
 	// UpdateChallenge updates a challenge.
 	UpdateChallenge(challenge *entities.Challenge) error
 	// DeleteChallenge deletes a challenge.
 	DeleteChallenge(challenge *entities.Challenge) error
 	// FindChallengeByID returns a challenge by given ID.
 	FindChallengeByID(id uint) (challenge *entities.Challenge, err error)
-	// FindChallengeByAuthor returns a challenge by given author.
-	// FindChallengesByAuthor(author *entities.User) (challenges []*entities.Challenge, err error)
 	// AllChallenges returns all challenges.
 	AllChallenges() (challenges []*entities.Challenge, err error)
 	// AddTestcase adds a testcase to a challenge.
@@ -195,13 +191,6 @@ OFFSET ?
 	result.Total = int(totalChallenges)
 
 	return
-}
-
-// CreateChallengeWithTestcase implements ChallengeRepository.
-func (r *challengeRepository) CreateChallengeWithTestcase(challenge *entities.Challenge, testcases []*entities.ChallengeTestcase) (*entities.Challenge, error) {
-	challenge.Testcases = testcases
-	result := r.db.Create(challenge)
-	return challenge, result.Error
 }
 
 // CreateChallenge implements ChallengeRepository.

@@ -10,7 +10,7 @@ import (
 
 func TestSandbox(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 
 	t.Run("Sandbox Go Test", func(t *testing.T) {
 		sandbox, err := testServiceKit.SandboxService.CreateSandbox(

@@ -16,7 +16,7 @@ func TestUserRoute(t *testing.T) {
 
 	t.Run("admin can update user role", func(t *testing.T) {
 		db := databases.NewTempSQLiteDatabase()
-		testServiceKit := services.CreateServiceKit(db)
+		testServiceKit := services.CreateTestServiceKit(db)
 		rateLimitStorage := controllers.GetMemoryStorage()
 		app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 		adminToken, _ := createUserWrapper(t, testServiceKit)
@@ -43,7 +43,7 @@ func TestUserRoute(t *testing.T) {
 
 	t.Run("normal user cannot update role", func(t *testing.T) {
 		db := databases.NewTempSQLiteDatabase()
-		testServiceKit := services.CreateServiceKit(db)
+		testServiceKit := services.CreateTestServiceKit(db)
 		rateLimitStorage := controllers.GetMemoryStorage()
 		app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 		_, normalToken := createUserWrapper(t, testServiceKit)

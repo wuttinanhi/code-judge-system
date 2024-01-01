@@ -15,7 +15,7 @@ import (
 // Dedicated test for challenge update
 func TestChallengeUpdate(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 	rateLimitStorage := controllers.GetMemoryStorage()
 	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
@@ -120,7 +120,7 @@ func TestChallengeUpdate(t *testing.T) {
 
 func TestChallengeUpdateTestcaseLimit(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 	rateLimitStorage := controllers.GetMemoryStorage()
 	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
@@ -183,5 +183,78 @@ func TestChallengeUpdateTestcaseLimit(t *testing.T) {
 	}
 	if response.StatusCode == http.StatusTooManyRequests {
 		t.Errorf("Expected status StatusTooManyRequests, got %v", response.StatusCode)
+	}
+}
+
+func TestChallengeUpdateSandboxLimit(t *testing.T) {
+	db := databases.NewTempSQLiteDatabase()
+	testServiceKit := services.CreateTestServiceKit(db)
+	rateLimitStorage := controllers.GetMemoryStorage()
+	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
+
+	// create admin user
+	adminUser, err := testServiceKit.UserService.Register("admin@example.com", "testpassword", "admin")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// set user role to admin
+	err = testServiceKit.UserService.UpdateRole(adminUser, entities.UserRoleAdmin)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// generate admin access token
+	adminAccessToken, err := testServiceKit.JWTService.GenerateToken(*adminUser)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// create new challenge
+	_, err = testServiceKit.ChallengeService.CreateChallenge(&entities.Challenge{
+		Name:        "Test Challenge",
+		Description: "Test Description",
+		User:        adminUser,
+		Testcases:   []*entities.ChallengeTestcase{},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testcases := []entities.ChallengeTestcaseDTO{}
+	testcases = append(testcases, entities.ChallengeTestcaseDTO{
+		ID:             0,
+		Input:          "INPUT",
+		ExpectedOutput: "EXPECTED OUTPUT",
+		LimitMemory:    entities.SandboxMemoryGB * 1,
+		LimitTimeMs:    99999,
+		Action:         "create",
+	})
+	testcases = append(testcases, entities.ChallengeTestcaseDTO{
+		ID:             0,
+		Input:          "INPUT",
+		ExpectedOutput: "EXPECTED OUTPUT",
+		LimitMemory:    entities.SandboxMemoryGB * 1,
+		LimitTimeMs:    99999,
+		Action:         "create",
+	})
+
+	dto := entities.ChallengeUpdateDTO{
+		Name:        "Test Update",
+		Description: "Test Update",
+		Testcases:   testcases,
+	}
+	requestBody, _ := json.Marshal(dto)
+
+	request, _ := http.NewRequest(http.MethodPut, "/challenge/update/1", bytes.NewBuffer(requestBody))
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Authorization", "Bearer "+adminAccessToken)
+
+	response, err := app.Test(request, -1)
+	if err != nil {
+		t.Error(err)
+	}
+	if response.StatusCode != http.StatusBadRequest {
+		t.Errorf("Expected status %v, got %v", http.StatusBadRequest, response.StatusCode)
 	}
 }

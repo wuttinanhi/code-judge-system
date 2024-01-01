@@ -14,7 +14,7 @@ import (
 
 func TestAuthRoutes(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 	rateLimitStorage := controllers.GetMemoryStorage()
 	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 

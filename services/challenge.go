@@ -1,6 +1,8 @@
 package services
 
 import (
+	"fmt"
+
 	"github.com/wuttinanhi/code-judge-system/entities"
 	"github.com/wuttinanhi/code-judge-system/repositories"
 )
@@ -10,7 +12,6 @@ type ChallengeService interface {
 	// UpdateChallenge(challenge *entities.Challenge) (err error)
 	DeleteChallenge(challenge *entities.Challenge) (err error)
 	FindChallengeByID(challengeID uint) (challenge *entities.Challenge, err error)
-	// FindChallengesByAuthor(user *entities.User) (challenges []*entities.Challenge, err error)
 	AllChallenges() (challenges []*entities.Challenge, err error)
 	AddTestcase(challenge *entities.Challenge, testcase *entities.ChallengeTestcase) (*entities.ChallengeTestcase, error)
 	UpdateTestcase(testcase *entities.ChallengeTestcase) (err error)
@@ -20,10 +21,31 @@ type ChallengeService interface {
 	PaginationChallengesWithStatus(options *entities.ChallengePaginationOptions) (result *entities.PaginationResult[*entities.ChallengeExtended], err error)
 	UpdateChallengeWithTestcase(challenge *entities.Challenge) (err error)
 	CountAllChallengesByUser(user *entities.User) (total int64, err error)
+	ValidateTestcases(testcases []*entities.ChallengeTestcase) (err error)
 }
 
 type challengeService struct {
-	challengeRepo repositories.ChallengeRepository
+	challengeRepo  repositories.ChallengeRepository
+	sandboxService SandboxService
+}
+
+// ValidateTestcases implements ChallengeService.
+func (s *challengeService) ValidateTestcases(testcases []*entities.ChallengeTestcase) (err error) {
+	// loop testcases
+	for _, testcase := range testcases {
+		maxMemoryErr := s.sandboxService.ValidateMemoryLimit(testcase.LimitMemory)
+		if maxMemoryErr != nil {
+			err = fmt.Errorf("testcase #%d: max memory exceeded sandbox limit", testcase.ID)
+			return
+		}
+
+		maxTimeLimitErr := s.sandboxService.ValidateTimeLimit(testcase.LimitTimeMs)
+		if maxTimeLimitErr != nil {
+			err = fmt.Errorf("testcase #%d: max run time exceeded sandbox limit", testcase.ID)
+			return
+		}
+	}
+	return
 }
 
 // CountAllChallengesByUser implements ChallengeService.
@@ -34,6 +56,10 @@ func (s *challengeService) CountAllChallengesByUser(user *entities.User) (total 
 
 // UpdateChallengeWithTestcase implements ChallengeService.
 func (s *challengeService) UpdateChallengeWithTestcase(challenge *entities.Challenge) (err error) {
+	err = s.ValidateTestcases(challenge.Testcases)
+	if err != nil {
+		return err
+	}
 	err = s.challengeRepo.UpdateChallengeWithTestcase(challenge)
 	return
 }
@@ -46,7 +72,11 @@ func (s *challengeService) PaginationChallengesWithStatus(options *entities.Chal
 
 // CreateChallenge implements ChallengeService.
 func (s *challengeService) CreateChallenge(challenge *entities.Challenge) (*entities.Challenge, error) {
-	challenge, err := s.challengeRepo.CreateChallenge(challenge)
+	err := s.ValidateTestcases(challenge.Testcases)
+	if err != nil {
+		return nil, err
+	}
+	challenge, err = s.challengeRepo.CreateChallenge(challenge)
 	return challenge, err
 }
 
@@ -86,12 +116,6 @@ func (s *challengeService) FindChallengeByID(challengeID uint) (challenge *entit
 	return challenge, err
 }
 
-// FindChallengesByAuthor implements ChallengeService.
-// func (s *challengeService) FindChallengesByAuthor(user *entities.User) (challenges []*entities.Challenge, err error) {
-// 	challenges, err = s.challengeRepo.FindChallengesByAuthor(user)
-// 	return challenges, err
-// }
-
 // FindTestcaseByID implements ChallengeService.
 func (s *challengeService) FindTestcaseByID(testcaseID uint) (testcase *entities.ChallengeTestcase, err error) {
 	testcase, err = s.challengeRepo.FindTestcaseByID(testcaseID)
@@ -110,8 +134,9 @@ func (s *challengeService) UpdateTestcase(testcase *entities.ChallengeTestcase) 
 	return err
 }
 
-func NewChallengeService(challengeRepo repositories.ChallengeRepository) ChallengeService {
+func NewChallengeService(challengeRepo repositories.ChallengeRepository, sandboxService SandboxService) ChallengeService {
 	return &challengeService{
-		challengeRepo: challengeRepo,
+		challengeRepo:  challengeRepo,
+		sandboxService: sandboxService,
 	}
 }

@@ -15,7 +15,7 @@ import (
 
 func TestChallengeRoute(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 	rateLimitStorage := controllers.GetMemoryStorage()
 	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
@@ -69,6 +69,32 @@ func TestChallengeRoute(t *testing.T) {
 
 		if response.StatusCode != http.StatusOK {
 			t.Errorf("Expected status OK, got %v", response.StatusCode)
+		}
+	})
+
+	t.Run("/challenge/create with sandbox limit", func(t *testing.T) {
+		dto := entities.ChallengeCreateWithTestcaseDTO{
+			Name:        "Test Challenge",
+			Description: "Test Description",
+			Testcases: []entities.ChallengeTestcaseDTO{
+				{Input: "1 2", ExpectedOutput: "3", LimitMemory: entities.SandboxMemoryGB * 1, LimitTimeMs: 99999},
+				{Input: "2 3", ExpectedOutput: "5", LimitMemory: entities.SandboxMemoryGB * 1, LimitTimeMs: 99999},
+			},
+		}
+		requestBody, _ := json.Marshal(dto)
+
+		request, _ := http.NewRequest(http.MethodPost, "/challenge/create", bytes.NewBuffer(requestBody))
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Authorization", "Bearer "+adminAccessToken)
+
+		response, err := app.Test(request, -1)
+		if err != nil {
+			t.Error(err)
+		}
+
+		// expect bad request status code
+		if response.StatusCode != http.StatusBadRequest {
+			t.Errorf("Expected status InternalServerError, got %v", response.StatusCode)
 		}
 	})
 
@@ -186,8 +212,7 @@ func TestChallengeRoute(t *testing.T) {
 	})
 }
 
-func ChallengeCreateWrapper(app *fiber.App, userCreateToken string) (*http.Response, error) {
-
+func challengeCreateWrapper(app *fiber.App, userCreateToken string) (*http.Response, error) {
 	dto := entities.ChallengeCreateWithTestcaseDTO{
 		Name:        "Test Challenge",
 		Description: "Test Description",
@@ -213,7 +238,7 @@ func ChallengeCreateWrapper(app *fiber.App, userCreateToken string) (*http.Respo
 
 func TestChallengeCreateLimit(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 	rateLimitStorage := controllers.GetMemoryStorage()
 	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 
@@ -237,7 +262,7 @@ func TestChallengeCreateLimit(t *testing.T) {
 
 	// expect first challenge create 100 to be success
 	for i := 0; i < 200; i++ {
-		response, err := ChallengeCreateWrapper(app, adminAccessToken)
+		response, err := challengeCreateWrapper(app, adminAccessToken)
 		if err != nil {
 			t.Error(err)
 		}
