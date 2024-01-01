@@ -38,6 +38,11 @@ func (r *userRepository) Pagination(options *entities.PaginationOptions) (result
 	baseQuery := r.db.Model(&entities.User{})
 
 	findQuery := baseQuery.
+		Where(
+			"display_name LIKE ? OR email LIKE ?",
+			"%"+options.Search+"%",
+			"%"+options.Search+"%",
+		).
 		Limit(options.Limit).
 		Offset(offset).
 		Order(clause.OrderByColumn{Column: clause.Column{Name: options.Sort}, Desc: desc})

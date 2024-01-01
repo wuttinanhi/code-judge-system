@@ -1,4 +1,4 @@
-import { Box, Button, TablePagination } from "@mui/material";
+import { Box, Button, TablePagination, TextField } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -7,6 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { useState } from "react";
+import { useDebounce } from "use-debounce";
 import { useUser } from "../contexts/user.provider";
 import { usePaginationUser } from "../swrs/user";
 import { User } from "../types/user";
@@ -17,51 +18,98 @@ export function UserTable() {
 
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
   const [order, _] = useState("ASC");
+
+  const [searchDebounce] = useDebounce(search, 500);
 
   const { data, isLoading, isError } = usePaginationUser(
     page + 1,
     limit,
     order,
-    "id"
+    "id",
+    searchDebounce
   );
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error</div>;
-  if (!data || data.items === null) return null;
   if (!user) return null;
 
+  function renderData() {
+    if (isError) {
+      return (
+        <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+          <TableCell
+            component="th"
+            colSpan={4}
+            align="center"
+            sx={{ paddingY: 2 }}
+          >
+            Error
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (!data || !data.items || isLoading) {
+      return (
+        <TableRow sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+          <TableCell
+            component="th"
+            colSpan={4}
+            align="center"
+            sx={{ paddingY: 2 }}
+          >
+            Loading
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return data.items.map((user: User) => (
+      <UserTableRow user={user} key={user.id} />
+    ));
+  }
+
   return (
-    <Paper sx={{ width: "100%", overflow: "hidden" }}>
-      <TableContainer>
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell align="right">Display Name</TableCell>
-              <TableCell align="right">Email</TableCell>
-              <TableCell align="right">Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.items.map((user) => (
-              <UserTableRow key={user.id} user={user} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        align="right"
-        component="div"
-        count={data.total}
-        page={page}
-        rowsPerPage={limit}
-        onPageChange={(_, newPage) => {
-          setPage(newPage);
-        }}
-        onRowsPerPageChange={(e) => setLimit(parseInt(e.target.value, 10))}
-      />
-    </Paper>
+    <>
+      <Box my={2}>
+        <TextField
+          fullWidth
+          id="fullWidth"
+          label="Search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Box>
+
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        <TableContainer>
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell align="right">Display Name</TableCell>
+                <TableCell align="right">Email</TableCell>
+                <TableCell align="right">Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>{renderData()}</TableBody>
+          </Table>
+        </TableContainer>
+        {data && (
+          <TablePagination
+            align="right"
+            component="div"
+            count={data.total}
+            page={page}
+            rowsPerPage={limit}
+            onPageChange={(_, newPage) => {
+              setPage(newPage);
+            }}
+            onRowsPerPageChange={(e) => setLimit(parseInt(e.target.value, 10))}
+          />
+        )}
+      </Paper>
+    </>
   );
 }
 
