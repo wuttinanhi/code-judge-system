@@ -14,7 +14,7 @@ import (
 // Quick test to test functionality of PaginationChallengesWithStatus
 func TestSubmissionPagination(t *testing.T) {
 	db := databases.NewTempSQLiteDatabase()
-	testServiceKit := services.CreateServiceKit(db)
+	testServiceKit := services.CreateTestServiceKit(db)
 	rateLimitStorage := controllers.GetMemoryStorage()
 	app := controllers.SetupAPI(testServiceKit, rateLimitStorage)
 

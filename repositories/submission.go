@@ -61,26 +61,29 @@ func (r *submissionRepository) Pagination(options *entities.SubmissionPagination
 		Joins("LEFT JOIN users ON submissions.user_id = users.id").
 		Joins("LEFT JOIN challenges ON submissions.challenge_id = challenges.id").
 		Where(`
-			users.id = ? OR 
-			challenges.id = ? OR
 			challenges.name LIKE ? OR 
 			challenges.description LIKE ? OR
 			users.display_name LIKE ? OR
 			submissions.status LIKE ?
 		`,
-			options.User.ID,
-			options.Challenge.ID,
 			"%"+options.Search+"%",
 			"%"+options.Search+"%",
 			"%"+options.Search+"%",
 			"%"+options.Search+"%",
 		)
 
+	if options.User.ID != 0 {
+		baseQuery = baseQuery.Where(`submissions.user_id = ?`, options.User.ID)
+	}
+	if options.Challenge.ID != 0 {
+		baseQuery = baseQuery.Where(`submissions.challenge_id = ?`, options.Challenge.ID)
+	}
+
 	var submissions []*entities.Submission
 	submissionQuery := baseQuery.
 		Limit(options.Limit).
 		Offset(offset).
-		Order("id " + options.Order).
+		Order("submissions.id " + options.Order).
 		Find(&submissions)
 	if submissionQuery.Error != nil {
 		err = submissionQuery.Error
