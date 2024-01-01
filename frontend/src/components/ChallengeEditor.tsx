@@ -174,7 +174,7 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
         <TextField
           label="Challenge Description"
           multiline
-          rows={4}
+          rows={20}
           helperText="Description of the challenge"
           value={challengeDescription}
           onChange={(e) => setChallengeDescription(e.target.value)}

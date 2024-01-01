@@ -31,7 +31,7 @@ type ChallengePaginationOptions struct {
 
 type ChallengeCreateWithTestcaseDTO struct {
 	Name        string                 `json:"name" validate:"required,min=3,max=255"`
-	Description string                 `json:"description" validate:"max=255"`
+	Description string                 `json:"description" validate:"max=3000"`
 	Testcases   []ChallengeTestcaseDTO `json:"testcases" validate:"required"`
 }
 
@@ -59,7 +59,7 @@ func (c *ChallengeCreateWithTestcaseDTO) GetTestcases() []*ChallengeTestcase {
 
 type ChallengeUpdateDTO struct {
 	Name        string                 `json:"name" validate:"required,min=3,max=255"`
-	Description string                 `json:"description" validate:"max=255"`
+	Description string                 `json:"description" validate:"max=3000"`
 	Testcases   []ChallengeTestcaseDTO `json:"testcases" validate:"required"`
 }
 

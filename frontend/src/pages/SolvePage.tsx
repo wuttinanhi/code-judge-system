@@ -11,7 +11,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { useParams } from "react-router-dom";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "react-toastify";
 import { SubmissionService } from "../apis/submission";
 import { Navbar } from "../components/Navbar";
@@ -62,46 +65,72 @@ export default function SolvePage() {
   };
 
   return (
-    <Container sx={{ width: "100%" }} disableGutters>
-      <CssBaseline />
-
+    <>
       <Navbar />
 
-      <Container>
-        <Paper sx={{ padding: 3, mt: 15 }}>
-          <Typography variant="h4" component="h1" align="left">
-            #{data.challenge_id} {data.name}
-          </Typography>
-          <Divider sx={{ my: 3 }} />
-          <Typography variant="body1" align="left">
-            {data.description}
-          </Typography>
-        </Paper>
+      <Box
+        display="flex"
+        flexDirection="row"
+        justifyContent="flex-start"
+        alignContent="flex-start"
+        sx={{ marginTop: 15, marginX: 10 }}
+        columnGap={5}
+      >
+        <Box flex={1}>
+          <Paper sx={{ padding: 3 }}>
+            <Typography variant="h4" component="h1" align="left">
+              #{data.challenge_id} {data.name}
+            </Typography>
+            <Divider sx={{ my: 3 }} />
+            <ReactMarkdown
+              children={data.description}
+              components={{
+                code(props) {
+                  const { children, className, node, ...rest } = props;
+                  const match = /language-(\w+)/.exec(className || "");
+                  return match ? (
+                    <SyntaxHighlighter
+                      PreTag="div"
+                      children={String(children).replace(/\n$/, "")}
+                      language={match[1]}
+                      style={vscDarkPlus}
+                    />
+                  ) : (
+                    <code {...rest} className={className}>
+                      {children}
+                    </code>
+                  );
+                },
+              }}
+            />
+          </Paper>
 
-        <Paper sx={{ padding: 3, mt: 5 }}>
-          <Typography variant="h4" component="h1" align="left">
-            Testcases
-          </Typography>
-          <Divider sx={{ my: 3 }} />
-          <TestcaseRenderer
-            testcases={data.testcases.map((t) => {
-              return {
-                testcase_id: t.testcase_id,
-                input: t.input,
-                expected_output: t.expected_output,
-              } as ITestcase;
-            })}
-          />
-        </Paper>
+          <Box mt={5}>
+            <Typography variant="h4" component="h1" align="left">
+              Testcases
+            </Typography>
+            <Divider sx={{ my: 3 }} />
+            <TestcaseRenderer
+              testcases={data.testcases.map((t) => {
+                return {
+                  testcase_id: t.testcase_id,
+                  input: t.input,
+                  expected_output: t.expected_output,
+                } as ITestcase;
+              })}
+            />
+          </Box>
+        </Box>
 
-        <Paper sx={{ padding: 3, mt: 5 }}>
+        <Box flex={1} maxHeight="80vh">
           <Typography variant="h4" component="h1" align="left">
             Solution
           </Typography>
+
           <Divider sx={{ my: 3 }} />
 
           <Editor
-            height="50vh"
+            height="80%"
             theme="vs-dark"
             language={language}
             value={code}
@@ -137,8 +166,12 @@ export default function SolvePage() {
               Submit
             </Button>
           </Box>
-        </Paper>
+        </Box>
+      </Box>
+
+      <Container maxWidth="lg">
+        <CssBaseline />
       </Container>
-    </Container>
+    </>
   );
 }
