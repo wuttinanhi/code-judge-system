@@ -45,8 +45,6 @@ export function SubmissionTable() {
     0
   );
 
-  if (isLoading) return <div>Loading...</div>;
-
   function renderData() {
     if (isError) {
       return (
@@ -114,17 +112,19 @@ export function SubmissionTable() {
             <TableBody>{renderData()}</TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          align="right"
-          component="div"
-          count={data.total}
-          page={page}
-          rowsPerPage={limit}
-          onPageChange={(_, newPage) => {
-            setPage(newPage);
-          }}
-          onRowsPerPageChange={(e) => setLimit(parseInt(e.target.value, 10))}
-        />
+        {data && (
+          <TablePagination
+            align="right"
+            component="div"
+            count={data.total}
+            page={page}
+            rowsPerPage={limit}
+            onPageChange={(_, newPage) => {
+              setPage(newPage);
+            }}
+            onRowsPerPageChange={(e) => setLimit(parseInt(e.target.value, 10))}
+          />
+        )}
       </Paper>
     </>
   );

@@ -12,15 +12,23 @@ export function usePaginationSubmission(
   challengeID?: any,
   userID?: any
 ) {
-  let url = `/submission/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}&search=${search}`;
-  if (challengeID) {
-    url += `&challenge_id=${challengeID}`;
-  }
-  if (userID) {
-    url += `&user_id=${userID}`;
-  }
+  const { data, error, isLoading } = useSWR(() => {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      sort,
+      order,
+      search,
+    });
+    if (challengeID) {
+      params.append("challenge_id", String(challengeID));
+    }
+    if (userID) {
+      params.append("user_id", String(userID));
+    }
 
-  const { data, error, isLoading } = useSWR(() => url, fetcherWithAuth);
+    return `/submission/pagination?${params.toString()}`;
+  }, fetcherWithAuth);
 
   return {
     data: data as PaginationResult<Submission>,

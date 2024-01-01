@@ -10,11 +10,17 @@ export function usePaginationChallenge(
   sort: string,
   search: string
 ) {
-  const { data, error, isLoading } = useSWR(
-    () =>
-      `/challenge/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}&search=${search}`,
-    fetcherWithAuth
-  );
+  const { data, error, isLoading } = useSWR(() => {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      sort,
+      order,
+      search,
+    });
+
+    return `/challenge/pagination?${params.toString()}`;
+  }, fetcherWithAuth);
 
   return {
     data: data as PaginationResult<Challenge>,

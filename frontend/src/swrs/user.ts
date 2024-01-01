@@ -10,11 +10,16 @@ export function usePaginationUser(
   sort: string,
   search: string
 ) {
-  const { data, error, isLoading } = useSWR(
-    () =>
-      `/user/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}&search=${search}`,
-    fetcherWithAuth
-  );
+  const { data, error, isLoading } = useSWR(() => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      sort,
+      order,
+      search,
+    });
+    return `/user/pagination?${params.toString()}`;
+  }, fetcherWithAuth);
 
   return {
     data: data as PaginationResult<User>,
