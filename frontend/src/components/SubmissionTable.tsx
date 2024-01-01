@@ -104,6 +104,7 @@ export function SubmissionTable() {
               <TableRow>
                 <TableCell># Submission ID</TableCell>
                 <TableCell>Challenge Name</TableCell>
+                <TableCell align="right">Language</TableCell>
                 <TableCell align="right">Created By</TableCell>
                 <TableCell align="right">Status</TableCell>
                 <TableCell align="right">Action</TableCell>
@@ -143,6 +144,9 @@ function SubmissionTableRow(props: SubmissionTableRowProps) {
       </TableCell>
       <TableCell component="th" scope="row">
         {props.submission.challenge.name}
+      </TableCell>
+      <TableCell component="th" scope="row" align="right">
+        {props.submission.language}
       </TableCell>
       <TableCell component="th" scope="row" align="right">
         {props.submission.user.displayname}
