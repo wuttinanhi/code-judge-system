@@ -130,37 +130,42 @@ func (r *challengeRepository) PaginationChallengesWithStatus(options *entities.C
 		return
 	}
 
+	// calculate offset
+	offset := (options.Page - 1) * options.Limit
+
 	challengeQuery := fmt.Sprintf(`
-SELECT t.*, u.*, COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status
+SELECT 
+	t.id as ORDER_ID,
+	t.*, 
+	u.*, 
+	COALESCE(subq.submission_status, "NOTSOLVE") AS submission_status
 FROM challenges AS t
 LEFT JOIN users AS u ON t.user_id = u.id
 LEFT JOIN (
 	SELECT
+		MAX(id) as id,
 		challenge_id,
-		MAX(id),
 		MAX(status) as submission_status
 	FROM submissions
 	WHERE user_id = ?
 	GROUP BY challenge_id
-) AS subq ON t.id = subq.challenge_id
+) subq ON t.id = subq.challenge_id
 WHERE 
 	t.name LIKE ? OR 
 	t.description LIKE ? OR
 	u.display_name LIKE ?
-ORDER BY ? %s
+ORDER BY ORDER_ID %s
 LIMIT ?
 OFFSET ?
 	`, options.Order)
 
-	offset := (options.Page - 1) * options.Limit
-
 	var storeVaule []*entities.ChallengeExtended
-	err = r.db.Raw(challengeQuery,
+	err = r.db.Raw(
+		challengeQuery,
 		options.User.ID,
 		"%"+options.Search+"%",
 		"%"+options.Search+"%",
 		"%"+options.Search+"%",
-		options.Sort,
 		options.Limit,
 		offset,
 	).
@@ -172,10 +177,20 @@ OFFSET ?
 		challenge.User.CreatedAt = time.Time{}
 	}
 
-	// Query to count total challenges
+	// query to count total challenges
 	var totalChallenges int64
-	r.db.Model(&entities.Challenge{}).Count(&totalChallenges)
+	r.db.Model(&entities.Challenge{}).
+		Preload("User").
+		Joins("LEFT JOIN users ON challenges.user_id = users.id").
+		Where(
+			"name LIKE ? OR description LIKE ? OR users.display_name LIKE ?",
+			"%"+options.Search+"%",
+			"%"+options.Search+"%",
+			"%"+options.Search+"%",
+		).
+		Count(&totalChallenges)
 
+	// store result
 	result.Items = storeVaule
 	result.Total = int(totalChallenges)
 

@@ -1,4 +1,10 @@
-import { Box, Button, TablePagination, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  TablePagination,
+  TableSortLabel,
+  TextField,
+} from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -19,7 +25,7 @@ export function ChallengeTable() {
   const [page, setPage] = useState(0);
   const [limit, setLimit] = useState(10);
   const [search, setSearch] = useState("");
-  const [order, _] = useState("asc");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
 
   const [searchDebounce] = useDebounce(search, 500);
 
@@ -69,6 +75,11 @@ export function ChallengeTable() {
     ));
   }
 
+  function onSortChange() {
+    // toggle order
+    setOrder(order === "asc" ? "desc" : "asc");
+  }
+
   return (
     <>
       <Box my={2}>
@@ -86,7 +97,15 @@ export function ChallengeTable() {
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow>
-                <TableCell>Challenge Name</TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={true}
+                    direction={order}
+                    onClick={onSortChange}
+                  >
+                    Challenge Name
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell align="right">Created By</TableCell>
                 <TableCell align="right">Status</TableCell>
                 <TableCell align="right">Action</TableCell>

@@ -4,7 +4,7 @@ type PaginationOptions struct {
 	Page   int    `json:"page" validate:"min=1"`
 	Limit  int    `json:"limit" validate:"min=1,max=100"`
 	Order  string `json:"order_by" validate:"oneof=asc desc"`
-	Sort   string `json:"sort_by" validate:"string"`
+	Sort   string `json:"sort_by" validate:"string,max=20"`
 	Search string `json:"search" validate:"string,max=100"`
 }
 
