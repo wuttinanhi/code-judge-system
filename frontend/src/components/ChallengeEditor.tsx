@@ -103,6 +103,8 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
         input: "",
         expected_output: "",
         testcase_id: 0,
+        limit_memory: 268435456,
+        limit_time_ms: 1000,
         action: "create",
       },
     ]);
@@ -280,21 +282,49 @@ export function TestcaseEditor(props: TestcaseEditorProps) {
     >
       <Card sx={{ flexGrow: 1, flexBasis: "50%", width: "full" }}>
         <CardContent>
-          <Box justifyContent="space-between" display="flex">
+          <Box justifyContent="space-between" display="flex" mb={3}>
             <Typography variant="h6">
               Testcase #{data.testcase_id ? data.testcase_id : "New"}
             </Typography>
 
-            <Button
-              variant="contained"
-              color="error"
-              onClick={() => {
-                setData((p) => ({ ...p, action: "delete" }));
-              }}
-            >
-              <DeleteForeverIcon />
-              Delete
-            </Button>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+              <TextField
+                label="Limit Memory"
+                variant="outlined"
+                value={data.limit_memory}
+                onChange={(e) => {
+                  setData((p) => ({
+                    ...p,
+                    limit_memory: parseInt(e.target.value),
+                    action: p.action === "create" ? "create" : "update",
+                  }));
+                }}
+              />
+
+              <TextField
+                label="Limit Time (ms)"
+                variant="outlined"
+                value={data.limit_time_ms}
+                onChange={(e) => {
+                  setData((p) => ({
+                    ...p,
+                    limit_time_ms: parseInt(e.target.value),
+                    action: p.action === "create" ? "create" : "update",
+                  }));
+                }}
+              />
+
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => {
+                  setData((p) => ({ ...p, action: "delete" }));
+                }}
+              >
+                <DeleteForeverIcon />
+                Delete
+              </Button>
+            </Box>
           </Box>
 
           <Box
