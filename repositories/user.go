@@ -35,9 +35,7 @@ func (r *userRepository) Pagination(options *entities.PaginationOptions) (result
 	offset := (options.Page - 1) * options.Limit
 	desc := strings.ToUpper(options.Order) == "DESC"
 
-	baseQuery := r.db.Model(&entities.User{})
-
-	findQuery := baseQuery.
+	findQuery := r.db.Model(&entities.User{}).
 		Where(
 			"display_name LIKE ? OR email LIKE ?",
 			"%"+options.Search+"%",
@@ -53,7 +51,13 @@ func (r *userRepository) Pagination(options *entities.PaginationOptions) (result
 	}
 
 	var total int64
-	if err := baseQuery.Count(&total).Error; err != nil {
+	countQuery := r.db.Model(&entities.User{}).
+		Where(
+			"display_name LIKE ? OR email LIKE ?",
+			"%"+options.Search+"%",
+			"%"+options.Search+"%",
+		).Count(&total)
+	if err := countQuery.Error; err != nil {
 		return nil, err
 	}
 
