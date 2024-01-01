@@ -11,9 +11,9 @@
             "mode": "auto",
             "program": "main.go",
             "env": {
-                "APP_MODE": "CONSUMER",
+                "APP_MODE": "CONSUMER"
             },
-            "envFile": "${workspaceFolder}/.env",
+            "envFile": "${workspaceFolder}/.env"
         },
         {
             "name": "API Web Server",
@@ -22,6 +22,17 @@
             "mode": "auto",
             "program": "${workspaceFolder}/main.go",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "name": "Docker Node.js Launch",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "platform": "node",
+            "node": {
+                "package": "${workspaceFolder}/frontend/package.json",
+                "localRoot": "${workspaceFolder}/frontend"
+            }
         }
     ]
 }

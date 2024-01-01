@@ -9,6 +9,11 @@ type kafkaMockService struct {
 	ctx context.Context
 }
 
+// CreateTopic implements KafkaService.
+func (*kafkaMockService) CreateTopic(topic string, partitions int) error {
+	return nil
+}
+
 // Consume implements KafkaService.
 func (*kafkaMockService) Consume(topic string, groupID string) (chan string, chan error) {
 	// do nothing

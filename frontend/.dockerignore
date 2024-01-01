@@ -11,7 +11,6 @@
 **/*.*proj.user
 **/*.dbmdl
 **/*.jfm
-**/bin
 **/charts
 **/docker-compose*
 **/compose*
@@ -23,5 +22,5 @@
 **/values.dev.yaml
 LICENSE
 README.md
-frontend/
-docker-compose**
+dist
+.env**

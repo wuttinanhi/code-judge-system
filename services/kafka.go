@@ -13,6 +13,7 @@ type KafkaService interface {
 	Consume(topic string, groupID string) (chan string, chan error)
 	IsTopicExist(topic string) bool
 	OverriddenHost(host string)
+	CreateTopic(topic string, partitions int) error
 }
 
 type kafkaService struct {
@@ -100,8 +101,22 @@ func (s *kafkaService) Consume(topic string, groupID string) (chan string, chan 
 	return messageC, errorC
 }
 
-func NewKafkaService(host string) KafkaService {
+// CreateTopic implements KafkaService.
+func (s *kafkaService) CreateTopic(topic string, partitions int) error {
+	conn, err := kafka.DialContext(s.ctx, "tcp", s.host)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
 
+	return conn.CreateTopics(kafka.TopicConfig{
+		Topic:             topic,
+		NumPartitions:     partitions,
+		ReplicationFactor: 1,
+	})
+}
+
+func NewKafkaService(host string) KafkaService {
 	return &kafkaService{
 		host: host,
 		ctx:  context.Background(),

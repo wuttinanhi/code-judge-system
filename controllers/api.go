@@ -1,12 +1,14 @@
 package controllers
 
 import (
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/spf13/viper"
 
 	"github.com/wuttinanhi/code-judge-system/services"
 )
@@ -31,11 +33,21 @@ func SetupAPI(serviceKit *services.ServiceKit, ratelimitStorage fiber.Storage) *
 		Storage: ratelimitStorage,
 	}))
 
+	allowOrigins := viper.GetStringSlice("APP_API_CORS_ALLOW_ORIGINS")
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173",
+		AllowOriginsFunc: func(origin string) bool {
+			for _, allowOrigin := range allowOrigins {
+				if origin == allowOrigin {
+					return true
+				}
+			}
+			return false
+		},
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
+
+	log.Println("Allow Origins:", allowOrigins)
 
 	app.Use(recover.New())
 

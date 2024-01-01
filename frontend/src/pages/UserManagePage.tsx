@@ -8,11 +8,8 @@ import {
 } from "@mui/material";
 import { Navbar } from "../components/Navbar";
 import { UserTable } from "../components/UserTable";
-import { useUser } from "../contexts/user.provider";
 
 export default function UserManagePage() {
-  const { user } = useUser();
-
   return (
     <Container sx={{ width: "100%" }} disableGutters>
       <CssBaseline />

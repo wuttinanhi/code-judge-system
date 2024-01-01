@@ -1,10 +1,121 @@
 version: '3.4'
 
+volumes:
+  db_data_production:
+  kafka_data_production:
+  redis_data_production:
+  redisinsight_data_production:
+
 services:
-  codejudgesystem:
+  frontend:
+    image: codejudgesystem-frontend
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    ports:
+      - 80:3000
+    env_file:
+      - .env.prod
+    environment:
+      - APP_ENV=production
+      - APP_MODE=FRONTEND
+
+  backend:
     image: codejudgesystem
+    restart: always
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
       - 3000:3000
+    env_file:
+      - .env.prod
+    environment:
+      - APP_ENV=production
+      - APP_MODE=API
+
+  consumer:
+    image: codejudgesystem
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env.prod
+    environment:
+      - APP_ENV=production
+      - APP_MODE=CONSUMER
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  db:
+    image: mysql:8.2.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: codejudgesystem
+    env_file:
+      - .env.prod
+    volumes:
+      - db_data_production:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1
+    restart: always
+    environment:
+      PMA_HOST: db
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.6
+    restart: always
+    volumes:
+      - "kafka_data_production:/bitnami"
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    env_file:
+      - .env.prod
+
+  redis:
+    image: docker.io/bitnami/redis:7.2
+    restart: always
+    environment:
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+      - REDIS_IO_THREADS=4
+    env_file:
+      - .env.prod
+    volumes:
+      - 'redis_data_production:/bitnami/redis/data'
+
+  # MONITOR TOOL
+  # kafka-ui:
+  #   container_name: kafka-ui
+  #   image: provectuslabs/kafka-ui:latest
+  #   ports:
+  #     - 8081:8080
+  #   depends_on:
+  #     - kafka
+  #   environment:
+  #     KAFKA_CLUSTERS_0_NAME: local
+  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+  #     DYNAMIC_CONFIG_ENABLED: 'true'
+
+  # redisinsight:
+  #   image: redislabs/redisinsight
+  #   ports:
+  #     - 8082:8001
+  #   depends_on:
+  #     - redis
+  #   volumes:
+  #     - 'redisinsight_data_production:/db'
