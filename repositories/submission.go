@@ -53,15 +53,31 @@ func (r *submissionRepository) Pagination(options *entities.SubmissionPagination
 		options.Challenge = &entities.Challenge{ID: 0}
 	}
 
-	var submissions []*entities.Submission
-	submissionQuery := r.db.Model(&entities.Submission{}).
+	baseQuery := r.db.
+		Model(&entities.Submission{}).
 		Preload("User").
 		Preload("SubmissionTestcases").
 		Preload("Challenge").
-		Where(&entities.Submission{
-			UserID:      options.User.ID,
-			ChallengeID: options.Challenge.ID,
-		}).
+		Joins("LEFT JOIN users ON submissions.user_id = users.id").
+		Joins("LEFT JOIN challenges ON submissions.challenge_id = challenges.id").
+		Where(`
+			users.id = ? OR 
+			challenges.id = ? OR
+			challenges.name LIKE ? OR 
+			challenges.description LIKE ? OR
+			users.display_name LIKE ? OR
+			submissions.status LIKE ?
+		`,
+			options.User.ID,
+			options.Challenge.ID,
+			"%"+options.Search+"%",
+			"%"+options.Search+"%",
+			"%"+options.Search+"%",
+			"%"+options.Search+"%",
+		)
+
+	var submissions []*entities.Submission
+	submissionQuery := baseQuery.
 		Limit(options.Limit).
 		Offset(offset).
 		Order("id " + options.Order).
@@ -79,12 +95,10 @@ func (r *submissionRepository) Pagination(options *entities.SubmissionPagination
 
 	// Query to count total submissions
 	var totalCount int64
-	r.db.Model(&entities.Submission{}).
-		Where(&entities.Submission{
-			UserID:      options.User.ID,
-			ChallengeID: options.Challenge.ID,
-		}).
-		Count(&totalCount)
+	err = baseQuery.Count(&totalCount).Error
+	if err != nil {
+		return
+	}
 
 	result.Items = submissions
 	result.Total = int(totalCount)

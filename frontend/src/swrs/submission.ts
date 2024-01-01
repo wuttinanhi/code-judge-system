@@ -8,15 +8,16 @@ export function usePaginationSubmission(
   limit: number,
   sort: string,
   order: string,
-  challengeID: number,
-  userID: number
+  search: string,
+  challengeID?: any,
+  userID?: any
 ) {
-  let url = `/submission/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}`;
+  let url = `/submission/pagination?page=${page}&limit=${limit}&sort=${sort}&order=${order}&search=${search}`;
   if (challengeID) {
-    url += `&challengeId=${challengeID}`;
+    url += `&challenge_id=${challengeID}`;
   }
   if (userID) {
-    url += `&userId=${userID}`;
+    url += `&user_id=${userID}`;
   }
 
   const { data, error, isLoading } = useSWR(() => url, fetcherWithAuth);
