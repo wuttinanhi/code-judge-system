@@ -4,8 +4,8 @@ RUN npm install -g pnpm
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN pnpm install && pnpm add vite
 COPY . .
-# ENV NODE_ENV=production
-# RUN pnpm build
+ENV NODE_ENV=production
+RUN pnpm build --mode production
 EXPOSE 80
 # RUN chown -R node /usr/src/app
 # USER node

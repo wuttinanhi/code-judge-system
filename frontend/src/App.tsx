@@ -72,7 +72,6 @@ function App() {
   return (
     <>
       <div>
-        <title>Code Judge System</title>
         <ToastContainer />
         <BackendPinger />
         <ThemeProvider theme={defaultTheme}>
