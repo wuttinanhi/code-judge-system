@@ -7,7 +7,10 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
+import ReactMarkdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Navbar } from "../components/Navbar";
 import { TestcaseRenderer } from "../components/TestcaseRenderer";
 import { useSubmission } from "../swrs/submission";
@@ -45,7 +48,28 @@ export default function SubmissionViewPage() {
             </Button>
           </Box>
           <Divider sx={{ my: 3 }} />
-          {data.challenge.description}
+
+          <ReactMarkdown
+            children={data.challenge.description}
+            components={{
+              code(props) {
+                const { children, className, node, ...rest } = props;
+                const match = /language-(\w+)/.exec(className || "");
+                return match ? (
+                  <SyntaxHighlighter
+                    PreTag="div"
+                    children={String(children).replace(/\n$/, "")}
+                    language={match[1]}
+                    style={vscDarkPlus}
+                  />
+                ) : (
+                  <code {...rest} className={className}>
+                    {children}
+                  </code>
+                );
+              },
+            }}
+          />
         </Paper>
 
         <Paper sx={{ padding: 3, mt: 5 }}>
