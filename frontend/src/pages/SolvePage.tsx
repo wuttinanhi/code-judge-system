@@ -20,6 +20,7 @@ import { SubmissionService } from "../apis/submission";
 import { Navbar } from "../components/Navbar";
 import { TestcaseRenderer } from "../components/TestcaseRenderer";
 import { useUser } from "../contexts/user.provider";
+import { handleBadRequest } from "../helpers/badrequest-toast";
 import { useChallenge } from "../swrs/challenge";
 import { SubmissionSubmitResponse } from "../types/submission";
 import { ITestcase } from "../types/testcase";
@@ -58,7 +59,7 @@ export default function SolvePage() {
       window.location.href = `/submission/${data.submission_id}`;
     } else {
       const data = await response.json();
-      toast.error(`Something went wrong ${data.message}`);
+      handleBadRequest(data);
     }
 
     setSubmitButtonDisabled(false);

@@ -42,3 +42,11 @@ func ParsePaginationOptions(c *fiber.Ctx) *entities.PaginationOptions {
 		Search: search,
 	}
 }
+
+func CreateValidationError(err error) entities.HttpBadRequest {
+	return entities.HttpBadRequest{
+		Error:   "Bad Request",
+		Message: "Validation error",
+		Errors:  []string{err.Error()},
+	}
+}

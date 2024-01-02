@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserService } from "../apis/user";
+import { handleBadRequest } from "../helpers/badrequest-toast";
 
 export function SignUpPage() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export function SignUpPage() {
       window.location.href = "/signin";
     } else {
       const data = await response.json();
-      toast.error("Failed to register! " + data.message);
+      handleBadRequest(data);
     }
   };
 

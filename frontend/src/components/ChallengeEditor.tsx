@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { ChallengeService } from "../apis/challenge";
 import { useUser } from "../contexts/user.provider";
+import { handleBadRequest } from "../helpers/badrequest-toast";
 import { ChallengeUpdateDTO } from "../types/challenge";
 import { ITestcaseModify } from "../types/testcase";
 import AlertDialog from "./AlertDialog";
@@ -52,7 +53,7 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
     const data = await res.json();
 
     if (!res.ok) {
-      toast.error(data.message);
+      handleBadRequest(data);
     } else {
       // redirect to challenge page
       window.location.href = `/challenge`;
@@ -74,7 +75,7 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
     const data = await res.json();
 
     if (!res.ok) {
-      toast.error(data.message);
+      handleBadRequest(data);
     } else {
       toast.success("Challenge updated successfully");
     }
@@ -232,15 +233,17 @@ export function ChallengeEditor(props: ChallengeEditorProps) {
           mt={2}
           gap={2}
         >
-          <Button
-            variant="contained"
-            color="error"
-            size="large"
-            onClick={() => setDeleteDialogOpen(true)}
-            disabled={deleteButtonDisabled}
-          >
-            Delete
-          </Button>
+          {props.mode === "edit" && (
+            <Button
+              variant="contained"
+              color="error"
+              size="large"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={deleteButtonDisabled}
+            >
+              Delete
+            </Button>
+          )}
 
           <Button
             variant="contained"
@@ -291,7 +294,7 @@ export function TestcaseEditor(props: TestcaseEditorProps) {
               <TextField
                 label="Limit Memory"
                 variant="outlined"
-                value={data.limit_memory}
+                value={isNaN(data.limit_memory) ? 0 : data.limit_memory}
                 onChange={(e) => {
                   setData((p) => ({
                     ...p,
@@ -304,7 +307,7 @@ export function TestcaseEditor(props: TestcaseEditorProps) {
               <TextField
                 label="Limit Time (ms)"
                 variant="outlined"
-                value={data.limit_time_ms}
+                value={isNaN(data.limit_time_ms) ? 0 : data.limit_time_ms}
                 onChange={(e) => {
                   setData((p) => ({
                     ...p,

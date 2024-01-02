@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/wuttinanhi/code-judge-system/entities"
@@ -61,6 +62,9 @@ func (h *challengeHandler) CreateChallengeWithTestcase(c *fiber.Ctx) error {
 		Testcases:   dto.GetTestcases(),
 	})
 	if err != nil {
+		if strings.Contains(err.Error(), "testcase #") {
+			return c.Status(http.StatusBadRequest).JSON(CreateValidationError(err))
+		}
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 
@@ -89,6 +93,9 @@ func (h *challengeHandler) UpdateChallenge(c *fiber.Ctx) error {
 	challenge.Testcases = dto.GetTestcases()
 	err = h.serviceKit.ChallengeService.UpdateChallengeWithTestcase(challenge)
 	if err != nil {
+		if strings.Contains(err.Error(), "testcase #") {
+			return c.Status(http.StatusBadRequest).JSON(CreateValidationError(err))
+		}
 		return c.Status(http.StatusBadRequest).JSON(entities.HttpError{Message: err.Error()})
 	}
 

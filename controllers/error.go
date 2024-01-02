@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/wuttinanhi/code-judge-system/entities"
@@ -15,9 +17,16 @@ func ErrorHandler(c *fiber.Ctx, err error) error {
 	}
 
 	// if error is go-validator error
-	if err, ok := err.(validator.ValidationErrors); ok {
-		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpError{
-			Message: err.Error(),
+	if errs, ok := err.(validator.ValidationErrors); ok {
+		var errors []string
+		for _, e := range errs {
+			errors = append(errors, fmt.Sprintf("%s %s", e.Field(), e.Tag()))
+		}
+
+		return c.Status(fiber.StatusBadRequest).JSON(entities.HttpBadRequest{
+			Error:   "Bad Request",
+			Message: "Validation error",
+			Errors:  errors,
 		})
 	}
 
