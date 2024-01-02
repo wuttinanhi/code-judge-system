@@ -44,6 +44,11 @@ func (s *submissionService) ProcessSubmission(submission *entities.Submission) (
 	}
 	defer s.sandboxService.CleanUp(sandbox)
 
+	compile := s.sandboxService.CompileSandbox(sandbox)
+	if compile.ExitCode != 0 {
+		return nil, errors.New("failed to compile sandbox")
+	}
+
 	wg := sync.WaitGroup{}
 
 	for _, testcase := range submissionTestcases {

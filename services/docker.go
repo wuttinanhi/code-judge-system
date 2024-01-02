@@ -111,6 +111,7 @@ func (s dockerService) GetContainerExitCode(containerID string) (int, error) {
 }
 
 func (s dockerService) CreateVolume(name string) (volume.Volume, error) {
+	log.Println("creating volume", name)
 	volume, err := s.DockerClient.VolumeCreate(s.ctx, volume.CreateOptions{
 		Name:   name,
 		Driver: "local",
@@ -119,6 +120,7 @@ func (s dockerService) CreateVolume(name string) (volume.Volume, error) {
 }
 
 func (s dockerService) DeleteVolume(v volume.Volume) error {
+	log.Println("deleting volume", v.Name)
 	err := s.DockerClient.VolumeRemove(s.ctx, v.Name, true)
 	return err
 }
@@ -138,7 +140,7 @@ func (s dockerService) CopyToContainer(containerID, targetPath string, data []by
 	tw.Write(data)
 	tw.Close()
 
-	err := s.DockerClient.CopyToContainer(s.ctx, containerID, targetDir, &buf, types.CopyToContainerOptions{
+	err := s.DockerClient.CopyToContainer(context.Background(), containerID, targetDir, &buf, types.CopyToContainerOptions{
 		AllowOverwriteDirWithFile: false,
 		CopyUIDGID:                false,
 	})

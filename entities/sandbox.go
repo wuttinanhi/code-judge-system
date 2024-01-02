@@ -18,6 +18,7 @@ type SandboxInstance struct {
 	CompileExitCode int
 	CompileStdout   string
 	CompileStderr   string
+	Code            string
 }
 
 type SandboxRunResult struct {
@@ -56,15 +57,15 @@ var PythonInstructionBook = SandboxInstruction{
 	DockerImage:    "docker.io/library/python:3.10",
 	CompileCmd:     "cp /sandbox/code /sandbox/code.py",
 	RunCmd:         "python3 /sandbox/code.py < /stdin/stdin",
-	CompileTimeout: 0,
+	CompileTimeout: 1000,
 }
 
 var GoInstructionBook = SandboxInstruction{
 	Language:       "go",
 	DockerImage:    "docker.io/library/golang:1.21",
-	CompileCmd:     "cd /sandbox && cp /sandbox/code /sandbox/main.go && go mod init sandbox && go build -o main",
+	CompileCmd:     "cd /sandbox && cp /sandbox/code /sandbox/main.go && go mod init sandbox && go build -o /sandbox/main",
 	RunCmd:         "/sandbox/main < /stdin/stdin",
-	CompileTimeout: 10000,
+	CompileTimeout: 1000 * 60,
 }
 
 var CInstructionBook = SandboxInstruction{
@@ -72,7 +73,7 @@ var CInstructionBook = SandboxInstruction{
 	DockerImage:    "docker.io/library/gcc:12.3.0",
 	CompileCmd:     "cp /sandbox/code /sandbox/main.c && gcc -o /sandbox/main /sandbox/main.c",
 	RunCmd:         "/sandbox/main < /stdin/stdin",
-	CompileTimeout: 10000,
+	CompileTimeout: 1000 * 60,
 }
 
 var PythonCodeExample = `

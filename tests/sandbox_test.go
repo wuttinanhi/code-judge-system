@@ -22,6 +22,11 @@ func TestSandbox(t *testing.T) {
 		}
 		defer testServiceKit.SandboxService.CleanUp(sandbox)
 
+		compile := testServiceKit.SandboxService.CompileSandbox(sandbox)
+		if compile.Err != nil {
+			t.Fatal(compile.Err)
+		}
+
 		result := testServiceKit.SandboxService.Run(sandbox, "1\n2\n", entities.SandboxMemoryMB*128, 1000)
 		if result.Err != nil {
 			t.Fatal(err)
@@ -44,6 +49,11 @@ func TestSandbox(t *testing.T) {
 			t.Fatal(err)
 		}
 		defer testServiceKit.SandboxService.CleanUp(sandbox)
+
+		compile := testServiceKit.SandboxService.CompileSandbox(sandbox)
+		if compile.Err != nil {
+			t.Fatal(compile.Err)
+		}
 
 		result := testServiceKit.SandboxService.Run(sandbox, "1\n2\n", entities.SandboxMemoryMB*128, 1000)
 		if err != nil {
@@ -68,6 +78,11 @@ func TestSandbox(t *testing.T) {
 		}
 		defer testServiceKit.SandboxService.CleanUp(sandbox)
 
+		compile := testServiceKit.SandboxService.CompileSandbox(sandbox)
+		if compile.Err != nil {
+			t.Fatal(compile.Err)
+		}
+
 		result := testServiceKit.SandboxService.Run(sandbox, "1\n2\n", entities.SandboxMemoryMB*128, 1000)
 		if err != nil {
 			t.Fatal(err)
@@ -91,6 +106,11 @@ func TestSandbox(t *testing.T) {
 		}
 		defer testServiceKit.SandboxService.CleanUp(sandbox)
 
+		compile := testServiceKit.SandboxService.CompileSandbox(sandbox)
+		if compile.Err != nil {
+			t.Fatal(compile.Err)
+		}
+
 		result := testServiceKit.SandboxService.Run(sandbox, "1\n2\n", entities.SandboxMemoryMB*128, 1000)
 		if err != nil {
 			t.Fatal(err)
@@ -98,7 +118,7 @@ func TestSandbox(t *testing.T) {
 
 		// exit code must be OOM
 		if result.ExitCode != 137 {
-			t.Error("OOM exit code not match")
+			t.Error("OOM exit code not match, got", result.ExitCode)
 		}
 	})
 
@@ -111,6 +131,11 @@ func TestSandbox(t *testing.T) {
 			t.Fatal(err)
 		}
 		defer testServiceKit.SandboxService.CleanUp(sandbox)
+
+		compile := testServiceKit.SandboxService.CompileSandbox(sandbox)
+		if compile.Err != nil {
+			t.Fatal(compile.Err)
+		}
 
 		result := testServiceKit.SandboxService.Run(sandbox, "1\n2\n", entities.SandboxMemoryMB*128, 1000)
 		if err != nil {
