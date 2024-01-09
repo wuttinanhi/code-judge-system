@@ -30,3 +30,12 @@ node_modules
 __debug_**
 
 .env**
+**/__pycache__
+**/.terraform
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.backup
+**/terraform.tfvars
+**/ssh
+**/swarm-worker-token
+**/.terraform.tfstate.lock.info

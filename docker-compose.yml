@@ -1,45 +1,72 @@
 version: '3.4'
 
 volumes:
-  db_data_production:
-  kafka_data_production:
-  redis_data_production:
-  redisinsight_data_production:
+  production_db_data:
+  production_kafka_data:
+  production_redis_data:
+  production_redisinsight_data:
+
+# create network overlay for swarm
+networks:
+  production:
+    driver: overlay
 
 services:
   frontend:
     image: docker.io/wuttinanhi/codejudgesystem-frontend:latest
     ports:
       - 80:3000
-    env_file:
-      - .env.prod
     environment:
       - APP_ENV=production
       - APP_MODE=FRONTEND
+      - VITE_API_URL=${VITE_API_URL}
 
   backend:
     image: docker.io/wuttinanhi/codejudgesystem:latest
     ports:
       - 3000:3000
-    env_file:
-      - .env.prod
     environment:
-      - APP_ENV=production
-      - APP_MODE=API
+      - APP_ENV=${APP_ENV}
+      - APP_MODE=${APP_MODE}
+      - AUTH_JWT_SECRET=${AUTH_JWT_SECRET}
+      - KAFKA_HOST=${KAFKA_HOST}
+      - KAFKA_SUBMISSION_PROCESS_TOPIC=${KAFKA_SUBMISSION_PROCESS_TOPIC}
+      - KAFKA_SUBMISSION_PROCESS_GROUP=${KAFKA_SUBMISSION_PROCESS_GROUP}
+      - APP_API_CORS_ALLOW_ORIGINS=${APP_API_CORS_ALLOW_ORIGINS}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - RATE_LIMIT_HOST=${RATE_LIMIT_HOST}
+      - RATE_LIMIT_PORT=${RATE_LIMIT_PORT}
+      - RATE_LIMIT_USER=${RATE_LIMIT_USER}
+      - RATE_LIMIT_PASSWORD=${RATE_LIMIT_PASSWORD}
+      - SANDBOX_MAX_MEMORY_MB=${SANDBOX_MAX_MEMORY_MB}
+      - SANDBOX_MAX_TIME_MS=${SANDBOX_MAX_TIME_MS}
+    networks:
+      - production
 
   consumer:
     image: docker.io/wuttinanhi/codejudgesystem:latest
-    restart: always
-    env_file:
-      - .env.prod
     environment:
       - APP_ENV=production
       - APP_MODE=CONSUMER
+      - KAFKA_HOST=${KAFKA_HOST}
+      - KAFKA_SUBMISSION_PROCESS_TOPIC=${KAFKA_SUBMISSION_PROCESS_TOPIC}
+      - KAFKA_SUBMISSION_PROCESS_GROUP=${KAFKA_SUBMISSION_PROCESS_GROUP}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - SANDBOX_MAX_MEMORY_MB=${SANDBOX_MAX_MEMORY_MB}
+      - SANDBOX_MAX_TIME_MS=${SANDBOX_MAX_TIME_MS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 3
       placement:
         constraints: [node.role == worker]
       resources:
@@ -49,32 +76,34 @@ services:
         reservations:
           cpus: '0.25'
           memory: 256M
+    networks:
+      - production
 
   db:
     image: mysql:8.2.0
-    restart: always
     environment:
-      MYSQL_DATABASE: codejudgesystem
-    env_file:
-      - .env.prod
+      - MYSQL_DATABASE=codejudgesystem
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
-      - db_data_production:/var/lib/mysql
+      - production_db_data:/var/lib/mysql
+    networks:
+      - production
 
   phpmyadmin:
     image: phpmyadmin:5.2.1
-    restart: always
     environment:
       PMA_HOST: db
     ports:
       - 8080:80
     depends_on:
       - db
+    networks:
+      - production
 
   kafka:
     image: docker.io/bitnami/kafka:3.6
-    restart: always
     volumes:
-      - "kafka_data_production:/bitnami"
+      - "production_kafka_data:/bitnami"
     environment:
       # KRaft settings
       - KAFKA_CFG_NODE_ID=0
@@ -86,8 +115,6 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-    env_file:
-      - .env.prod
     deploy:
       mode: replicated
       replicas: 1
@@ -100,36 +127,16 @@ services:
         reservations:
           cpus: '0.25'
           memory: 512M
+    networks:
+      - production
 
   redis:
     image: docker.io/bitnami/redis:7.2
-    restart: always
     environment:
       - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
       - REDIS_IO_THREADS=4
-    env_file:
-      - .env.prod
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     volumes:
-      - 'redis_data_production:/bitnami/redis/data'
-
-  # MONITOR TOOL
-  # kafka-ui:
-  #   container_name: kafka-ui
-  #   image: provectuslabs/kafka-ui:latest
-  #   ports:
-  #     - 8081:8080
-  #   depends_on:
-  #     - kafka
-  #   environment:
-  #     KAFKA_CLUSTERS_0_NAME: local
-  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-  #     DYNAMIC_CONFIG_ENABLED: 'true'
-
-  # redisinsight:
-  #   image: redislabs/redisinsight
-  #   ports:
-  #     - 8082:8001
-  #   depends_on:
-  #     - redis
-  #   volumes:
-  #     - 'redisinsight_data_production:/db'
+      - 'production_redis_data:/bitnami/redis/data'
+    networks:
+      - production
