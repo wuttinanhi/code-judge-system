@@ -24,8 +24,7 @@ def ssh_exec_command(target_server_ip: str, username: str, command: str):
     ssh.connect(
         hostname=target_server_ip, 
         username=username, 
-        key_filename="ssh/id_rsa",
-        banner_timeout=200
+        key_filename="ssh/id_rsa"
     )
 
     _, stdout, stderr = ssh.exec_command(command)
@@ -37,6 +36,7 @@ def ssh_exec_command(target_server_ip: str, username: str, command: str):
     return stdout, stderr
 
 def wait_for_docker(target_server_ip: str, username: str):
+    print('Starting waiting for Docker to ready...')
     while True:
         try:
             stdout, stderr = ssh_exec_command(target_server_ip, username, 'docker info')
