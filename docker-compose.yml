@@ -30,9 +30,6 @@ services:
   consumer:
     image: docker.io/wuttinanhi/codejudgesystem:latest
     restart: always
-    build:
-      context: .
-      dockerfile: ./Dockerfile
     env_file:
       - .env.prod
     environment:
