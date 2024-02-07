@@ -30,6 +30,12 @@ node_modules
 __debug_**
 
 .env**
+terraform/gcp/ssh/id_rsa
+terraform/gcp/ssh/id_rsa.pub
+terraform/gcp/__pycache__
+terraform/gcp/.terraform
+terraform/gcp/swarm-worker-token
+terraform/gcp/terraform.tfstate.backup
 **/__pycache__
 **/.terraform
 **/.terraform.lock.hcl
